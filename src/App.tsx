@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
 import Sangrias from "./pages/Sangrias";
+import Auditoria from "./pages/Auditoria";
+import Alertas from "./pages/Alertas";
+import Usuarios from "./pages/Usuarios";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
@@ -21,6 +24,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/sangrias" element={<Sangrias />} />
+          <Route path="/auditoria" element={<Auditoria />} />
+          <Route path="/alertas" element={<Alertas />} />
+          <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

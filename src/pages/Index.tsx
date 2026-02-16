@@ -1,40 +1,65 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Package, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  CalendarIcon,
+  Package,
+  TrendingDown,
+  AlertTriangle,
+  CheckCircle,
+  ShieldAlert,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import StockTable from "@/components/StockTable";
-import SangriasTable from "@/components/SangriasTable";
-import { StockItem, SangriaItem, calcularEstoqueFinal } from "@/types/inventory";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+} from "recharts";
 
-const initialStockItems: StockItem[] = [
-  { id: "1", descricao: "Ovo Tipo A - Cartela", codigo: "001", estoqueInicial: 120, entradas: 30, quantVendida: 80, trincado: 5, quebrado: 2, obs: "" },
-  { id: "2", descricao: "Ovo Tipo B - Cartela", codigo: "002", estoqueInicial: 85, entradas: 20, quantVendida: 50, trincado: 3, quebrado: 1, obs: "" },
-  { id: "3", descricao: "Ovo Caipira - Cartela", codigo: "003", estoqueInicial: 40, entradas: 15, quantVendida: 30, trincado: 1, quebrado: 0, obs: "" },
+const weeklyData = [
+  { dia: "Seg", vendas: 85, perdas: 4, entradas: 30 },
+  { dia: "Ter", vendas: 92, perdas: 6, entradas: 25 },
+  { dia: "Qua", vendas: 78, perdas: 3, entradas: 40 },
+  { dia: "Qui", vendas: 95, perdas: 8, entradas: 35 },
+  { dia: "Sex", vendas: 110, perdas: 5, entradas: 20 },
+  { dia: "Sáb", vendas: 130, perdas: 7, entradas: 50 },
+  { dia: "Dom", vendas: 60, perdas: 2, entradas: 15 },
 ];
 
-const initialSangrias: SangriaItem[] = [
-  { id: "1", sangria: "", cartelasVazias: "", barbantes: "", notacoes: "" },
-  { id: "2", sangria: "", cartelasVazias: "", barbantes: "", notacoes: "" },
+const perdasData = [
+  { name: "Trincados", value: 24, color: "hsl(40, 45%, 57%)" },
+  { name: "Quebrados", value: 11, color: "hsl(0, 65%, 51%)" },
+];
+
+const alerts = [
+  { type: "warning", message: "Perdas acima de 5% detectadas no produto Ovo Tipo A", time: "Há 2h" },
+  { type: "danger", message: "Ajuste manual sem justificativa pendente de aprovação", time: "Há 4h" },
+  { type: "info", message: "Movimentação fora do horário registrada por Operador 3", time: "Há 6h" },
 ];
 
 const Index = () => {
   const [date, setDate] = useState<Date>(new Date());
-  const [stockItems, setStockItems] = useState<StockItem[]>(initialStockItems);
-  const [sangrias, setSangrias] = useState<SangriaItem[]>(initialSangrias);
-
-  const totalEstoqueFinal = stockItems.reduce((acc, item) => acc + calcularEstoqueFinal(item), 0);
-  const totalVendido = stockItems.reduce((acc, item) => acc + item.quantVendida, 0);
-  const totalPerdas = stockItems.reduce((acc, item) => acc + item.trincado + item.quebrado, 0);
 
   const stats = [
-    { label: "Estoque Final", value: totalEstoqueFinal, icon: Package, color: "text-primary" },
-    { label: "Total Vendido", value: totalVendido, icon: CheckCircle, color: "text-accent" },
-    { label: "Perdas (Trinc. + Queb.)", value: totalPerdas, icon: AlertTriangle, color: "text-destructive" },
-    { label: "Produtos", value: stockItems.length, icon: TrendingDown, color: "text-muted-foreground" },
+    { label: "Estoque Atual", value: "1.245", icon: Package, trend: "+3.2%", up: true },
+    { label: "Vendido Hoje", value: "160", icon: CheckCircle, trend: "+12%", up: true },
+    { label: "Perdas Hoje", value: "7", icon: AlertTriangle, trend: "-2.1%", up: false },
+    { label: "Alertas Ativos", value: "3", icon: ShieldAlert, trend: "", up: false },
   ];
 
   return (
@@ -43,15 +68,15 @@ const Index = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Controle de Estoque Diário</h1>
+            <h1 className="text-3xl font-bold text-foreground">Dashboard Executivo</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Gerencie entradas, saídas e perdas do dia
+              Visão geral operacional — Controle e rastreamento
             </p>
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 w-fit">
-                <CalendarIcon className="w-4 h-4" />
+              <Button variant="outline" className="gap-2 w-fit border-border">
+                <CalendarIcon className="w-4 h-4 text-primary" />
                 {format(date, "dd 'de' MMMM, yyyy", { locale: ptBR })}
               </Button>
             </PopoverTrigger>
@@ -66,33 +91,180 @@ const Index = () => {
           </Popover>
         </div>
 
-        {/* Stats */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
-            <div key={stat.label} className="glass-card rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                <span className="text-xs text-muted-foreground font-medium">{stat.label}</span>
+            <div key={stat.label} className="glass-card rounded-lg p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center">
+                  <stat.icon className="w-4 h-4 text-primary" />
+                </div>
+                {stat.trend && (
+                  <span
+                    className={`text-xs font-medium flex items-center gap-0.5 ${
+                      stat.up ? "text-success" : "text-destructive"
+                    }`}
+                  >
+                    {stat.up ? (
+                      <ArrowUpRight className="w-3 h-3" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3" />
+                    )}
+                    {stat.trend}
+                  </span>
+                )}
               </div>
-              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Stock Table */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-3">Planilha de Estoque</h2>
-          <p className="text-xs text-muted-foreground mb-3">
-            OBS: Unidade de medida em cartelas. Todo ovo quebrado ou trincado deve ser registrado.
-          </p>
-          <StockTable items={stockItems} onChange={setStockItems} />
-        </section>
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Weekly Chart */}
+          <div className="lg:col-span-2 glass-card rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Movimentação Semanal</h3>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={weeklyData} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,88%)" />
+                <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "hsl(0,0%,45%)" }} />
+                <YAxis tick={{ fontSize: 12, fill: "hsl(0,0%,45%)" }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(0,0%,100%)",
+                    border: "1px solid hsl(0,0%,88%)",
+                    borderRadius: 6,
+                    fontSize: 12,
+                  }}
+                />
+                <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="vendas" name="Vendas" fill="hsl(40,45%,57%)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="entradas" name="Entradas" fill="hsl(0,0%,75%)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="perdas" name="Perdas" fill="hsl(0,65%,51%)" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
 
-        {/* Sangrias Table */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-3">Controle de Sangrias e Insumos</h2>
-          <SangriasTable items={sangrias} onChange={setSangrias} />
-        </section>
+          {/* Pie Chart */}
+          <div className="glass-card rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Composição de Perdas</h3>
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart>
+                <Pie
+                  data={perdasData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={75}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {perdasData.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex justify-center gap-4 mt-2">
+              {perdasData.map((item) => (
+                <div key={item.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
+                  {item.name}: {item.value}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Alerts */}
+        <div className="glass-card rounded-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground">Alertas Inteligentes</h3>
+            <Button variant="ghost" size="sm" className="text-xs text-primary hover:text-primary">
+              Ver todos
+            </Button>
+          </div>
+          <div className="space-y-3">
+            {alerts.map((alert, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-3 p-3 rounded-md border ${
+                  alert.type === "danger"
+                    ? "border-destructive/20 bg-destructive/5"
+                    : alert.type === "warning"
+                    ? "border-primary/20 bg-primary/5"
+                    : "border-border bg-muted/30"
+                }`}
+              >
+                <AlertTriangle
+                  className={`w-4 h-4 mt-0.5 shrink-0 ${
+                    alert.type === "danger"
+                      ? "text-destructive"
+                      : alert.type === "warning"
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground">{alert.message}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{alert.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Divergence Index */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="glass-card rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Índice de Divergência</h3>
+            <div className="flex items-end gap-4">
+              <span className="text-4xl font-bold text-primary">2.3%</span>
+              <span className="text-xs text-muted-foreground pb-1">dentro do limite aceitável</span>
+            </div>
+            <div className="mt-4 h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-full bg-primary rounded-full" style={{ width: "23%" }} />
+            </div>
+            <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+              <span>0%</span>
+              <span className="text-destructive">Limite: 5%</span>
+              <span>10%</span>
+            </div>
+          </div>
+          <div className="glass-card rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-foreground mb-4">Ranking de Movimentação</h3>
+            <div className="space-y-3">
+              {[
+                { name: "Operador 1", mov: 245, risk: "baixo" },
+                { name: "Operador 2", mov: 198, risk: "baixo" },
+                { name: "Operador 3", mov: 312, risk: "médio" },
+              ].map((op, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
+                      {i + 1}
+                    </div>
+                    <span className="text-sm text-foreground">{op.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-foreground">{op.mov}</span>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                        op.risk === "baixo"
+                          ? "bg-success/10 text-success"
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {op.risk}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
