@@ -1,6 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, Shield, Plus, UserPlus } from "lucide-react";
+import { Users, Shield, Plus, UserPlus, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,31 +24,50 @@ interface UserProfile {
 }
 
 const initialUsers: UserProfile[] = [
-  { name: "Maria Silva", email: "maria@granja.com", phone: "", role: "Operador", status: "ativo" },
-  { name: "João Santos", email: "joao@granja.com", phone: "", role: "Supervisor", status: "ativo" },
-  { name: "Carlos Lima", email: "carlos@granja.com", phone: "", role: "Administrador", status: "ativo" },
-  { name: "Ana Souza", email: "ana@granja.com", phone: "", role: "Auditor", status: "ativo" },
-  { name: "Pedro Costa", email: "pedro@granja.com", phone: "", role: "Operador", status: "inativo" },
+  { name: "Maria Silva", email: "maria@granja.com", phone: "(11) 99999-0001", role: "Operador", status: "ativo" },
+  { name: "João Santos", email: "joao@granja.com", phone: "(11) 99999-0002", role: "Supervisor", status: "ativo" },
+  { name: "Carlos Lima", email: "carlos@granja.com", phone: "(11) 99999-0003", role: "Administrador", status: "ativo" },
+  { name: "Ana Souza", email: "ana@granja.com", phone: "(11) 99999-0004", role: "Auditor", status: "ativo" },
+  { name: "Pedro Costa", email: "pedro@granja.com", phone: "(11) 99999-0005", role: "Operador", status: "inativo" },
 ];
 
-// Simulate current user role — in production this comes from auth
 const CURRENT_USER_ROLE = "Administrador";
 
 const UsuariosPage = () => {
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ name: "", email: "", phone: "", role: "Operador" });
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [formUser, setFormUser] = useState({ name: "", email: "", phone: "", role: "Operador" });
   const isAdmin = CURRENT_USER_ROLE === "Administrador";
 
-  const handleAdd = () => {
-    if (!newUser.name || (!newUser.email && !newUser.phone)) {
+  const openAdd = () => {
+    setEditIndex(null);
+    setFormUser({ name: "", email: "", phone: "", role: "Operador" });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (idx: number) => {
+    setEditIndex(idx);
+    const u = users[idx];
+    setFormUser({ name: u.name, email: u.email, phone: u.phone, role: u.role });
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!formUser.name || (!formUser.email && !formUser.phone)) {
       toast.error("Preencha o nome e pelo menos email ou telefone.");
       return;
     }
-    setUsers([...users, { ...newUser, status: "ativo" }]);
-    setNewUser({ name: "", email: "", phone: "", role: "Operador" });
+    if (editIndex !== null) {
+      const updated = [...users];
+      updated[editIndex] = { ...updated[editIndex], ...formUser };
+      setUsers(updated);
+      toast.success("Perfil atualizado com sucesso!");
+    } else {
+      setUsers([...users, { ...formUser, status: "ativo" }]);
+      toast.success("Perfil adicionado com sucesso!");
+    }
     setDialogOpen(false);
-    toast.success("Perfil adicionado com sucesso!");
   };
 
   return (
@@ -62,7 +81,7 @@ const UsuariosPage = () => {
             </p>
           </div>
           {isAdmin && (
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Button onClick={openAdd} className="gap-2">
               <UserPlus className="w-4 h-4" />
               Adicionar Perfil
             </Button>
@@ -93,6 +112,9 @@ const UsuariosPage = () => {
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Telefone</th>
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Perfil</th>
                   <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Status</th>
+                  {isAdmin && (
+                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -112,6 +134,14 @@ const UsuariosPage = () => {
                         {user.status}
                       </Badge>
                     </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-center">
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary">
+                          <Pencil className="w-3.5 h-3.5" />
+                          Editar
+                        </Button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -119,29 +149,33 @@ const UsuariosPage = () => {
           </div>
         </div>
 
-        {/* Add Profile Dialog */}
+        {/* Add/Edit Profile Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Adicionar Novo Perfil</DialogTitle>
-              <DialogDescription>Preencha os dados do novo usuário. Apenas administradores podem fazer isso.</DialogDescription>
+              <DialogTitle>{editIndex !== null ? "Editar Perfil" : "Adicionar Novo Perfil"}</DialogTitle>
+              <DialogDescription>
+                {editIndex !== null
+                  ? "Atualize os dados do usuário. Apenas administradores podem fazer isso."
+                  : "Preencha os dados do novo usuário. Apenas administradores podem fazer isso."}
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-2">
               <div>
                 <label className="text-sm font-medium text-foreground">Nome *</label>
-                <Input value={newUser.name} onChange={(e) => setNewUser({ ...newUser, name: e.target.value })} placeholder="Nome completo" />
+                <Input value={formUser.name} onChange={(e) => setFormUser({ ...formUser, name: e.target.value })} placeholder="Nome completo" />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Email</label>
-                <Input type="email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} placeholder="email@granja.com" />
+                <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Telefone</label>
-                <Input value={newUser.phone} onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })} placeholder="(00) 00000-0000" />
+                <Input value={formUser.phone} onChange={(e) => setFormUser({ ...formUser, phone: e.target.value })} placeholder="(00) 00000-0000" />
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Cargo *</label>
-                <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v })}>
+                <Select value={formUser.role} onValueChange={(v) => setFormUser({ ...formUser, role: v })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -156,7 +190,7 @@ const UsuariosPage = () => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleAdd}>Adicionar</Button>
+              <Button onClick={handleSubmit}>{editIndex !== null ? "Salvar Alterações" : "Adicionar"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

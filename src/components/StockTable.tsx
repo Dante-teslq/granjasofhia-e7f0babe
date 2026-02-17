@@ -100,6 +100,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                       onChange={(e) =>
                         updateItem(item.id, field, parseInt(e.target.value) || 0)
                       }
+                      placeholder="0"
                       className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
                     />
                   </td>
@@ -113,7 +114,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                   <Input
                     value={item.obs}
                     onChange={(e) => updateItem(item.id, "obs", e.target.value)}
-                    placeholder="—"
+                    placeholder="Anotações"
                     className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>

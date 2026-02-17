@@ -49,6 +49,7 @@ const SangriasTable = ({ items, onChange }: SangriasTableProps) => {
                   <Input
                     value={item.sangria}
                     onChange={(e) => updateItem(item.id, "sangria", e.target.value)}
+                    placeholder="Ex: R$ 150,00"
                     className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
@@ -56,6 +57,7 @@ const SangriasTable = ({ items, onChange }: SangriasTableProps) => {
                   <Input
                     value={item.cartelasVazias}
                     onChange={(e) => updateItem(item.id, "cartelasVazias", e.target.value)}
+                    placeholder="Ex: 20 unidades"
                     className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
@@ -63,6 +65,7 @@ const SangriasTable = ({ items, onChange }: SangriasTableProps) => {
                   <Input
                     value={item.barbantes}
                     onChange={(e) => updateItem(item.id, "barbantes", e.target.value)}
+                    placeholder="Ex: 5 rolos"
                     className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
@@ -70,6 +73,7 @@ const SangriasTable = ({ items, onChange }: SangriasTableProps) => {
                   <Input
                     value={item.notacoes}
                     onChange={(e) => updateItem(item.id, "notacoes", e.target.value)}
+                    placeholder="Ex: Reposição pendente"
                     className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
