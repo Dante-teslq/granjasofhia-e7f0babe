@@ -49,28 +49,28 @@ const SangriasTable = ({ items, onChange }: SangriasTableProps) => {
                   <Input
                     value={item.sangria}
                     onChange={(e) => updateItem(item.id, "sangria", e.target.value)}
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">
                   <Input
                     value={item.cartelasVazias}
                     onChange={(e) => updateItem(item.id, "cartelasVazias", e.target.value)}
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">
                   <Input
                     value={item.barbantes}
                     onChange={(e) => updateItem(item.id, "barbantes", e.target.value)}
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">
                   <Input
                     value={item.notacoes}
                     onChange={(e) => updateItem(item.id, "notacoes", e.target.value)}
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">

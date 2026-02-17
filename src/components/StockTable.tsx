@@ -80,7 +80,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                     value={item.descricao}
                     onChange={(e) => updateItem(item.id, "descricao", e.target.value)}
                     placeholder="Ex: Ovo tipo A"
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">
@@ -88,7 +88,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                     value={item.codigo}
                     onChange={(e) => updateItem(item.id, "codigo", e.target.value)}
                     placeholder="000"
-                    className="border-0 bg-transparent h-8 text-sm w-20"
+                    className="border border-input bg-background h-8 text-sm w-20 rounded-md"
                   />
                 </td>
                 {numFields.map((field) => (
@@ -100,7 +100,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                       onChange={(e) =>
                         updateItem(item.id, field, parseInt(e.target.value) || 0)
                       }
-                      className="border-0 bg-transparent h-8 text-sm text-center w-20 mx-auto"
+                      className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
                     />
                   </td>
                 ))}
@@ -114,7 +114,7 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
                     value={item.obs}
                     onChange={(e) => updateItem(item.id, "obs", e.target.value)}
                     placeholder="—"
-                    className="border-0 bg-transparent h-8 text-sm"
+                    className="border border-input bg-background h-8 text-sm rounded-md"
                   />
                 </td>
                 <td className="px-2 py-1.5">
