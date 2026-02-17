@@ -1,22 +1,26 @@
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
-import { AlertTriangle, ShieldAlert, Clock, TrendingUp } from "lucide-react";
+import { AlertTriangle, ShieldAlert, Clock, TrendingUp, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const alertRules = [
-  { icon: TrendingUp, label: "Ajustes acima de 5%", status: "ativo", count: 1 },
-  { icon: AlertTriangle, label: "Perdas elevadas no dia", status: "ativo", count: 2 },
-  { icon: Clock, label: "Movimentações fora do horário", status: "ativo", count: 1 },
-  { icon: ShieldAlert, label: "Comportamento atípico de usuário", status: "inativo", count: 0 },
+  { icon: TrendingUp, label: "Ajustes acima de 5%", status: "ativo", count: 1, link: "/estoque" },
+  { icon: AlertTriangle, label: "Perdas elevadas no dia", status: "ativo", count: 2, link: "/estoque" },
+  { icon: Clock, label: "Movimentações fora do horário", status: "ativo", count: 1, link: "/auditoria" },
+  { icon: ShieldAlert, label: "Comportamento atípico de usuário", status: "inativo", count: 0, link: "/usuarios" },
 ];
 
 const recentAlerts = [
-  { severity: "alta", message: "Operador 3 registrou 8 quebras em 10 minutos — padrão atípico", time: "16/02/2026 11:20", status: "pendente" },
-  { severity: "média", message: "Perdas totais atingiram 6.2% no produto Ovo Tipo A hoje", time: "16/02/2026 10:00", status: "visto" },
-  { severity: "baixa", message: "Movimentação registrada às 05:45 — fora do horário padrão", time: "16/02/2026 05:45", status: "visto" },
-  { severity: "alta", message: "Ajuste manual de -15 unidades sem justificativa ainda pendente", time: "15/02/2026 16:30", status: "pendente" },
+  { severity: "alta", message: "Operador 3 registrou 8 quebras em 10 minutos — padrão atípico", time: "16/02/2026 11:20", status: "pendente", link: "/auditoria" },
+  { severity: "média", message: "Perdas totais atingiram 6.2% no produto Ovo Tipo A hoje", time: "16/02/2026 10:00", status: "visto", link: "/estoque" },
+  { severity: "baixa", message: "Movimentação registrada às 05:45 — fora do horário padrão", time: "16/02/2026 05:45", status: "visto", link: "/auditoria" },
+  { severity: "alta", message: "Ajuste manual de -15 unidades sem justificativa ainda pendente", time: "15/02/2026 16:30", status: "pendente", link: "/estoque" },
 ];
 
 const AlertasPage = () => {
+  const navigate = useNavigate();
+
   return (
     <DashboardLayout>
       <div className="p-6 lg:p-8 space-y-6 max-w-[1400px]">
@@ -30,7 +34,11 @@ const AlertasPage = () => {
         {/* Rules */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {alertRules.map((rule, i) => (
-            <div key={i} className="glass-card rounded-lg p-4">
+            <div
+              key={i}
+              onClick={() => navigate(rule.link)}
+              className="glass-card rounded-lg p-4 cursor-pointer transition-colors hover:border-primary/40"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <rule.icon className="w-4 h-4 text-primary" />
                 <span className="text-xs font-medium text-foreground">{rule.label}</span>
@@ -42,7 +50,10 @@ const AlertasPage = () => {
                 >
                   {rule.status}
                 </Badge>
-                <span className="text-lg font-bold text-foreground">{rule.count}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-foreground">{rule.count}</span>
+                  <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                </div>
               </div>
             </div>
           ))}
@@ -55,7 +66,8 @@ const AlertasPage = () => {
             {recentAlerts.map((alert, i) => (
               <div
                 key={i}
-                className={`flex items-start gap-3 p-3 rounded-md border ${
+                onClick={() => navigate(alert.link)}
+                className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors hover:opacity-80 ${
                   alert.severity === "alta"
                     ? "border-destructive/20 bg-destructive/5"
                     : alert.severity === "média"
@@ -65,10 +77,8 @@ const AlertasPage = () => {
               >
                 <AlertTriangle
                   className={`w-4 h-4 mt-0.5 shrink-0 ${
-                    alert.severity === "alta"
-                      ? "text-destructive"
-                      : alert.severity === "média"
-                      ? "text-primary"
+                    alert.severity === "alta" ? "text-destructive"
+                      : alert.severity === "média" ? "text-primary"
                       : "text-muted-foreground"
                   }`}
                 />
@@ -78,16 +88,13 @@ const AlertasPage = () => {
                     <span className="text-xs text-muted-foreground">{alert.time}</span>
                     <Badge
                       variant="outline"
-                      className={`text-[10px] ${
-                        alert.status === "pendente"
-                          ? "border-primary/30 text-primary"
-                          : "border-border text-muted-foreground"
-                      }`}
+                      className={`text-[10px] ${alert.status === "pendente" ? "border-primary/30 text-primary" : "border-border text-muted-foreground"}`}
                     >
                       {alert.status}
                     </Badge>
                   </div>
                 </div>
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
               </div>
             ))}
           </div>

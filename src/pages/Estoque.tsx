@@ -1,19 +1,25 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Save, CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import StockTable from "@/components/StockTable";
-import { StockItem } from "@/types/inventory";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useInventory } from "@/contexts/InventoryContext";
+import { toast } from "@/components/ui/sonner";
 
 const EstoquePage = () => {
   const [date, setDate] = useState<Date>(new Date());
-  const [stockItems, setStockItems] = useState<StockItem[]>([
-    { id: crypto.randomUUID(), descricao: "", codigo: "", estoqueInicial: 0, entradas: 0, quantVendida: 0, trincado: 0, quebrado: 0, obs: "" },
-  ]);
+  const { stockItems, setStockItems, saveStock, lastStockSave } = useInventory();
+
+  const handleSave = () => {
+    saveStock();
+    toast.success("Estoque salvo com sucesso!", {
+      description: `Registro do dia ${format(date, "dd/MM/yyyy")} lançado.`,
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -23,19 +29,35 @@ const EstoquePage = () => {
             <h1 className="text-2xl font-bold text-foreground">Estoque Diário</h1>
             <p className="text-muted-foreground text-sm mt-1">Controle detalhado de estoque</p>
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2 w-fit">
-                <CalendarIcon className="w-4 h-4" />
-                {format(date, "dd 'de' MMMM, yyyy", { locale: ptBR })}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
-            </PopoverContent>
-          </Popover>
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2 w-fit">
+                  <CalendarIcon className="w-4 h-4" />
+                  {format(date, "dd 'de' MMMM, yyyy", { locale: ptBR })}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
         <StockTable items={stockItems} onChange={setStockItems} />
+        <div className="flex items-center justify-between">
+          <div>
+            {lastStockSave && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-success" />
+                Último salvamento: {format(lastStockSave, "dd/MM/yyyy HH:mm")}
+              </p>
+            )}
+          </div>
+          <Button onClick={handleSave} className="gap-2">
+            <Save className="w-4 h-4" />
+            Salvar Registro
+          </Button>
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -2,33 +2,19 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  CalendarIcon,
-  Package,
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  ShieldAlert,
-  ArrowUpRight,
-  ArrowDownRight,
+  CalendarIcon, Package, AlertTriangle, CheckCircle, ShieldAlert,
+  ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useInventory } from "@/contexts/InventoryContext";
+import { calcularEstoqueFinal } from "@/types/inventory";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
 } from "recharts";
 
 const weeklyData = [
@@ -41,37 +27,45 @@ const weeklyData = [
   { dia: "Dom", vendas: 60, perdas: 2, entradas: 15 },
 ];
 
-const perdasData = [
-  { name: "Trincados", value: 24, color: "hsl(40, 45%, 57%)" },
-  { name: "Quebrados", value: 11, color: "hsl(0, 65%, 51%)" },
-];
-
-const alerts = [
-  { type: "warning", message: "Perdas acima de 5% detectadas no produto Ovo Tipo A", time: "Há 2h" },
-  { type: "danger", message: "Ajuste manual sem justificativa pendente de aprovação", time: "Há 4h" },
-  { type: "info", message: "Movimentação fora do horário registrada por Operador 3", time: "Há 6h" },
-];
-
 const Index = () => {
   const [date, setDate] = useState<Date>(new Date());
+  const navigate = useNavigate();
+  const { savedStock } = useInventory();
+
+  // Compute live stats from saved data
+  const totalEstoque = savedStock.reduce((sum, item) => sum + calcularEstoqueFinal(item), 0);
+  const totalVendido = savedStock.reduce((sum, item) => sum + item.quantVendida, 0);
+  const totalPerdas = savedStock.reduce((sum, item) => sum + item.trincado + item.quebrado, 0);
+  const totalTrincado = savedStock.reduce((sum, item) => sum + item.trincado, 0);
+  const totalQuebrado = savedStock.reduce((sum, item) => sum + item.quebrado, 0);
+
+  const hasData = savedStock.length > 0 && savedStock.some(i => i.descricao);
+
+  const perdasData = [
+    { name: "Trincados", value: totalTrincado || 24, color: "hsl(40, 45%, 57%)" },
+    { name: "Quebrados", value: totalQuebrado || 11, color: "hsl(0, 65%, 51%)" },
+  ];
+
+  const alerts = [
+    { type: "warning", message: "Perdas acima de 5% detectadas no produto Ovo Tipo A", time: "Há 2h", link: "/estoque" },
+    { type: "danger", message: "Ajuste manual sem justificativa pendente de aprovação", time: "Há 4h", link: "/auditoria" },
+    { type: "info", message: "Movimentação fora do horário registrada por Operador 3", time: "Há 6h", link: "/alertas" },
+  ];
 
   const stats = [
-    { label: "Estoque Atual", value: "1.245", icon: Package, trend: "+3.2%", up: true },
-    { label: "Vendido Hoje", value: "160", icon: CheckCircle, trend: "+12%", up: true },
-    { label: "Perdas Hoje", value: "7", icon: AlertTriangle, trend: "-2.1%", up: false },
+    { label: "Estoque Atual", value: hasData ? totalEstoque.toLocaleString() : "1.245", icon: Package, trend: "+3.2%", up: true },
+    { label: "Vendido Hoje", value: hasData ? totalVendido.toString() : "160", icon: CheckCircle, trend: "+12%", up: true },
+    { label: "Perdas Hoje", value: hasData ? totalPerdas.toString() : "7", icon: AlertTriangle, trend: "-2.1%", up: false },
     { label: "Alertas Ativos", value: "3", icon: ShieldAlert, trend: "", up: false },
   ];
 
   return (
     <DashboardLayout>
       <div className="p-6 lg:p-8 space-y-6 max-w-[1400px]">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard Executivo</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Visão geral operacional — Controle e rastreamento
-            </p>
+            <p className="text-muted-foreground text-sm mt-1">Visão geral operacional — Controle e rastreamento</p>
           </div>
           <Popover>
             <PopoverTrigger asChild>
@@ -81,12 +75,7 @@ const Index = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(d) => d && setDate(d)}
-                initialFocus
-              />
+              <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
             </PopoverContent>
           </Popover>
         </div>
@@ -100,16 +89,8 @@ const Index = () => {
                   <stat.icon className="w-4 h-4 text-primary" />
                 </div>
                 {stat.trend && (
-                  <span
-                    className={`text-xs font-medium flex items-center gap-0.5 ${
-                      stat.up ? "text-success" : "text-destructive"
-                    }`}
-                  >
-                    {stat.up ? (
-                      <ArrowUpRight className="w-3 h-3" />
-                    ) : (
-                      <ArrowDownRight className="w-3 h-3" />
-                    )}
+                  <span className={`text-xs font-medium flex items-center gap-0.5 ${stat.up ? "text-success" : "text-destructive"}`}>
+                    {stat.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {stat.trend}
                   </span>
                 )}
@@ -122,7 +103,6 @@ const Index = () => {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Weekly Chart */}
           <div className="lg:col-span-2 glass-card rounded-lg p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Movimentação Semanal</h3>
             <ResponsiveContainer width="100%" height={260}>
@@ -130,14 +110,7 @@ const Index = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,88%)" />
                 <XAxis dataKey="dia" tick={{ fontSize: 12, fill: "hsl(0,0%,45%)" }} />
                 <YAxis tick={{ fontSize: 12, fill: "hsl(0,0%,45%)" }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(0,0%,100%)",
-                    border: "1px solid hsl(0,0%,88%)",
-                    borderRadius: 6,
-                    fontSize: 12,
-                  }}
-                />
+                <Tooltip contentStyle={{ background: "hsl(0,0%,100%)", border: "1px solid hsl(0,0%,88%)", borderRadius: 6, fontSize: 12 }} />
                 <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
                 <Bar dataKey="vendas" name="Vendas" fill="hsl(40,45%,57%)" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="entradas" name="Entradas" fill="hsl(0,0%,75%)" radius={[3, 3, 0, 0]} />
@@ -146,20 +119,11 @@ const Index = () => {
             </ResponsiveContainer>
           </div>
 
-          {/* Pie Chart */}
           <div className="glass-card rounded-lg p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Composição de Perdas</h3>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie
-                  data={perdasData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
+                <Pie data={perdasData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value">
                   {perdasData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
                   ))}
@@ -182,7 +146,7 @@ const Index = () => {
         <div className="glass-card rounded-lg p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground">Alertas Inteligentes</h3>
-            <Button variant="ghost" size="sm" className="text-xs text-primary hover:text-primary">
+            <Button variant="ghost" size="sm" className="text-xs text-primary hover:text-primary" onClick={() => navigate("/alertas")}>
               Ver todos
             </Button>
           </div>
@@ -190,23 +154,16 @@ const Index = () => {
             {alerts.map((alert, i) => (
               <div
                 key={i}
-                className={`flex items-start gap-3 p-3 rounded-md border ${
-                  alert.type === "danger"
-                    ? "border-destructive/20 bg-destructive/5"
-                    : alert.type === "warning"
-                    ? "border-primary/20 bg-primary/5"
+                onClick={() => navigate(alert.link)}
+                className={`flex items-start gap-3 p-3 rounded-md border cursor-pointer transition-colors hover:opacity-80 ${
+                  alert.type === "danger" ? "border-destructive/20 bg-destructive/5"
+                    : alert.type === "warning" ? "border-primary/20 bg-primary/5"
                     : "border-border bg-muted/30"
                 }`}
               >
-                <AlertTriangle
-                  className={`w-4 h-4 mt-0.5 shrink-0 ${
-                    alert.type === "danger"
-                      ? "text-destructive"
-                      : alert.type === "warning"
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                />
+                <AlertTriangle className={`w-4 h-4 mt-0.5 shrink-0 ${
+                  alert.type === "danger" ? "text-destructive" : alert.type === "warning" ? "text-primary" : "text-muted-foreground"
+                }`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground">{alert.message}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{alert.time}</p>
@@ -216,7 +173,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Divergence Index */}
+        {/* Divergence + Ranking */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="glass-card rounded-lg p-5">
             <h3 className="text-sm font-semibold text-foreground mb-4">Índice de Divergência</h3>
@@ -243,22 +200,12 @@ const Index = () => {
               ].map((op, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                      {i + 1}
-                    </div>
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">{i + 1}</div>
                     <span className="text-sm text-foreground">{op.name}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium text-foreground">{op.mov}</span>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                        op.risk === "baixo"
-                          ? "bg-success/10 text-success"
-                          : "bg-primary/10 text-primary"
-                      }`}
-                    >
-                      {op.risk}
-                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${op.risk === "baixo" ? "bg-success/10 text-success" : "bg-primary/10 text-primary"}`}>{op.risk}</span>
                   </div>
                 </div>
               ))}
