@@ -1,9 +1,12 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { FileText, Search, Filter, Eye } from "lucide-react";
+import GlobalDateFilter from "@/components/GlobalDateFilter";
+import { FileText, Search, Filter, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/components/ui/sonner";
 
 const mockLogs = [
   { id: 1, user: "Operador 1", action: "Registro de venda", produto: "Ovo Tipo A", antes: "120", depois: "40", data: "16/02/2026 08:32", ip: "192.168.1.10", device: "Desktop" },
@@ -15,13 +18,56 @@ const mockLogs = [
 
 const AuditoriaPage = () => {
   const [search, setSearch] = useState("");
+  const [filterUser, setFilterUser] = useState("todos");
+  const [filterAction, setFilterAction] = useState("todos");
 
-  const filtered = mockLogs.filter(
-    (log) =>
+  const filtered = mockLogs.filter((log) => {
+    const matchSearch =
       log.user.toLowerCase().includes(search.toLowerCase()) ||
       log.action.toLowerCase().includes(search.toLowerCase()) ||
-      log.produto.toLowerCase().includes(search.toLowerCase())
-  );
+      log.produto.toLowerCase().includes(search.toLowerCase());
+    const matchUser = filterUser === "todos" || log.user === filterUser;
+    const matchAction = filterAction === "todos" || log.action === filterAction;
+    return matchSearch && matchUser && matchAction;
+  });
+
+  const uniqueUsers = [...new Set(mockLogs.map((l) => l.user))];
+  const uniqueActions = [...new Set(mockLogs.map((l) => l.action))];
+
+  const exportCSV = () => {
+    const headers = ["Data/Hora", "Usuário", "Ação", "Produto", "Antes", "Depois", "IP", "Dispositivo"];
+    const rows = filtered.map((l) => [l.data, l.user, l.action, l.produto, l.antes, l.depois, l.ip, l.device]);
+    const csv = [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado com sucesso!");
+  };
+
+  const exportPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+    const doc = new jsPDF({ orientation: "landscape" });
+    doc.setFontSize(14);
+    doc.text("Log de Auditoria — Granja Sophia", 14, 15);
+    doc.setFontSize(9);
+    doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 22);
+
+    autoTable(doc, {
+      startY: 28,
+      head: [["Data/Hora", "Usuário", "Ação", "Produto", "Antes", "Depois", "IP", "Dispositivo"]],
+      body: filtered.map((l) => [l.data, l.user, l.action, l.produto, l.antes, l.depois, l.ip, l.device]),
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [180, 155, 100] },
+    });
+
+    doc.save(`auditoria_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("PDF exportado com sucesso!");
+  };
 
   return (
     <DashboardLayout>
@@ -33,14 +79,18 @@ const AuditoriaPage = () => {
               Registro imutável de todas as movimentações — somente leitura
             </p>
           </div>
-          <Badge variant="outline" className="w-fit border-primary/30 text-primary gap-1.5">
-            <FileText className="w-3 h-3" />
-            {mockLogs.length} registros
-          </Badge>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="outline" className="w-fit border-primary/30 text-primary gap-1.5">
+              <FileText className="w-3 h-3" />
+              {filtered.length} registros
+            </Badge>
+            <GlobalDateFilter />
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <div className="relative flex-1 max-w-sm">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por usuário, ação ou produto..."
@@ -49,9 +99,36 @@ const AuditoriaPage = () => {
               className="pl-9"
             />
           </div>
-          <Button variant="outline" size="icon">
-            <Filter className="w-4 h-4" />
-          </Button>
+          <Select value={filterUser} onValueChange={setFilterUser}>
+            <SelectTrigger className="w-[150px] h-10 text-sm">
+              <SelectValue placeholder="Usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos Usuários</SelectItem>
+              {uniqueUsers.map((u) => (
+                <SelectItem key={u} value={u}>{u}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterAction} onValueChange={setFilterAction}>
+            <SelectTrigger className="w-[170px] h-10 text-sm">
+              <SelectValue placeholder="Ação" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas Ações</SelectItem>
+              {uniqueActions.map((a) => (
+                <SelectItem key={a} value={a}>{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-1">
+            <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5 h-10">
+              <Download className="w-3.5 h-3.5" /> CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportPDF} className="gap-1.5 h-10">
+              <Download className="w-3.5 h-3.5" /> PDF
+            </Button>
+          </div>
         </div>
 
         <div className="glass-card rounded-lg overflow-hidden">
@@ -87,6 +164,13 @@ const AuditoriaPage = () => {
                     <td className="px-4 py-3 text-muted-foreground text-xs">{log.device}</td>
                   </tr>
                 ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                      Nenhum registro encontrado.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

@@ -1,48 +1,24 @@
 import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useApp } from "@/contexts/AppContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const mainLinks = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/estoque", icon: Package, label: "Estoque Diário" },
-  { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos" },
+const allLinks = [
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
+  { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
+  { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
+  { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
+  { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
+  { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
+  { to: "/configuracoes", icon: Settings, label: "Configurações", section: "Sistema" },
 ];
-
-const securityLinks = [
-  { to: "/auditoria", icon: FileText, label: "Log de Auditoria" },
-  { to: "/alertas", icon: Bell, label: "Alertas" },
-  { to: "/usuarios", icon: Users, label: "Usuários & Perfis" },
-];
-
-const settingsLinks = [
-  { to: "/configuracoes", icon: Settings, label: "Configurações" },
-];
-
-const SidebarSection = ({ title, links }: { title: string; links: typeof mainLinks }) => (
-  <div className="space-y-1">
-    <p className="px-3 text-[10px] uppercase tracking-widest text-sidebar-foreground/40 font-semibold mb-2">
-      {title}
-    </p>
-    {links.map((link) => (
-      <NavLink
-        key={link.to}
-        to={link.to}
-        end
-        className={({ isActive }) =>
-          `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-            isActive
-              ? "bg-primary/20 text-primary"
-              : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          }`
-        }
-      >
-        <link.icon className="w-4 h-4" />
-        {link.label}
-      </NavLink>
-    ))}
-  </div>
-);
 
 const AppSidebar = () => {
+  const { currentRole, setCurrentRole, canAccess } = useApp();
+
+  const filteredLinks = allLinks.filter((link) => canAccess(link.to));
+  const sections = [...new Set(filteredLinks.map((l) => l.section))];
+
   return (
     <aside className="w-64 min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0">
       <div className="p-5 border-b border-sidebar-border">
@@ -62,12 +38,48 @@ const AppSidebar = () => {
       </div>
 
       <nav className="flex-1 p-4 space-y-6">
-        <SidebarSection title="Operacional" links={mainLinks} />
-        <SidebarSection title="Segurança" links={securityLinks} />
-        <SidebarSection title="Sistema" links={settingsLinks} />
+        {sections.map((section) => (
+          <div key={section} className="space-y-1">
+            <p className="px-3 text-[10px] uppercase tracking-widest text-sidebar-foreground/40 font-semibold mb-2">
+              {section}
+            </p>
+            {filteredLinks
+              .filter((l) => l.section === section)
+              .map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary/20 text-primary"
+                        : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    }`
+                  }
+                >
+                  <link.icon className="w-4 h-4" />
+                  {link.label}
+                </NavLink>
+              ))}
+          </div>
+        ))}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      {/* Role switcher for demo */}
+      <div className="p-4 border-t border-sidebar-border space-y-2">
+        <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-wide">Perfil ativo</p>
+        <Select value={currentRole} onValueChange={(v) => setCurrentRole(v as any)}>
+          <SelectTrigger className="h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Operador">Operador</SelectItem>
+            <SelectItem value="Supervisor">Supervisor</SelectItem>
+            <SelectItem value="Administrador">Administrador</SelectItem>
+            <SelectItem value="Auditor">Auditor</SelectItem>
+          </SelectContent>
+        </Select>
         <p className="text-[10px] text-sidebar-foreground/30 text-center tracking-wide">
           © 2026 Granja Sophia
         </p>

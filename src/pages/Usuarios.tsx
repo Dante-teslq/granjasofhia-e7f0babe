@@ -1,12 +1,13 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, Shield, Plus, UserPlus, Pencil } from "lucide-react";
+import { Users, Shield, UserPlus, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
+import { useApp } from "@/contexts/AppContext";
 
 const roles = [
   { name: "Operador", desc: "Registra entradas e vendas", color: "bg-muted text-foreground" },
@@ -31,14 +32,13 @@ const initialUsers: UserProfile[] = [
   { name: "Pedro Costa", email: "pedro@granja.com", phone: "(11) 99999-0005", role: "Operador", status: "inativo" },
 ];
 
-const CURRENT_USER_ROLE = "Administrador";
-
 const UsuariosPage = () => {
+  const { currentRole } = useApp();
   const [users, setUsers] = useState<UserProfile[]>(initialUsers);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [formUser, setFormUser] = useState({ name: "", email: "", phone: "", role: "Operador" });
-  const isAdmin = CURRENT_USER_ROLE === "Administrador";
+  const isAdmin = currentRole === "Administrador";
 
   const openAdd = () => {
     setEditIndex(null);
@@ -88,7 +88,6 @@ const UsuariosPage = () => {
           )}
         </div>
 
-        {/* Roles */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {roles.map((role) => (
             <div key={role.name} className="glass-card rounded-lg p-4">
@@ -101,7 +100,6 @@ const UsuariosPage = () => {
           ))}
         </div>
 
-        {/* Users Table */}
         <div className="glass-card rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -149,7 +147,6 @@ const UsuariosPage = () => {
           </div>
         </div>
 
-        {/* Add/Edit Profile Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>

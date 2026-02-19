@@ -1,23 +1,46 @@
-import { useState } from "react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Save, CheckCircle } from "lucide-react";
+import { Save, CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
+import GlobalDateFilter from "@/components/GlobalDateFilter";
 import StockTable from "@/components/StockTable";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { useInventory } from "@/contexts/InventoryContext";
+import { useApp } from "@/contexts/AppContext";
+import { calcularEstoqueFinal } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 
 const EstoquePage = () => {
-  const [date, setDate] = useState<Date>(new Date());
   const { stockItems, setStockItems, saveStock, lastStockSave } = useInventory();
+  const { currentRole } = useApp();
 
   const handleSave = () => {
+    // Validations
+    for (const item of stockItems) {
+      if (!item.descricao) continue; // skip empty rows
+      const disponivel = item.estoqueInicial + item.entradas;
+      if (item.quantVendida > disponivel) {
+        toast.error(`"${item.descricao || "Produto"}": Quantidade vendida (${item.quantVendida}) excede o estoque disponível (${disponivel}).`);
+        return;
+      }
+      if (item.quantVendida + item.trincado + item.quebrado > disponivel) {
+        toast.error(`"${item.descricao || "Produto"}": Vendas + perdas (${item.quantVendida + item.trincado + item.quebrado}) excedem estoque disponível (${disponivel}).`);
+        return;
+      }
+      if (currentRole === "Operador") {
+        const ef = calcularEstoqueFinal(item);
+        if (ef !== item.estoqueInicial + item.entradas - item.quantVendida - item.trincado - item.quebrado) {
+          // manual adjustment detected
+        }
+        if ((item.trincado > 0 || item.quebrado > 0) && !item.obs.trim()) {
+          toast.error(`"${item.descricao || "Produto"}": Operadores devem preencher a observação ao registrar perdas.`);
+          return;
+        }
+      }
+    }
+
     saveStock();
     toast.success("Estoque salvo com sucesso!", {
-      description: `Registro do dia ${format(date, "dd/MM/yyyy")} lançado.`,
+      description: `Registro lançado.`,
     });
   };
 
@@ -29,19 +52,7 @@ const EstoquePage = () => {
             <h1 className="text-2xl font-bold text-foreground">Estoque Diário</h1>
             <p className="text-muted-foreground text-sm mt-1">Controle detalhado de estoque</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2 w-fit">
-                  <CalendarIcon className="w-4 h-4" />
-                  {format(date, "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar mode="single" selected={date} onSelect={(d) => d && setDate(d)} initialFocus />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <GlobalDateFilter />
         </div>
         <StockTable items={stockItems} onChange={setStockItems} />
         <div className="flex items-center justify-between">

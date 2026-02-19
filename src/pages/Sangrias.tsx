@@ -1,6 +1,7 @@
 import { Save, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import DashboardLayout from "@/components/DashboardLayout";
+import GlobalDateFilter from "@/components/GlobalDateFilter";
 import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
 import { useInventory } from "@/contexts/InventoryContext";
@@ -19,9 +20,12 @@ const SangriasPage = () => {
   return (
     <DashboardLayout>
       <div className="p-6 lg:p-8 space-y-6 max-w-[1400px]">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Sangrias e Insumos</h1>
-          <p className="text-muted-foreground text-sm mt-1">Controle de sangrias, cartelas e barbantes</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Sangrias e Insumos</h1>
+            <p className="text-muted-foreground text-sm mt-1">Controle de sangrias, cartelas e barbantes</p>
+          </div>
+          <GlobalDateFilter />
         </div>
         <SangriasTable items={sangriaItems} onChange={setSangriaItems} />
         <div className="flex items-center justify-between">
