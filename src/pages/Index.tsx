@@ -7,7 +7,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
-import { calcularEstoqueFinal } from "@/types/inventory";
+import { STORES } from "@/types/inventory";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -34,13 +34,14 @@ const Index = () => {
   const { savedStock } = useInventory();
   const { settings } = useApp();
 
-  const totalEstoque = savedStock.reduce((sum, item) => sum + calcularEstoqueFinal(item), 0);
-  const totalVendido = savedStock.reduce((sum, item) => sum + item.quantVendida, 0);
-  const totalPerdas = savedStock.reduce((sum, item) => sum + item.trincado + item.quebrado, 0);
-  const totalTrincado = savedStock.reduce((sum, item) => sum + item.trincado, 0);
-  const totalQuebrado = savedStock.reduce((sum, item) => sum + item.quebrado, 0);
+  // Aggregate across all stores
+  const allStockItems = STORES.flatMap((s) => savedStock[s] || []);
+  const totalTrincado = allStockItems.reduce((sum, item) => sum + item.trincado, 0);
+  const totalQuebrado = allStockItems.reduce((sum, item) => sum + item.quebrado, 0);
+  const totalPerdas = totalTrincado + totalQuebrado;
+  const totalFaltas = allStockItems.reduce((sum, item) => sum + Math.abs(item.estoqueLoja - item.estoqueSistema), 0);
 
-  const hasData = savedStock.length > 0 && savedStock.some(i => i.descricao);
+  const hasData = allStockItems.length > 0 && allStockItems.some(i => i.descricao);
 
   const perdasData = [
     { name: "Trincados", value: totalTrincado || 24, color: "hsl(40, 45%, 57%)" },
@@ -55,8 +56,8 @@ const Index = () => {
   ];
 
   const stats = [
-    { label: "Estoque Atual", value: hasData ? totalEstoque.toLocaleString() : "1.245", icon: Package, trend: "+3.2%", up: true, link: "/estoque" },
-    { label: "Vendido Hoje", value: hasData ? totalVendido.toString() : "160", icon: CheckCircle, trend: "+12%", up: true, link: "/estoque" },
+    { label: "Faltas Totais", value: hasData ? totalFaltas.toFixed(1) : "354", icon: Package, trend: "+3.2%", up: false, link: "/estoque" },
+    { label: "Vendido Hoje", value: hasData ? "—" : "160", icon: CheckCircle, trend: "+12%", up: true, link: "/apuracao" },
     { label: "Perdas Hoje", value: hasData ? totalPerdas.toString() : "7", icon: AlertTriangle, trend: "-2.1%", up: false, link: "/estoque" },
     { label: "Alertas Ativos", value: "3", icon: ShieldAlert, trend: "", up: false, link: "/alertas" },
   ];
@@ -96,12 +97,12 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard Executivo</h1>
-            <p className="text-muted-foreground text-sm mt-1">Visão geral operacional — Controle e rastreamento</p>
+            <p className="text-muted-foreground text-sm mt-1">Visão geral operacional — Granja Sofhia</p>
           </div>
           <GlobalDateFilter />
         </div>
 
-        {/* Stats Cards - Clickable */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <div
@@ -155,7 +156,6 @@ const Index = () => {
                   paddingAngle={4}
                   dataKey="value"
                   animationDuration={800}
-                  activeShape={undefined}
                 >
                   {perdasData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} stroke={entry.color} strokeWidth={2} className="transition-opacity hover:opacity-80" />

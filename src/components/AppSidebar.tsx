@@ -7,6 +7,7 @@ const allLinks = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
   { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
   { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
+  { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
   { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
   { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
@@ -28,7 +29,7 @@ const AppSidebar = () => {
           </div>
           <div>
             <h1 className="text-base font-bold font-serif tracking-tight text-sidebar-foreground">
-              Granja Sophia
+              Granja Sofhia
             </h1>
             <p className="text-[10px] text-sidebar-foreground/50 tracking-wide uppercase">
               Controle Operacional
@@ -81,7 +82,7 @@ const AppSidebar = () => {
           </SelectContent>
         </Select>
         <p className="text-[10px] text-sidebar-foreground/30 text-center tracking-wide">
-          © 2026 Granja Sophia
+          © 2026 Granja Sofhia
         </p>
       </div>
     </aside>

@@ -8,6 +8,7 @@ import { AppProvider, useApp } from "@/contexts/AppContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
 import Sangrias from "./pages/Sangrias";
+import Apuracao from "./pages/Apuracao";
 import Auditoria from "./pages/Auditoria";
 import Alertas from "./pages/Alertas";
 import Usuarios from "./pages/Usuarios";
@@ -27,6 +28,7 @@ const AppRoutes = () => (
     <Route path="/" element={<ProtectedRoute path="/"><Index /></ProtectedRoute>} />
     <Route path="/estoque" element={<Estoque />} />
     <Route path="/sangrias" element={<Sangrias />} />
+    <Route path="/apuracao" element={<ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute>} />
     <Route path="/auditoria" element={<ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute>} />
     <Route path="/alertas" element={<ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute>} />
     <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />

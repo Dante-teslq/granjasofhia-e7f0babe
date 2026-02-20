@@ -1,7 +1,8 @@
-import { Plus, Trash2, Lock } from "lucide-react";
-import { StockItem, calcularEstoqueFinal } from "@/types/inventory";
+import { Plus, Trash2 } from "lucide-react";
+import { StockItem, PRODUCT_CATALOG } from "@/types/inventory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StockTableProps {
   items: StockItem[];
@@ -12,11 +13,11 @@ const emptyItem = (): StockItem => ({
   id: crypto.randomUUID(),
   descricao: "",
   codigo: "",
-  estoqueInicial: 0,
-  entradas: 0,
-  quantVendida: 0,
+  estoqueSistema: 0,
+  estoqueLoja: 0,
   trincado: 0,
   quebrado: 0,
+  faltas: 0,
   obs: "",
 });
 
@@ -25,24 +26,26 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
     onChange(items.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
+  const selectProduct = (id: string, descricao: string) => {
+    const product = PRODUCT_CATALOG.find((p) => p.descricao === descricao);
+    onChange(
+      items.map((item) =>
+        item.id === id
+          ? { ...item, descricao, codigo: product?.codigo || "" }
+          : item
+      )
+    );
+  };
+
   const addRow = () => onChange([...items, emptyItem()]);
   const removeRow = (id: string) => onChange(items.filter((item) => item.id !== id));
 
-  const numFields: (keyof StockItem)[] = [
-    "estoqueInicial",
-    "entradas",
-    "quantVendida",
-    "trincado",
-    "quebrado",
+  const numFields: { key: keyof StockItem; label: string }[] = [
+    { key: "estoqueSistema", label: "Est. Sistema" },
+    { key: "estoqueLoja", label: "Est. Loja" },
+    { key: "trincado", label: "Trincado" },
+    { key: "quebrado", label: "Quebra" },
   ];
-
-  const fieldLabels: Record<string, string> = {
-    estoqueInicial: "Est. Inicial",
-    entradas: "Entradas",
-    quantVendida: "Qt. Vendida",
-    trincado: "Trincado",
-    quebrado: "Quebrado",
-  };
 
   return (
     <div className="glass-card rounded-lg overflow-hidden">
@@ -50,84 +53,92 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/50 text-foreground">
-              <th className="px-3 py-3 text-left font-semibold text-xs uppercase tracking-wider">Descrição do Produto</th>
-              <th className="px-3 py-3 text-left font-semibold text-xs uppercase tracking-wider">Código</th>
+              <th className="px-3 py-3 text-left font-semibold text-xs uppercase tracking-wider min-w-[200px]">Produto</th>
+              <th className="px-3 py-3 text-center font-semibold text-xs uppercase tracking-wider">Código</th>
               {numFields.map((f) => (
-                <th key={f} className="px-3 py-3 text-center font-semibold text-xs uppercase tracking-wider">
-                  {fieldLabels[f]}
+                <th key={f.key} className="px-3 py-3 text-center font-semibold text-xs uppercase tracking-wider">
+                  {f.label}
                 </th>
               ))}
               <th className="px-3 py-3 text-center font-semibold text-xs uppercase tracking-wider">
-                <div className="flex items-center justify-center gap-1">
-                  <Lock className="w-3 h-3 text-primary" />
-                  Est. Final
-                </div>
+                Faltas
               </th>
               <th className="px-3 py-3 text-left font-semibold text-xs uppercase tracking-wider">OBS</th>
               <th className="px-3 py-3 w-10"></th>
             </tr>
           </thead>
           <tbody>
-            {items.map((item, idx) => (
-              <tr
-                key={item.id}
-                className={`border-t border-border transition-colors hover:bg-muted/30 ${
-                  idx % 2 === 0 ? "" : "bg-muted/20"
-                }`}
-              >
-                <td className="px-2 py-1.5">
-                  <Input
-                    value={item.descricao}
-                    onChange={(e) => updateItem(item.id, "descricao", e.target.value)}
-                    placeholder="Ex: Ovo tipo A"
-                    className="border border-input bg-background h-8 text-sm rounded-md"
-                  />
-                </td>
-                <td className="px-2 py-1.5">
-                  <Input
-                    value={item.codigo}
-                    onChange={(e) => updateItem(item.id, "codigo", e.target.value)}
-                    placeholder="000"
-                    className="border border-input bg-background h-8 text-sm w-20 rounded-md"
-                  />
-                </td>
-                {numFields.map((field) => (
-                  <td key={field} className="px-2 py-1.5">
+            {items.map((item, idx) => {
+              const faltas = item.estoqueLoja - item.estoqueSistema + item.trincado + item.quebrado;
+              return (
+                <tr
+                  key={item.id}
+                  className={`border-t border-border transition-colors hover:bg-muted/30 ${
+                    idx % 2 === 0 ? "" : "bg-muted/20"
+                  }`}
+                >
+                  <td className="px-2 py-1.5">
+                    <Select
+                      value={item.descricao}
+                      onValueChange={(v) => selectProduct(item.id, v)}
+                    >
+                      <SelectTrigger className="border border-input bg-background h-8 text-sm rounded-md">
+                        <SelectValue placeholder="Selecione o produto" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRODUCT_CATALOG.map((p) => (
+                          <SelectItem key={p.codigo} value={p.descricao}>
+                            {p.descricao}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-2 py-1.5 text-center">
+                    <span className="inline-flex items-center justify-center w-16 h-8 rounded bg-muted text-sm font-medium text-foreground">
+                      {item.codigo || "—"}
+                    </span>
+                  </td>
+                  {numFields.map((field) => (
+                    <td key={field.key} className="px-2 py-1.5">
+                      <Input
+                        type="number"
+                        step="0.5"
+                        value={item[field.key] || ""}
+                        onChange={(e) =>
+                          updateItem(item.id, field.key, parseFloat(e.target.value) || 0)
+                        }
+                        placeholder="0"
+                        className="border border-input bg-background h-8 text-sm text-center w-24 mx-auto rounded-md"
+                      />
+                    </td>
+                  ))}
+                  <td className="px-3 py-1.5 text-center">
+                    <span className={`inline-flex items-center justify-center w-20 h-8 rounded font-bold text-sm ${
+                      faltas < 0 ? "bg-destructive/10 text-destructive" : faltas > 0 ? "bg-primary/10 text-primary" : "bg-success/10 text-success"
+                    }`}>
+                      {faltas.toFixed(1)}
+                    </span>
+                  </td>
+                  <td className="px-2 py-1.5">
                     <Input
-                      type="number"
-                      min={0}
-                      value={item[field] || ""}
-                      onChange={(e) =>
-                        updateItem(item.id, field, parseInt(e.target.value) || 0)
-                      }
-                      placeholder="0"
-                      className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
+                      value={item.obs}
+                      onChange={(e) => updateItem(item.id, "obs", e.target.value)}
+                      placeholder="Anotações"
+                      className="border border-input bg-background h-8 text-sm rounded-md"
                     />
                   </td>
-                ))}
-                <td className="px-3 py-1.5 text-center">
-                  <span className="inline-flex items-center justify-center w-16 h-8 rounded bg-primary/10 font-bold text-primary text-sm">
-                    {calcularEstoqueFinal(item)}
-                  </span>
-                </td>
-                <td className="px-2 py-1.5">
-                  <Input
-                    value={item.obs}
-                    onChange={(e) => updateItem(item.id, "obs", e.target.value)}
-                    placeholder="Anotações"
-                    className="border border-input bg-background h-8 text-sm rounded-md"
-                  />
-                </td>
-                <td className="px-2 py-1.5">
-                  <button
-                    onClick={() => removeRow(item.id)}
-                    className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  <td className="px-2 py-1.5">
+                    <button
+                      onClick={() => removeRow(item.id)}
+                      className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

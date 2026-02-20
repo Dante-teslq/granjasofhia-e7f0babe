@@ -53,7 +53,7 @@ const AuditoriaPage = () => {
     const autoTable = (await import("jspdf-autotable")).default;
     const doc = new jsPDF({ orientation: "landscape" });
     doc.setFontSize(14);
-    doc.text("Log de Auditoria — Granja Sophia", 14, 15);
+    doc.text("Log de Auditoria — Granja Sofhia", 14, 15);
     doc.setFontSize(9);
     doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 22);
 

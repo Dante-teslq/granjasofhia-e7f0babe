@@ -1,38 +1,25 @@
 import { format } from "date-fns";
-import { Save, CheckCircle } from "lucide-react";
+import { Save, CheckCircle, Store } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import StockTable from "@/components/StockTable";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
-import { calcularEstoqueFinal } from "@/types/inventory";
+import { STORES } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 
 const EstoquePage = () => {
-  const { stockItems, setStockItems, saveStock, lastStockSave } = useInventory();
+  const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore } = useInventory();
   const { currentRole } = useApp();
 
   const handleSave = () => {
-    // Validations
     for (const item of stockItems) {
-      if (!item.descricao) continue; // skip empty rows
-      const disponivel = item.estoqueInicial + item.entradas;
-      if (item.quantVendida > disponivel) {
-        toast.error(`"${item.descricao || "Produto"}": Quantidade vendida (${item.quantVendida}) excede o estoque disponível (${disponivel}).`);
-        return;
-      }
-      if (item.quantVendida + item.trincado + item.quebrado > disponivel) {
-        toast.error(`"${item.descricao || "Produto"}": Vendas + perdas (${item.quantVendida + item.trincado + item.quebrado}) excedem estoque disponível (${disponivel}).`);
-        return;
-      }
+      if (!item.descricao) continue;
       if (currentRole === "Operador") {
-        const ef = calcularEstoqueFinal(item);
-        if (ef !== item.estoqueInicial + item.entradas - item.quantVendida - item.trincado - item.quebrado) {
-          // manual adjustment detected
-        }
         if ((item.trincado > 0 || item.quebrado > 0) && !item.obs.trim()) {
-          toast.error(`"${item.descricao || "Produto"}": Operadores devem preencher a observação ao registrar perdas.`);
+          toast.error(`"${item.descricao}": Operadores devem preencher a observação ao registrar perdas.`);
           return;
         }
       }
@@ -40,7 +27,7 @@ const EstoquePage = () => {
 
     saveStock();
     toast.success("Estoque salvo com sucesso!", {
-      description: `Registro lançado.`,
+      description: `Loja: ${currentStore} — Registro lançado.`,
     });
   };
 
@@ -49,10 +36,25 @@ const EstoquePage = () => {
       <div className="p-6 lg:p-8 space-y-6 max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Estoque Diário</h1>
-            <p className="text-muted-foreground text-sm mt-1">Controle detalhado de estoque</p>
+            <h1 className="text-2xl font-bold text-foreground">Conferência de Estoque</h1>
+            <p className="text-muted-foreground text-sm mt-1">Controle diário por PDV — Estoque Sistema × Estoque Loja</p>
           </div>
-          <GlobalDateFilter />
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Store className="w-4 h-4 text-primary" />
+              <Select value={currentStore} onValueChange={(v) => setCurrentStore(v as any)}>
+                <SelectTrigger className="w-[180px] h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STORES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <GlobalDateFilter />
+          </div>
         </div>
         <StockTable items={stockItems} onChange={setStockItems} />
         <div className="flex items-center justify-between">

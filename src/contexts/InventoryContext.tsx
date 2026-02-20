@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { StockItem, SangriaItem } from "@/types/inventory";
+import { StockItem, SangriaItem, STORES, StoreName } from "@/types/inventory";
 
 interface InventoryData {
+  currentStore: StoreName;
+  setCurrentStore: (store: StoreName) => void;
   stockItems: StockItem[];
   sangriaItems: SangriaItem[];
-  savedStock: StockItem[];
+  savedStock: Record<StoreName, StockItem[]>;
   savedSangrias: SangriaItem[];
   setStockItems: (items: StockItem[]) => void;
   setSangriaItems: (items: SangriaItem[]) => void;
@@ -22,22 +24,35 @@ export const useInventory = () => {
   return ctx;
 };
 
+const emptyStockRow = (): StockItem => ({
+  id: crypto.randomUUID(),
+  descricao: "",
+  codigo: "",
+  estoqueSistema: 0,
+  estoqueLoja: 0,
+  trincado: 0,
+  quebrado: 0,
+  faltas: 0,
+  obs: "",
+});
+
 export const InventoryProvider = ({ children }: { children: ReactNode }) => {
-  const [stockItems, setStockItems] = useState<StockItem[]>([
-    { id: crypto.randomUUID(), descricao: "", codigo: "", estoqueInicial: 0, entradas: 0, quantVendida: 0, trincado: 0, quebrado: 0, obs: "" },
-  ]);
+  const [currentStore, setCurrentStore] = useState<StoreName>("CEASA");
+  const [stockItems, setStockItems] = useState<StockItem[]>([emptyStockRow()]);
   const [sangriaItems, setSangriaItems] = useState<SangriaItem[]>([
     { id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", notacoes: "" },
   ]);
-  const [savedStock, setSavedStock] = useState<StockItem[]>([]);
+  const [savedStock, setSavedStock] = useState<Record<StoreName, StockItem[]>>(
+    () => Object.fromEntries(STORES.map((s) => [s, []])) as Record<StoreName, StockItem[]>
+  );
   const [savedSangrias, setSavedSangrias] = useState<SangriaItem[]>([]);
   const [lastStockSave, setLastStockSave] = useState<Date | null>(null);
   const [lastSangriaSave, setLastSangriaSave] = useState<Date | null>(null);
 
   const saveStock = useCallback(() => {
-    setSavedStock([...stockItems]);
+    setSavedStock((prev) => ({ ...prev, [currentStore]: [...stockItems] }));
     setLastStockSave(new Date());
-  }, [stockItems]);
+  }, [stockItems, currentStore]);
 
   const saveSangrias = useCallback(() => {
     setSavedSangrias([...sangriaItems]);
@@ -46,6 +61,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <InventoryContext.Provider value={{
+      currentStore, setCurrentStore,
       stockItems, sangriaItems, savedStock, savedSangrias,
       setStockItems, setSangriaItems, saveStock, saveSangrias,
       lastStockSave, lastSangriaSave,
