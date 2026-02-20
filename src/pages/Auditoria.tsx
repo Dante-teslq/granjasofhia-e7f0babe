@@ -1,35 +1,59 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
-import { FileText, Search, Filter, Download } from "lucide-react";
+import { FileText, Search, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/sonner";
+import { parse, isWithinInterval, format } from "date-fns";
 
 const mockLogs = [
   { id: 1, user: "Operador 1", action: "Registro de venda", produto: "Ovo Tipo A", antes: "120", depois: "40", data: "16/02/2026 08:32", ip: "192.168.1.10", device: "Desktop" },
   { id: 2, user: "Operador 2", action: "Ajuste de estoque", produto: "Ovo Caipira", antes: "40", depois: "38", data: "16/02/2026 09:15", ip: "192.168.1.22", device: "Tablet" },
   { id: 3, user: "Supervisor", action: "Aprovação de ajuste", produto: "Ovo Tipo B", antes: "—", depois: "—", data: "16/02/2026 10:45", ip: "192.168.1.5", device: "Desktop" },
-  { id: 4, user: "Operador 3", action: "Registro de quebra", produto: "Ovo Tipo A", antes: "0", depois: "3", data: "16/02/2026 11:20", ip: "192.168.1.15", device: "Mobile" },
-  { id: 5, user: "Operador 1", action: "Entrada de estoque", produto: "Ovo Tipo B", antes: "85", depois: "105", data: "16/02/2026 13:00", ip: "192.168.1.10", device: "Desktop" },
+  { id: 4, user: "Operador 3", action: "Registro de quebra", produto: "Ovo Tipo A", antes: "0", depois: "3", data: "17/02/2026 11:20", ip: "192.168.1.15", device: "Mobile" },
+  { id: 5, user: "Operador 1", action: "Entrada de estoque", produto: "Ovo Tipo B", antes: "85", depois: "105", data: "18/02/2026 13:00", ip: "192.168.1.10", device: "Desktop" },
+  { id: 6, user: "Operador 2", action: "Registro de venda", produto: "GRANDE SOFHIA", antes: "200", depois: "150", data: "19/02/2026 09:00", ip: "192.168.1.22", device: "Desktop" },
+  { id: 7, user: "Supervisor", action: "Ajuste de estoque", produto: "VERMELHO ALMEIDA", antes: "50", depois: "45", data: "20/02/2026 14:30", ip: "192.168.1.5", device: "Desktop" },
 ];
 
+const parseLogDate = (dateStr: string): Date | null => {
+  try {
+    return parse(dateStr, "dd/MM/yyyy HH:mm", new Date());
+  } catch {
+    return null;
+  }
+};
+
 const AuditoriaPage = () => {
+  const { dateRange } = useApp();
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("todos");
   const [filterAction, setFilterAction] = useState("todos");
 
-  const filtered = mockLogs.filter((log) => {
-    const matchSearch =
-      log.user.toLowerCase().includes(search.toLowerCase()) ||
-      log.action.toLowerCase().includes(search.toLowerCase()) ||
-      log.produto.toLowerCase().includes(search.toLowerCase());
-    const matchUser = filterUser === "todos" || log.user === filterUser;
-    const matchAction = filterAction === "todos" || log.action === filterAction;
-    return matchSearch && matchUser && matchAction;
-  });
+  const filtered = useMemo(() => {
+    const rangeFrom = new Date(dateRange.from);
+    rangeFrom.setHours(0, 0, 0, 0);
+    const rangeTo = new Date(dateRange.to);
+    rangeTo.setHours(23, 59, 59, 999);
+
+    return mockLogs.filter((log) => {
+      // Date filter
+      const logDate = parseLogDate(log.data);
+      if (logDate && !isWithinInterval(logDate, { start: rangeFrom, end: rangeTo })) return false;
+
+      const matchSearch =
+        log.user.toLowerCase().includes(search.toLowerCase()) ||
+        log.action.toLowerCase().includes(search.toLowerCase()) ||
+        log.produto.toLowerCase().includes(search.toLowerCase());
+      const matchUser = filterUser === "todos" || log.user === filterUser;
+      const matchAction = filterAction === "todos" || log.action === filterAction;
+      return matchSearch && matchUser && matchAction;
+    });
+  }, [search, filterUser, filterAction, dateRange]);
 
   const uniqueUsers = [...new Set(mockLogs.map((l) => l.user))];
   const uniqueActions = [...new Set(mockLogs.map((l) => l.action))];
@@ -42,7 +66,7 @@ const AuditoriaPage = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `auditoria_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `auditoria_${format(dateRange.from, "yyyy-MM-dd")}_${format(dateRange.to, "yyyy-MM-dd")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("CSV exportado com sucesso!");
@@ -55,7 +79,7 @@ const AuditoriaPage = () => {
     doc.setFontSize(14);
     doc.text("Log de Auditoria — Granja Sofhia", 14, 15);
     doc.setFontSize(9);
-    doc.text(`Gerado em: ${new Date().toLocaleString("pt-BR")}`, 14, 22);
+    doc.text(`Período: ${format(dateRange.from, "dd/MM/yyyy")} a ${format(dateRange.to, "dd/MM/yyyy")}`, 14, 22);
 
     autoTable(doc, {
       startY: 28,
@@ -65,7 +89,7 @@ const AuditoriaPage = () => {
       headStyles: { fillColor: [180, 155, 100] },
     });
 
-    doc.save(`auditoria_${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`auditoria_${format(dateRange.from, "yyyy-MM-dd")}_${format(dateRange.to, "yyyy-MM-dd")}.pdf`);
     toast.success("PDF exportado com sucesso!");
   };
 
@@ -167,7 +191,7 @@ const AuditoriaPage = () => {
                 {filtered.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                      Nenhum registro encontrado.
+                      Nenhum registro encontrado para o período selecionado.
                     </td>
                   </tr>
                 )}

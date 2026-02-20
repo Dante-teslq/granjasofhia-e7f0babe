@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Save, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -5,15 +6,22 @@ import GlobalDateFilter from "@/components/GlobalDateFilter";
 import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
 import { useInventory } from "@/contexts/InventoryContext";
+import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/sonner";
 
 const SangriasPage = () => {
-  const { sangriaItems, setSangriaItems, saveSangrias, lastSangriaSave } = useInventory();
+  const { sangriaItems, setSangriaItems, saveSangrias, lastSangriaSave, loadSangriasForDate } = useInventory();
+  const { dateRange } = useApp();
+
+  // Reload sangrias when date changes
+  useEffect(() => {
+    loadSangriasForDate(dateRange.from);
+  }, [dateRange.from, loadSangriasForDate]);
 
   const handleSave = () => {
-    saveSangrias();
+    saveSangrias(dateRange.from);
     toast.success("Sangrias salvas com sucesso!", {
-      description: "Registro de insumos lançado.",
+      description: `Data: ${format(dateRange.from, "dd/MM/yyyy")} — Registro lançado.`,
     });
   };
 

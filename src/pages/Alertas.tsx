@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/sonner";
+import { parse, isWithinInterval } from "date-fns";
 
 type Severity = "baixa" | "média" | "crítica";
 type AlertStatus = "ativo" | "analisado" | "resolvido";
@@ -28,9 +30,18 @@ interface AlertItem {
 const initialAlerts: AlertItem[] = [
   { id: 1, severity: "crítica", message: "Operador 3 registrou 8 quebras em 10 minutos — padrão atípico", time: "16/02/2026 11:20", status: "ativo", link: "/auditoria", operator: "Operador 3" },
   { id: 2, severity: "média", message: "Perdas totais atingiram 6.2% no produto Ovo Tipo A hoje", time: "16/02/2026 10:00", status: "ativo", link: "/estoque", operator: "—" },
-  { id: 3, severity: "baixa", message: "Movimentação registrada às 05:45 — fora do horário padrão", time: "16/02/2026 05:45", status: "analisado", link: "/auditoria", operator: "Operador 1", analyst: "Supervisor João" },
-  { id: 4, severity: "crítica", message: "Ajuste manual de -15 unidades sem justificativa ainda pendente", time: "15/02/2026 16:30", status: "ativo", link: "/estoque", operator: "Operador 2" },
+  { id: 3, severity: "baixa", message: "Movimentação registrada às 05:45 — fora do horário padrão", time: "18/02/2026 05:45", status: "analisado", link: "/auditoria", operator: "Operador 1", analyst: "Supervisor João" },
+  { id: 4, severity: "crítica", message: "Ajuste manual de -15 unidades sem justificativa ainda pendente", time: "19/02/2026 16:30", status: "ativo", link: "/estoque", operator: "Operador 2" },
+  { id: 5, severity: "média", message: "Estoque divergente em GRANDE SOFHIA — CEASA", time: "20/02/2026 08:00", status: "ativo", link: "/estoque", operator: "Operador 1" },
 ];
+
+const parseAlertDate = (dateStr: string): Date | null => {
+  try {
+    return parse(dateStr, "dd/MM/yyyy HH:mm", new Date());
+  } catch {
+    return null;
+  }
+};
 
 const alertRules = [
   { icon: TrendingUp, label: "Ajustes acima de 5%", status: "ativo", count: 1, link: "/estoque" },
@@ -59,6 +70,7 @@ const statusBadge: Record<AlertStatus, { variant: "default" | "secondary" | "out
 
 const AlertasPage = () => {
   const navigate = useNavigate();
+  const { dateRange } = useApp();
   const [alerts, setAlerts] = useState<AlertItem[]>(initialAlerts);
   const [filterSeverity, setFilterSeverity] = useState<string>("todos");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
@@ -66,11 +78,22 @@ const AlertasPage = () => {
   const [resolveObs, setResolveObs] = useState("");
   const [resolveAction, setResolveAction] = useState<AlertStatus>("analisado");
 
-  const filtered = alerts.filter((a) => {
-    if (filterSeverity !== "todos" && a.severity !== filterSeverity) return false;
-    if (filterStatus !== "todos" && a.status !== filterStatus) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const rangeFrom = new Date(dateRange.from);
+    rangeFrom.setHours(0, 0, 0, 0);
+    const rangeTo = new Date(dateRange.to);
+    rangeTo.setHours(23, 59, 59, 999);
+
+    return alerts.filter((a) => {
+      // Date filter
+      const alertDate = parseAlertDate(a.time);
+      if (alertDate && !isWithinInterval(alertDate, { start: rangeFrom, end: rangeTo })) return false;
+
+      if (filterSeverity !== "todos" && a.severity !== filterSeverity) return false;
+      if (filterStatus !== "todos" && a.status !== filterStatus) return false;
+      return true;
+    });
+  }, [alerts, filterSeverity, filterStatus, dateRange]);
 
   const handleStatusChange = (alert: AlertItem, newStatus: AlertStatus) => {
     if (newStatus === "resolvido") {
@@ -248,7 +271,7 @@ const AlertasPage = () => {
               );
             })}
             {filtered.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">Nenhum alerta encontrado com os filtros selecionados.</p>
+              <p className="text-sm text-muted-foreground text-center py-6">Nenhum alerta encontrado para o período selecionado.</p>
             )}
           </div>
         </div>

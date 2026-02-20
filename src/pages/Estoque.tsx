@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { format } from "date-fns";
 import { Save, CheckCircle, Store } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -11,8 +12,13 @@ import { STORES } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 
 const EstoquePage = () => {
-  const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore } = useInventory();
-  const { currentRole } = useApp();
+  const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore, loadStockForDate } = useInventory();
+  const { currentRole, dateRange } = useApp();
+
+  // Reload stock when date or store changes
+  useEffect(() => {
+    loadStockForDate(dateRange.from);
+  }, [dateRange.from, currentStore, loadStockForDate]);
 
   const handleSave = () => {
     for (const item of stockItems) {
@@ -25,9 +31,9 @@ const EstoquePage = () => {
       }
     }
 
-    saveStock();
+    saveStock(dateRange.from);
     toast.success("Estoque salvo com sucesso!", {
-      description: `Loja: ${currentStore} — Registro lançado.`,
+      description: `Loja: ${currentStore} — Data: ${format(dateRange.from, "dd/MM/yyyy")}`,
     });
   };
 

@@ -7,7 +7,6 @@ import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
-import { STORES } from "@/types/inventory";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -31,11 +30,11 @@ const CHART_COLORS = {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { savedStock } = useInventory();
-  const { settings } = useApp();
+  const { getStockInRange } = useInventory();
+  const { settings, dateRange } = useApp();
 
-  // Aggregate across all stores
-  const allStockItems = STORES.flatMap((s) => savedStock[s] || []);
+  // Use date range from global filter
+  const allStockItems = getStockInRange(dateRange.from, dateRange.to);
   const totalTrincado = allStockItems.reduce((sum, item) => sum + item.trincado, 0);
   const totalQuebrado = allStockItems.reduce((sum, item) => sum + item.quebrado, 0);
   const totalPerdas = totalTrincado + totalQuebrado;
