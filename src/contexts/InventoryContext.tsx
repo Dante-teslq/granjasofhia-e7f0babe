@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { StockItem, SangriaItem, STORES, StoreName } from "@/types/inventory";
+import { createContext, useContext, useState, type ReactNode, useCallback } from "react";
+import { StockItem, SangriaItem, STORES, type StoreName } from "@/types/inventory";
 
 interface InventoryData {
   currentStore: StoreName;
