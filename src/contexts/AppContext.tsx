@@ -63,8 +63,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const canAccess = (page: string) => {
-    if (currentRole === "Administrador" || currentRole === "Supervisor") return true;
-    if (currentRole === "Auditor") return page !== "/configuracoes" && page !== "/usuarios";
+    if (currentRole === "Administrador") return true;
+    if (currentRole === "Supervisor") return page !== "/antifraude";
+    if (currentRole === "Auditor") return page !== "/configuracoes" && page !== "/usuarios" && page !== "/antifraude";
     // Operador
     return operatorAllowed.has(page);
   };
