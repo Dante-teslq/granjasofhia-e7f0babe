@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Sun, Moon, Monitor, Percent, Clock } from "lucide-react";
+import { Sun, Moon, Monitor, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/sonner";
@@ -30,13 +30,6 @@ const ConfiguracoesPage = () => {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const handleLossLimit = (val: string) => {
-    const n = parseFloat(val);
-    if (!isNaN(n) && n >= 0 && n <= 100) {
-      updateSettings({ lossLimitPercent: n });
-      toast.success(`Limite de perdas atualizado para ${n}%`);
-    }
-  };
 
   const handleHourChange = (field: "operationStartHour" | "operationEndHour", val: string) => {
     const n = parseInt(val);
@@ -78,26 +71,6 @@ const ConfiguracoesPage = () => {
           </div>
         </div>
 
-        {/* Loss Limit */}
-        <div className="glass-card rounded-lg p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Percent className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Limite de Perdas Aceitáveis</h3>
-          </div>
-          <p className="text-xs text-muted-foreground">Percentual máximo de perdas antes de disparar alertas</p>
-          <div className="flex items-center gap-2 max-w-xs">
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              step={0.5}
-              defaultValue={settings.lossLimitPercent}
-              onBlur={(e) => handleLossLimit(e.target.value)}
-              className="w-24"
-            />
-            <span className="text-sm text-muted-foreground">%</span>
-          </div>
-        </div>
 
         {/* Operation Hours */}
         <div className="glass-card rounded-lg p-5 space-y-4">

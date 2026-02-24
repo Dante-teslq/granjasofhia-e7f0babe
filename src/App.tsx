@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { InventoryProvider } from "@/contexts/InventoryContext";
 import { AuditProvider } from "@/contexts/AuditContext";
+import { FraudProvider } from "@/contexts/FraudContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
@@ -14,6 +15,7 @@ import Auditoria from "./pages/Auditoria";
 import Alertas from "./pages/Alertas";
 import Usuarios from "./pages/Usuarios";
 import Configuracoes from "./pages/Configuracoes";
+import Antifraude from "./pages/Antifraude";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,7 @@ const AppRoutes = () => (
     <Route path="/apuracao" element={<ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute>} />
     <Route path="/auditoria" element={<ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute>} />
     <Route path="/alertas" element={<ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute>} />
+    <Route path="/antifraude" element={<ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute>} />
     <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />
     <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
@@ -44,11 +47,13 @@ const App = () => (
       <AppProvider>
         <InventoryProvider>
           <AuditProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
+            <FraudProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </FraudProvider>
           </AuditProvider>
         </InventoryProvider>
       </AppProvider>

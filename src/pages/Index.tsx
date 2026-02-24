@@ -31,7 +31,7 @@ const CHART_COLORS = {
 const Index = () => {
   const navigate = useNavigate();
   const { getStockInRange } = useInventory();
-  const { settings, dateRange } = useApp();
+  const { dateRange } = useApp();
 
   // Use date range from global filter
   const allStockItems = getStockInRange(dateRange.from, dateRange.to);
@@ -50,7 +50,7 @@ const Index = () => {
   const perdasTotal = perdasData.reduce((s, d) => s + d.value, 0);
 
   const alerts = [
-    { type: "warning", message: "Perdas acima de " + settings.lossLimitPercent + "% detectadas no produto Ovo Tipo A", time: "Há 2h", link: "/estoque" },
+    { type: "warning", message: "Ajuste manual acima do limite detectado no produto Ovo Tipo A", time: "Há 2h", link: "/alertas" },
     { type: "danger", message: "Ajuste manual sem justificativa pendente de aprovação", time: "Há 4h", link: "/auditoria" },
     { type: "info", message: "Movimentação fora do horário registrada por Operador 3", time: "Há 6h", link: "/alertas" },
   ];
@@ -219,7 +219,7 @@ const Index = () => {
             </div>
             <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
               <span>0%</span>
-              <span className="text-destructive">Limite: {settings.lossLimitPercent}%</span>
+              <span className="text-destructive">Limite: 5%</span>
               <span>10%</span>
             </div>
           </div>
