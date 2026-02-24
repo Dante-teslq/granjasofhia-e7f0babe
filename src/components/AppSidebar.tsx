@@ -6,8 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const allLinks = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
   { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
-  { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
   { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
+  { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
   { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
   { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },

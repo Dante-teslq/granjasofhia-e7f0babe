@@ -37,14 +37,15 @@ const Index = () => {
   const allStockItems = getStockInRange(dateRange.from, dateRange.to);
   const totalTrincado = allStockItems.reduce((sum, item) => sum + item.trincado, 0);
   const totalQuebrado = allStockItems.reduce((sum, item) => sum + item.quebrado, 0);
-  const totalPerdas = totalTrincado + totalQuebrado;
+  // Apenas quebrados são perdas definitivas; trincados são reclassificação
+  const totalPerdas = totalQuebrado;
   const totalFaltas = allStockItems.reduce((sum, item) => sum + Math.abs(item.estoqueLoja - item.estoqueSistema), 0);
 
   const hasData = allStockItems.length > 0 && allStockItems.some(i => i.descricao);
 
   const perdasData = [
-    { name: "Trincados", value: totalTrincado || 24, color: "hsl(40, 45%, 57%)" },
-    { name: "Quebrados", value: totalQuebrado || 11, color: "hsl(0, 65%, 51%)" },
+    { name: "Reclassificados (Trincados)", value: totalTrincado || 24, color: "hsl(40, 45%, 57%)" },
+    { name: "Perdas (Quebrados)", value: totalQuebrado || 11, color: "hsl(0, 65%, 51%)" },
   ];
   const perdasTotal = perdasData.reduce((s, d) => s + d.value, 0);
 

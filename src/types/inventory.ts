@@ -18,13 +18,14 @@ export interface SangriaItem {
   notacoes: string;
 }
 
+// Faltas: diferença entre loja e sistema + quebrados (trincados são reclassificação, não perda)
 export function calcularFaltas(item: StockItem): number {
-  return item.estoqueLoja - item.estoqueSistema + item.trincado + item.quebrado;
+  return item.estoqueLoja - item.estoqueSistema + item.quebrado;
 }
 
-// Keep backward compat
+// Estoque final: não subtrai trincados (reclassificação)
 export function calcularEstoqueFinal(item: StockItem): number {
-  return item.estoqueSistema - item.estoqueLoja - item.trincado - item.quebrado;
+  return item.estoqueSistema - item.estoqueLoja - item.quebrado;
 }
 
 export const STORES = [

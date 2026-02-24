@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { Save, CheckCircle, Store } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -8,17 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
+import { useAudit } from "@/contexts/AuditContext";
 import { STORES } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 
 const EstoquePage = () => {
-  const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore, loadStockForDate } = useInventory();
+  const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore, loadStockForDate, allSavedStock } = useInventory();
   const { currentRole, dateRange } = useApp();
+  const { addLog } = useAudit();
+  const prevStockRef = useRef<string | null>(null);
 
   // Reload stock when date or store changes
   useEffect(() => {
     loadStockForDate(dateRange.from);
   }, [dateRange.from, currentStore, loadStockForDate]);
+
+  // Capture previous state on load
+  useEffect(() => {
+    const key = `${format(dateRange.from, "yyyy-MM-dd")}|${currentStore}`;
+    const existing = allSavedStock[key];
+    prevStockRef.current = existing ? JSON.stringify(existing) : null;
+  }, [dateRange.from, currentStore, allSavedStock]);
 
   const handleSave = () => {
     for (const item of stockItems) {
@@ -31,7 +41,25 @@ const EstoquePage = () => {
       }
     }
 
+    const isNew = !prevStockRef.current;
     saveStock(dateRange.from);
+
+    // Log each product in audit
+    for (const item of stockItems) {
+      if (!item.descricao) continue;
+      const action = isNew ? "create" : "update";
+      const prevItems = prevStockRef.current ? JSON.parse(prevStockRef.current) : [];
+      const prevItem = prevItems.find((p: any) => p.codigo === item.codigo);
+      addLog({
+        user: currentRole,
+        action,
+        module: "Estoque",
+        produto: item.descricao,
+        antes: prevItem ? `Sist:${prevItem.estoqueSistema} Loja:${prevItem.estoqueLoja} Qbr:${prevItem.quebrado}` : "—",
+        depois: `Sist:${item.estoqueSistema} Loja:${item.estoqueLoja} Qbr:${item.quebrado}`,
+      });
+    }
+
     toast.success("Estoque salvo com sucesso!", {
       description: `Loja: ${currentStore} — Data: ${format(dateRange.from, "dd/MM/yyyy")}`,
     });

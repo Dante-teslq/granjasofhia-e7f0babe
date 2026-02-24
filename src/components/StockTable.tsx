@@ -69,7 +69,8 @@ const StockTable = ({ items, onChange }: StockTableProps) => {
           </thead>
           <tbody>
             {items.map((item, idx) => {
-              const faltas = item.estoqueLoja - item.estoqueSistema + item.trincado + item.quebrado;
+              // Trincados = reclassificação, não perda. Só quebrados entram nas faltas.
+              const faltas = item.estoqueLoja - item.estoqueSistema + item.quebrado;
               return (
                 <tr
                   key={item.id}

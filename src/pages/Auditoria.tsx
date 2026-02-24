@@ -1,66 +1,48 @@
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
-import { FileText, Search, Download } from "lucide-react";
+import { FileText, Search, Download, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
+import { useAudit, type AuditAction } from "@/contexts/AuditContext";
 import { toast } from "@/components/ui/sonner";
-import { parse, isWithinInterval, format } from "date-fns";
+import { format } from "date-fns";
 
-const mockLogs = [
-  { id: 1, user: "Operador 1", action: "Registro de venda", produto: "Ovo Tipo A", antes: "120", depois: "40", data: "16/02/2026 08:32", ip: "192.168.1.10", device: "Desktop" },
-  { id: 2, user: "Operador 2", action: "Ajuste de estoque", produto: "Ovo Caipira", antes: "40", depois: "38", data: "16/02/2026 09:15", ip: "192.168.1.22", device: "Tablet" },
-  { id: 3, user: "Supervisor", action: "Aprovação de ajuste", produto: "Ovo Tipo B", antes: "—", depois: "—", data: "16/02/2026 10:45", ip: "192.168.1.5", device: "Desktop" },
-  { id: 4, user: "Operador 3", action: "Registro de quebra", produto: "Ovo Tipo A", antes: "0", depois: "3", data: "17/02/2026 11:20", ip: "192.168.1.15", device: "Mobile" },
-  { id: 5, user: "Operador 1", action: "Entrada de estoque", produto: "Ovo Tipo B", antes: "85", depois: "105", data: "18/02/2026 13:00", ip: "192.168.1.10", device: "Desktop" },
-  { id: 6, user: "Operador 2", action: "Registro de venda", produto: "GRANDE SOFHIA", antes: "200", depois: "150", data: "19/02/2026 09:00", ip: "192.168.1.22", device: "Desktop" },
-  { id: 7, user: "Supervisor", action: "Ajuste de estoque", produto: "VERMELHO ALMEIDA", antes: "50", depois: "45", data: "20/02/2026 14:30", ip: "192.168.1.5", device: "Desktop" },
-];
-
-const parseLogDate = (dateStr: string): Date | null => {
-  try {
-    return parse(dateStr, "dd/MM/yyyy HH:mm", new Date());
-  } catch {
-    return null;
-  }
+const ACTION_LABELS: Record<AuditAction, string> = {
+  create: "Criação",
+  update: "Atualização",
+  adjustment: "Ajuste",
 };
 
 const AuditoriaPage = () => {
   const { dateRange } = useApp();
+  const { getLogsInRange } = useAudit();
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("todos");
   const [filterAction, setFilterAction] = useState("todos");
 
+  const allLogs = useMemo(() => getLogsInRange(dateRange.from, dateRange.to), [dateRange, getLogsInRange]);
+
   const filtered = useMemo(() => {
-    const rangeFrom = new Date(dateRange.from);
-    rangeFrom.setHours(0, 0, 0, 0);
-    const rangeTo = new Date(dateRange.to);
-    rangeTo.setHours(23, 59, 59, 999);
-
-    return mockLogs.filter((log) => {
-      // Date filter
-      const logDate = parseLogDate(log.data);
-      if (logDate && !isWithinInterval(logDate, { start: rangeFrom, end: rangeTo })) return false;
-
+    return allLogs.filter((log) => {
       const matchSearch =
         log.user.toLowerCase().includes(search.toLowerCase()) ||
-        log.action.toLowerCase().includes(search.toLowerCase()) ||
+        log.module.toLowerCase().includes(search.toLowerCase()) ||
         log.produto.toLowerCase().includes(search.toLowerCase());
       const matchUser = filterUser === "todos" || log.user === filterUser;
       const matchAction = filterAction === "todos" || log.action === filterAction;
       return matchSearch && matchUser && matchAction;
     });
-  }, [search, filterUser, filterAction, dateRange]);
+  }, [allLogs, search, filterUser, filterAction]);
 
-  const uniqueUsers = [...new Set(mockLogs.map((l) => l.user))];
-  const uniqueActions = [...new Set(mockLogs.map((l) => l.action))];
+  const uniqueUsers = [...new Set(allLogs.map((l) => l.user))];
 
   const exportCSV = () => {
-    const headers = ["Data/Hora", "Usuário", "Ação", "Produto", "Antes", "Depois", "IP", "Dispositivo"];
-    const rows = filtered.map((l) => [l.data, l.user, l.action, l.produto, l.antes, l.depois, l.ip, l.device]);
+    const headers = ["Data/Hora", "Usuário", "Ação", "Módulo", "Produto", "Antes", "Depois", "IP", "Dispositivo"];
+    const rows = filtered.map((l) => [l.timestamp, l.user, ACTION_LABELS[l.action], l.module, l.produto, l.antes, l.depois, l.ip, l.device]);
     const csv = [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -83,8 +65,8 @@ const AuditoriaPage = () => {
 
     autoTable(doc, {
       startY: 28,
-      head: [["Data/Hora", "Usuário", "Ação", "Produto", "Antes", "Depois", "IP", "Dispositivo"]],
-      body: filtered.map((l) => [l.data, l.user, l.action, l.produto, l.antes, l.depois, l.ip, l.device]),
+      head: [["Data/Hora", "Usuário", "Ação", "Módulo", "Produto", "Antes", "Depois", "IP", "Dispositivo"]],
+      body: filtered.map((l) => [l.timestamp, l.user, ACTION_LABELS[l.action], l.module, l.produto, l.antes, l.depois, l.ip, l.device]),
       styles: { fontSize: 8 },
       headStyles: { fillColor: [180, 155, 100] },
     });
@@ -99,8 +81,9 @@ const AuditoriaPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Log de Auditoria</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Registro imutável de todas as movimentações — somente leitura
+            <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Registro imutável — somente leitura, sem edição ou exclusão
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -117,7 +100,7 @@ const AuditoriaPage = () => {
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por usuário, ação ou produto..."
+              placeholder="Buscar por usuário, módulo ou produto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -140,9 +123,9 @@ const AuditoriaPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todas Ações</SelectItem>
-              {uniqueActions.map((a) => (
-                <SelectItem key={a} value={a}>{a}</SelectItem>
-              ))}
+              <SelectItem value="create">Criação</SelectItem>
+              <SelectItem value="update">Atualização</SelectItem>
+              <SelectItem value="adjustment">Ajuste</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex gap-1">
@@ -163,6 +146,7 @@ const AuditoriaPage = () => {
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Data/Hora</th>
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Usuário</th>
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Ação</th>
+                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Módulo</th>
                   <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Produto</th>
                   <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Antes</th>
                   <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Depois</th>
@@ -174,24 +158,31 @@ const AuditoriaPage = () => {
                 {filtered.map((log, idx) => (
                   <tr
                     key={log.id}
-                    className={`border-t border-border transition-colors hover:bg-muted/30 ${
-                      idx % 2 === 0 ? "" : "bg-muted/20"
-                    }`}
+                    className={`border-t border-border transition-colors hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}
                   >
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{log.data}</td>
+                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{log.timestamp}</td>
                     <td className="px-4 py-3 font-medium">{log.user}</td>
-                    <td className="px-4 py-3">{log.action}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant="outline" className={`text-xs ${
+                        log.action === "create" ? "border-success/40 text-success" :
+                        log.action === "update" ? "border-primary/40 text-primary" :
+                        "border-destructive/40 text-destructive"
+                      }`}>
+                        {ACTION_LABELS[log.action]}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">{log.module}</td>
                     <td className="px-4 py-3">{log.produto}</td>
-                    <td className="px-4 py-3 text-center">{log.antes}</td>
-                    <td className="px-4 py-3 text-center font-medium">{log.depois}</td>
+                    <td className="px-4 py-3 text-center text-xs text-muted-foreground">{log.antes}</td>
+                    <td className="px-4 py-3 text-center text-xs font-medium">{log.depois}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{log.ip}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{log.device}</td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
-                      Nenhum registro encontrado para o período selecionado.
+                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                      Nenhum registro encontrado. Salve dados no Estoque ou Sangrias para gerar logs.
                     </td>
                   </tr>
                 )}

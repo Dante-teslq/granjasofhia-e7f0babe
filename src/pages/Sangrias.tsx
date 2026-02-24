@@ -7,11 +7,13 @@ import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
+import { useAudit } from "@/contexts/AuditContext";
 import { toast } from "@/components/ui/sonner";
 
 const SangriasPage = () => {
   const { sangriaItems, setSangriaItems, saveSangrias, lastSangriaSave, loadSangriasForDate } = useInventory();
-  const { dateRange } = useApp();
+  const { dateRange, currentRole } = useApp();
+  const { addLog } = useAudit();
 
   // Reload sangrias when date changes
   useEffect(() => {
@@ -20,6 +22,19 @@ const SangriasPage = () => {
 
   const handleSave = () => {
     saveSangrias(dateRange.from);
+
+    for (const item of sangriaItems) {
+      if (!item.sangria) continue;
+      addLog({
+        user: currentRole,
+        action: "create",
+        module: "Sangrias",
+        produto: item.sangria,
+        antes: "—",
+        depois: `Cartelas:${item.cartelasVazias} Barbantes:${item.barbantes}`,
+      });
+    }
+
     toast.success("Sangrias salvas com sucesso!", {
       description: `Data: ${format(dateRange.from, "dd/MM/yyyy")} — Registro lançado.`,
     });
