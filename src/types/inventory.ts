@@ -18,9 +18,9 @@ export interface SangriaItem {
   notacoes: string;
 }
 
-// Faltas: diferença entre loja e sistema + quebrados (trincados são reclassificação, não perda)
+// Faltas: apenas diferença entre loja e sistema (quebras e trincados não entram)
 export function calcularFaltas(item: StockItem): number {
-  return item.estoqueLoja - item.estoqueSistema + item.quebrado;
+  return item.estoqueLoja - item.estoqueSistema;
 }
 
 // Estoque final: não subtrai trincados (reclassificação)
