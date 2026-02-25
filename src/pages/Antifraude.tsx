@@ -78,7 +78,7 @@ const AntifravdePage = () => {
       <div className="p-6 lg:p-8 space-y-6 max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Painel Antifraude</h1>
+            <h1 className="text-2xl font-bold text-foreground">Painel de Segurança</h1>
             <p className="text-muted-foreground text-sm mt-1">
               Dashboard exclusivo — Indicadores de risco e monitoramento de dados
             </p>
@@ -164,7 +164,7 @@ const AntifravdePage = () => {
           <div className="glass-card rounded-lg p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Percent className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Limites Antifraude</h3>
+              <h3 className="text-sm font-semibold text-foreground">Limites de Segurança</h3>
             </div>
             <p className="text-xs text-muted-foreground">Defina os limites que disparam alertas automáticos</p>
             <div className="space-y-3">

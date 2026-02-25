@@ -10,7 +10,7 @@ const allLinks = [
   { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
   { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
-  { to: "/antifraude", icon: ShieldAlert, label: "Painel Antifraude", section: "Segurança" },
+  { to: "/antifraude", icon: ShieldAlert, label: "Painel de Segurança", section: "Segurança" },
   { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
   { to: "/configuracoes", icon: Settings, label: "Configurações", section: "Sistema" },
 ];
