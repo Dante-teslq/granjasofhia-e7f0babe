@@ -80,7 +80,7 @@ const AntifravdePage = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Painel Antifraude</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Dashboard exclusivo — Indicadores de risco e monitoramento de manipulação
+              Dashboard exclusivo — Indicadores de risco e monitoramento de dados
             </p>
           </div>
           <GlobalDateFilter />

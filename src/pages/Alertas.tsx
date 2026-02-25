@@ -141,7 +141,7 @@ const AlertasPage = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Alertas Antifraude</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Monitoramento automático de anomalias, manipulação de dados e riscos operacionais
+              Monitoramento automático de dados e riscos operacionais
             </p>
           </div>
           <GlobalDateFilter />
