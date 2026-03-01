@@ -103,6 +103,16 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-card border border-border shadow-sm;
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-2xl transition-all duration-300;
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.04);
+  }
+
+  .glass-card-interactive {
+    @apply glass-card cursor-pointer;
+  }
+
+  .glass-card-interactive:hover {
+    box-shadow: 0 8px 30px rgb(0 0 0 / 0.08);
+    transform: translateY(-2px);
   }
 }
