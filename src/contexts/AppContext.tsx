@@ -31,7 +31,7 @@ export const useApp = () => {
   return ctx;
 };
 
-const operatorAllowed = new Set(["/estoque", "/sangrias"]);
+const operatorAllowed = new Set(["/estoque", "/sangrias", "/evidencias"]);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentRole, setCurrentRole] = useState<UserRole>(() => {

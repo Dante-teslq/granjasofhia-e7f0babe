@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      evidencias_perdas: {
+        Row: {
+          created_at: string
+          data: string
+          foto_path: string
+          foto_url: string
+          id: string
+          justificativa: string
+          ponto_de_venda: string
+          quantidade: number
+          tipo_perda: string
+          usuario: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          foto_path: string
+          foto_url: string
+          id?: string
+          justificativa: string
+          ponto_de_venda: string
+          quantidade: number
+          tipo_perda: string
+          usuario: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          foto_path?: string
+          foto_url?: string
+          id?: string
+          justificativa?: string
+          ponto_de_venda?: string
+          quantidade?: number
+          tipo_perda?: string
+          usuario?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

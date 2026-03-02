@@ -1,4 +1,4 @@
-import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert } from "lucide-react";
+import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +8,7 @@ const allLinks = [
   { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
   { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
   { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
+  { to: "/evidencias", icon: Camera, label: "Evidências de Perdas", section: "Operacional" },
   { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
   { to: "/antifraude", icon: ShieldAlert, label: "Painel de Segurança", section: "Segurança" },
