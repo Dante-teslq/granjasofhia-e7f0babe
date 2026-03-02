@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
-  Camera, Upload, Save, CheckCircle, Search, Filter, ImageIcon, X, Calendar, MapPin, User, AlertTriangle,
+  Camera, Upload, Save, CheckCircle, Search, Filter, ImageIcon, X, Calendar, MapPin, User, AlertTriangle, Trash2,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useApp } from "@/contexts/AppContext";
 import { useAudit } from "@/contexts/AuditContext";
 import { STORES } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface EvidenciaRecord {
   id: string;
@@ -46,7 +51,10 @@ const EvidenciasPage = () => {
   const [loading, setLoading] = useState(false);
   const [filterPdv, setFilterPdv] = useState<string>("all");
   const [filterUser, setFilterUser] = useState<string>("all");
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
   const [selectedImage, setSelectedImage] = useState<EvidenciaRecord | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   // Load records
   const fetchRecords = async () => {
@@ -63,6 +71,12 @@ const EvidenciasPage = () => {
       if (filterUser !== "all") {
         query = query.eq("usuario", filterUser);
       }
+      if (isAdmin && filterDateFrom) {
+        query = query.gte("data", format(filterDateFrom, "yyyy-MM-dd"));
+      }
+      if (isAdmin && filterDateTo) {
+        query = query.lte("data", format(filterDateTo, "yyyy-MM-dd"));
+      }
 
       const { data, error } = await query;
       if (error) throw error;
@@ -76,7 +90,7 @@ const EvidenciasPage = () => {
 
   useEffect(() => {
     fetchRecords();
-  }, [filterPdv, filterUser]);
+  }, [filterPdv, filterUser, filterDateFrom, filterDateTo]);
 
   // Handle photo selection
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +112,42 @@ const EvidenciasPage = () => {
     setJustificativa("");
     setFoto(null);
     setFotoPreview(null);
+  };
+
+  const handleDelete = async (rec: EvidenciaRecord) => {
+    setDeleting(rec.id);
+    try {
+      // Delete photo from storage
+      const { error: storageError } = await supabase.storage
+        .from("evidencias")
+        .remove([rec.foto_url.split("/evidencias/")[1] || ""]);
+
+      // Delete record from DB
+      const { error: dbError } = await supabase
+        .from("evidencias_perdas")
+        .delete()
+        .eq("id", rec.id);
+
+      if (dbError) throw dbError;
+
+      addLog({
+        user: currentRole,
+        action: "create",
+        module: "Evidências",
+        produto: `Exclusão: ${rec.tipo_perda} x${rec.quantidade}`,
+        antes: `PDV:${rec.ponto_de_venda} | Qtd:${rec.quantidade}`,
+        depois: "Registro excluído",
+      });
+
+      toast.success("Evidência excluída com sucesso!");
+      if (selectedImage?.id === rec.id) setSelectedImage(null);
+      fetchRecords();
+    } catch (err: any) {
+      console.error("Erro ao excluir evidência:", err);
+      toast.error("Erro ao excluir evidência.");
+    } finally {
+      setDeleting(null);
+    }
   };
 
   const handleSave = async () => {
@@ -336,6 +386,49 @@ const EvidenciasPage = () => {
                 Galeria de Evidências
               </CardTitle>
               <div className="flex items-center gap-2 flex-wrap">
+                {isAdmin && (
+                  <>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1.5 h-9 text-sm">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {filterDateFrom ? format(filterDateFrom, "dd/MM/yy") : "De"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <CalendarComponent
+                          mode="single"
+                          selected={filterDateFrom}
+                          onSelect={setFilterDateFrom}
+                          locale={ptBR}
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" size="sm" className="gap-1.5 h-9 text-sm">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {filterDateTo ? format(filterDateTo, "dd/MM/yy") : "Até"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="end">
+                        <CalendarComponent
+                          mode="single"
+                          selected={filterDateTo}
+                          onSelect={setFilterDateTo}
+                          locale={ptBR}
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {(filterDateFrom || filterDateTo) && (
+                      <Button variant="ghost" size="sm" className="h-9 px-2" onClick={() => { setFilterDateFrom(undefined); setFilterDateTo(undefined); }}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </>
+                )}
                 <Select value={filterPdv} onValueChange={setFilterPdv}>
                   <SelectTrigger className="w-[160px] h-9 text-sm">
                     <Filter className="w-3.5 h-3.5 mr-1" />
@@ -397,7 +490,39 @@ const EvidenciasPage = () => {
                         }`}>
                           {rec.tipo_perda}
                         </span>
-                        <span className="text-xs font-semibold text-foreground">x{rec.quantidade}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-semibold text-foreground">x{rec.quantidade}</span>
+                          {isAdmin && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Excluir evidência?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação não pode ser desfeita. O registro e a foto serão permanentemente removidos.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => handleDelete(rec)}
+                                    disabled={deleting === rec.id}
+                                  >
+                                    {deleting === rec.id ? "Excluindo..." : "Excluir"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{rec.ponto_de_venda}</p>
                       <p className="text-[11px] text-muted-foreground/70">
@@ -462,6 +587,34 @@ const EvidenciasPage = () => {
                   {selectedImage.justificativa}
                 </p>
               </div>
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full gap-2">
+                      <Trash2 className="w-4 h-4" />
+                      Excluir Evidência
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir evidência?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação não pode ser desfeita. O registro e a foto serão permanentemente removidos.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => handleDelete(selectedImage)}
+                        disabled={deleting === selectedImage.id}
+                      >
+                        {deleting === selectedImage.id ? "Excluindo..." : "Excluir"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           )}
         </DialogContent>
