@@ -151,10 +151,6 @@ const EvidenciasPage = () => {
   };
 
   const handleSave = async () => {
-    if (!justificativa.trim()) {
-      toast.error("Justificativa é obrigatória.");
-      return;
-    }
     if (!foto) {
       toast.error("Foto é obrigatória.");
       return;
@@ -307,15 +303,15 @@ const EvidenciasPage = () => {
               </div>
             </div>
 
-            {/* Justificativa */}
+            {/* Observações */}
             <div className="space-y-2">
               <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                Justificativa *
+                Observações
               </label>
               <Textarea
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
-                placeholder="Descreva o motivo da perda, circunstâncias e providências tomadas..."
+                placeholder="Observações adicionais sobre a perda (opcional)..."
                 rows={3}
               />
             </div>
@@ -582,7 +578,7 @@ const EvidenciasPage = () => {
                 </div>
               </div>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">Justificativa</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">Observações</span>
                 <p className="text-sm text-foreground mt-1 p-3 rounded-lg bg-muted/50">
                   {selectedImage.justificativa}
                 </p>
