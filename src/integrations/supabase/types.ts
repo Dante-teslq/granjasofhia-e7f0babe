@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          device: string | null
+          id: string
+          ip: string | null
+          item_description: string
+          module: string
+          usuario: string
+        }
+        Insert: {
+          action: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip?: string | null
+          item_description?: string
+          module: string
+          usuario: string
+        }
+        Update: {
+          action?: string
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          device?: string | null
+          id?: string
+          ip?: string | null
+          item_description?: string
+          module?: string
+          usuario?: string
+        }
+        Relationships: []
+      }
       evidencias_perdas: {
         Row: {
           created_at: string

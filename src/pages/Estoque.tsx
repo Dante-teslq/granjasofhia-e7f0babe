@@ -115,12 +115,12 @@ const EstoquePage = () => {
       const action = isNew ? "create" : "update";
       const prevItem = prevItems.find((p: any) => p.codigo === item.codigo);
       addLog({
-        user: currentRole,
         action,
         module: "Estoque",
-        produto: item.descricao,
-        antes: prevItem ? `Sist:${prevItem.estoqueSistema} Loja:${prevItem.estoqueLoja} Qbr:${prevItem.quebrado}` : "—",
-        depois: `Sist:${item.estoqueSistema} Loja:${item.estoqueLoja} Qbr:${item.quebrado}`,
+        usuario: currentRole,
+        item_description: `${item.descricao} (${currentStore})`,
+        before_data: prevItem ? { estoqueSistema: prevItem.estoqueSistema, estoqueLoja: prevItem.estoqueLoja, quebrado: prevItem.quebrado, trincado: prevItem.trincado } : null,
+        after_data: { estoqueSistema: item.estoqueSistema, estoqueLoja: item.estoqueLoja, quebrado: item.quebrado, trincado: item.trincado },
       });
     }
 
