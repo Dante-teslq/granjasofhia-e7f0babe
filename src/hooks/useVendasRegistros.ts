@@ -85,7 +85,10 @@ export function useVendasRegistros() {
 
   // Derived data
   const pontosVenda = [...new Set(registros.map((r) => r.ponto_venda))].sort();
-  const anos = [...new Set(registros.map((r) => r.ano))].sort();
+  const currentYear = new Date().getFullYear();
+  const baseYears = Array.from({ length: currentYear - 2022 + 1 }, (_, i) => 2022 + i);
+  const dataYears = [...new Set(registros.map((r) => r.ano))];
+  const anos = [...new Set([...baseYears, ...dataYears])].sort();
 
   const getStoreYearData = (store: string, year: number): number[] => {
     const result = new Array(12).fill(0);
