@@ -26,12 +26,11 @@ const SangriasPage = () => {
     for (const item of sangriaItems) {
       if (!item.sangria) continue;
       addLog({
-        user: currentRole,
         action: "create",
         module: "Sangrias",
-        produto: item.sangria,
-        antes: "—",
-        depois: `Cartelas:${item.cartelasVazias} Barbantes:${item.barbantes}`,
+        usuario: currentRole,
+        item_description: item.sangria,
+        after_data: { cartelasVazias: item.cartelasVazias, barbantes: item.barbantes, notacoes: item.notacoes },
       });
     }
 

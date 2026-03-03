@@ -1,48 +1,74 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
-import { FileText, Search, Download, ShieldCheck } from "lucide-react";
+import { FileText, Search, Download, ShieldCheck, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
-import { useAudit, type AuditAction } from "@/contexts/AuditContext";
+import { useAudit } from "@/contexts/AuditContext";
 import { toast } from "@/components/ui/sonner";
 import { format } from "date-fns";
 
-const ACTION_LABELS: Record<AuditAction, string> = {
+const ACTION_LABELS: Record<string, string> = {
   create: "Criação",
   update: "Atualização",
+  delete: "Exclusão",
   adjustment: "Ajuste",
 };
 
 const AuditoriaPage = () => {
   const { dateRange } = useApp();
-  const { getLogsInRange } = useAudit();
+  const { logs, loading, fetchLogs } = useAudit();
   const [search, setSearch] = useState("");
   const [filterUser, setFilterUser] = useState("todos");
   const [filterAction, setFilterAction] = useState("todos");
+  const [filterModule, setFilterModule] = useState("todos");
 
-  const allLogs = useMemo(() => getLogsInRange(dateRange.from, dateRange.to), [dateRange, getLogsInRange]);
+  useEffect(() => {
+    fetchLogs(dateRange.from, dateRange.to);
+  }, [dateRange.from, dateRange.to, fetchLogs]);
 
   const filtered = useMemo(() => {
-    return allLogs.filter((log) => {
+    return logs.filter((log) => {
       const matchSearch =
-        log.user.toLowerCase().includes(search.toLowerCase()) ||
+        log.usuario.toLowerCase().includes(search.toLowerCase()) ||
         log.module.toLowerCase().includes(search.toLowerCase()) ||
-        log.produto.toLowerCase().includes(search.toLowerCase());
-      const matchUser = filterUser === "todos" || log.user === filterUser;
+        log.item_description.toLowerCase().includes(search.toLowerCase());
+      const matchUser = filterUser === "todos" || log.usuario === filterUser;
       const matchAction = filterAction === "todos" || log.action === filterAction;
-      return matchSearch && matchUser && matchAction;
+      const matchModule = filterModule === "todos" || log.module === filterModule;
+      return matchSearch && matchUser && matchAction && matchModule;
     });
-  }, [allLogs, search, filterUser, filterAction]);
+  }, [logs, search, filterUser, filterAction, filterModule]);
 
-  const uniqueUsers = [...new Set(allLogs.map((l) => l.user))];
+  const uniqueUsers = [...new Set(logs.map((l) => l.usuario))];
+  const uniqueModules = [...new Set(logs.map((l) => l.module))];
+
+  const formatBeforeAfter = (data: any): string => {
+    if (!data) return "—";
+    if (typeof data === "string") return data;
+    try {
+      return JSON.stringify(data, null, 0).slice(0, 120);
+    } catch {
+      return "—";
+    }
+  };
 
   const exportCSV = () => {
-    const headers = ["Data/Hora", "Usuário", "Ação", "Módulo", "Produto", "Antes", "Depois", "IP", "Dispositivo"];
-    const rows = filtered.map((l) => [l.timestamp, l.user, ACTION_LABELS[l.action], l.module, l.produto, l.antes, l.depois, l.ip, l.device]);
+    const headers = ["Data/Hora", "Usuário", "Ação", "Módulo", "Descrição", "Antes", "Depois", "IP", "Dispositivo"];
+    const rows = filtered.map((l) => [
+      format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss"),
+      l.usuario,
+      ACTION_LABELS[l.action] || l.action,
+      l.module,
+      l.item_description,
+      formatBeforeAfter(l.before_data),
+      formatBeforeAfter(l.after_data),
+      l.ip,
+      l.device,
+    ]);
     const csv = [headers.join(";"), ...rows.map((r) => r.join(";"))].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -65,9 +91,19 @@ const AuditoriaPage = () => {
 
     autoTable(doc, {
       startY: 28,
-      head: [["Data/Hora", "Usuário", "Ação", "Módulo", "Produto", "Antes", "Depois", "IP", "Dispositivo"]],
-      body: filtered.map((l) => [l.timestamp, l.user, ACTION_LABELS[l.action], l.module, l.produto, l.antes, l.depois, l.ip, l.device]),
-      styles: { fontSize: 8 },
+      head: [["Data/Hora", "Usuário", "Ação", "Módulo", "Descrição", "Antes", "Depois", "IP", "Dispositivo"]],
+      body: filtered.map((l) => [
+        format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss"),
+        l.usuario,
+        ACTION_LABELS[l.action] || l.action,
+        l.module,
+        l.item_description,
+        formatBeforeAfter(l.before_data),
+        formatBeforeAfter(l.after_data),
+        l.ip,
+        l.device,
+      ]),
+      styles: { fontSize: 7 },
       headStyles: { fillColor: [180, 155, 100] },
     });
 
@@ -100,7 +136,7 @@ const AuditoriaPage = () => {
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por usuário, módulo ou produto..."
+              placeholder="Buscar por usuário, módulo ou descrição..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -125,7 +161,19 @@ const AuditoriaPage = () => {
               <SelectItem value="todos">Todas Ações</SelectItem>
               <SelectItem value="create">Criação</SelectItem>
               <SelectItem value="update">Atualização</SelectItem>
+              <SelectItem value="delete">Exclusão</SelectItem>
               <SelectItem value="adjustment">Ajuste</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterModule} onValueChange={setFilterModule}>
+            <SelectTrigger className="w-[170px] h-10 text-sm">
+              <SelectValue placeholder="Módulo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos Módulos</SelectItem>
+              {uniqueModules.map((m) => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <div className="flex gap-1">
@@ -139,56 +187,70 @@ const AuditoriaPage = () => {
         </div>
 
         <div className="glass-card rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-foreground">
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Data/Hora</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Usuário</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Ação</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Módulo</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Produto</th>
-                  <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Antes</th>
-                  <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Depois</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">IP</th>
-                  <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Dispositivo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((log, idx) => (
-                  <tr
-                    key={log.id}
-                    className={`border-t border-border transition-colors hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}
-                  >
-                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{log.timestamp}</td>
-                    <td className="px-4 py-3 font-medium">{log.user}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline" className={`text-xs ${
-                        log.action === "create" ? "border-success/40 text-success" :
-                        log.action === "update" ? "border-primary/40 text-primary" :
-                        "border-destructive/40 text-destructive"
-                      }`}>
-                        {ACTION_LABELS[log.action]}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">{log.module}</td>
-                    <td className="px-4 py-3">{log.produto}</td>
-                    <td className="px-4 py-3 text-center text-xs text-muted-foreground">{log.antes}</td>
-                    <td className="px-4 py-3 text-center text-xs font-medium">{log.depois}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{log.ip}</td>
-                    <td className="px-4 py-3 text-muted-foreground text-xs">{log.device}</td>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              <span className="ml-2 text-sm text-muted-foreground">Carregando logs...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50 text-foreground">
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Data/Hora</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Usuário</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Ação</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Módulo</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Descrição</th>
+                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Antes</th>
+                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Depois</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">IP</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Dispositivo</th>
                   </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
-                      Nenhum registro encontrado. Salve dados no Estoque ou Sangrias para gerar logs.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((log, idx) => (
+                    <tr
+                      key={log.id}
+                      className={`border-t border-border transition-colors hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}
+                    >
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                        {format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss")}
+                      </td>
+                      <td className="px-4 py-3 font-medium">{log.usuario}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className={`text-xs ${
+                          log.action === "create" ? "border-success/40 text-success" :
+                          log.action === "update" ? "border-primary/40 text-primary" :
+                          log.action === "delete" ? "border-destructive/40 text-destructive" :
+                          "border-warning/40 text-warning"
+                        }`}>
+                          {ACTION_LABELS[log.action] || log.action}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">{log.module}</td>
+                      <td className="px-4 py-3">{log.item_description}</td>
+                      <td className="px-4 py-3 text-center text-xs text-muted-foreground max-w-[200px] truncate">
+                        {formatBeforeAfter(log.before_data)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs font-medium max-w-[200px] truncate">
+                        {formatBeforeAfter(log.after_data)}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">{log.ip}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-xs">{log.device}</td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                        Nenhum registro encontrado no período selecionado.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

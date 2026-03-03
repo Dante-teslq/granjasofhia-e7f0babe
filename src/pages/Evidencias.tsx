@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useApp } from "@/contexts/AppContext";
-import { useAudit } from "@/contexts/AuditContext";
+
 import { STORES } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +35,7 @@ interface EvidenciaRecord {
 
 const EvidenciasPage = () => {
   const { currentRole, dateRange } = useApp();
-  const { addLog } = useAudit();
+  
 
   // Form state
   const [pontoDeVenda, setPontoDeVenda] = useState<string>(STORES[0]);
@@ -130,14 +130,7 @@ const EvidenciasPage = () => {
 
       if (dbError) throw dbError;
 
-      addLog({
-        user: currentRole,
-        action: "create",
-        module: "Evidências",
-        produto: `Exclusão: ${rec.tipo_perda} x${rec.quantidade}`,
-        antes: `PDV:${rec.ponto_de_venda} | Qtd:${rec.quantidade}`,
-        depois: "Registro excluído",
-      });
+      // Note: DB trigger auto-logs the DELETE, no manual addLog needed
 
       toast.success("Evidência excluída com sucesso!");
       if (selectedImage?.id === rec.id) setSelectedImage(null);
@@ -193,15 +186,7 @@ const EvidenciasPage = () => {
 
       if (insertError) throw insertError;
 
-      // Audit log
-      addLog({
-        user: currentRole,
-        action: "create",
-        module: "Evidências",
-        produto: `${tipoPerda} x${qty}`,
-        antes: "—",
-        depois: `PDV:${pontoDeVenda} | Qtd:${qty} | Tipo:${tipoPerda}`,
-      });
+      // Note: DB trigger auto-logs the INSERT, no manual addLog needed
 
       toast.success("Evidência registrada com sucesso!", {
         description: `${tipoPerda} x${qty} — ${pontoDeVenda}`,

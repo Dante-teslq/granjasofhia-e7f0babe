@@ -1,25 +1,33 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import { format } from "date-fns";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-export type AuditAction = "create" | "update" | "adjustment";
+export type AuditAction = "create" | "update" | "delete" | "adjustment";
 
 export interface AuditEntry {
   id: string;
-  timestamp: string;
-  user: string;
-  action: AuditAction;
+  created_at: string;
+  action: string;
   module: string;
-  produto: string;
-  antes: string;
-  depois: string;
+  usuario: string;
+  item_description: string;
+  before_data: any;
+  after_data: any;
   ip: string;
   device: string;
 }
 
 interface AuditContextData {
   logs: AuditEntry[];
-  addLog: (entry: Omit<AuditEntry, "id" | "timestamp" | "ip" | "device">) => void;
-  getLogsInRange: (from: Date, to: Date) => AuditEntry[];
+  loading: boolean;
+  addLog: (entry: {
+    action: AuditAction;
+    module: string;
+    usuario: string;
+    item_description: string;
+    before_data?: any;
+    after_data?: any;
+  }) => Promise<void>;
+  fetchLogs: (from?: Date, to?: Date) => Promise<void>;
 }
 
 const AuditContext = createContext<AuditContextData | null>(null);
@@ -39,32 +47,63 @@ const detectDevice = (): string => {
 
 export const AuditProvider = ({ children }: { children: ReactNode }) => {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const addLog = useCallback((entry: Omit<AuditEntry, "id" | "timestamp" | "ip" | "device">) => {
-    const newEntry: AuditEntry = {
-      ...entry,
-      id: crypto.randomUUID(),
-      timestamp: format(new Date(), "dd/MM/yyyy HH:mm:ss"),
-      ip: "192.168.1.1",
-      device: detectDevice(),
-    };
-    // Logs are append-only — no edit or delete exposed
-    setLogs((prev) => [newEntry, ...prev]);
+  const fetchLogs = useCallback(async (from?: Date, to?: Date) => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from("audit_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (from) {
+        query = query.gte("created_at", from.toISOString());
+      }
+      if (to) {
+        const endOfDay = new Date(to);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.lte("created_at", endOfDay.toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setLogs((data as AuditEntry[]) || []);
+    } catch (err) {
+      console.error("Erro ao carregar logs de auditoria:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const getLogsInRange = useCallback((from: Date, to: Date): AuditEntry[] => {
-    const fromStr = format(from, "yyyy-MM-dd");
-    const toStr = format(to, "yyyy-MM-dd");
-    return logs.filter((log) => {
-      // Parse dd/MM/yyyy from timestamp
-      const parts = log.timestamp.split(" ")[0].split("/");
-      const logDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      return logDateStr >= fromStr && logDateStr <= toStr;
-    });
-  }, [logs]);
+  const addLog = useCallback(async (entry: {
+    action: AuditAction;
+    module: string;
+    usuario: string;
+    item_description: string;
+    before_data?: any;
+    after_data?: any;
+  }) => {
+    try {
+      const { error } = await supabase.from("audit_logs").insert({
+        action: entry.action,
+        module: entry.module,
+        usuario: entry.usuario,
+        item_description: entry.item_description,
+        before_data: entry.before_data || null,
+        after_data: entry.after_data || null,
+        ip: "192.168.1.1",
+        device: detectDevice(),
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Erro ao registrar log de auditoria:", err);
+    }
+  }, []);
 
   return (
-    <AuditContext.Provider value={{ logs, addLog, getLogsInRange }}>
+    <AuditContext.Provider value={{ logs, loading, addLog, fetchLogs }}>
       {children}
     </AuditContext.Provider>
   );
