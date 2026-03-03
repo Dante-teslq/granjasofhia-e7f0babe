@@ -17,6 +17,7 @@ import Usuarios from "./pages/Usuarios";
 import Configuracoes from "./pages/Configuracoes";
 import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,21 +28,41 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   return <>{children}</>;
 };
 
-const AppRoutes = () => (
-  <Routes>
-    <Route path="/" element={<ProtectedRoute path="/"><Index /></ProtectedRoute>} />
-    <Route path="/estoque" element={<Estoque />} />
-    <Route path="/sangrias" element={<Sangrias />} />
-    <Route path="/apuracao" element={<ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute>} />
-    <Route path="/auditoria" element={<ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute>} />
-    <Route path="/alertas" element={<ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute>} />
-    <Route path="/antifraude" element={<ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute>} />
-    <Route path="/evidencias" element={<ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute>} />
-    <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />
-    <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
-);
+const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const { session, loading } = useApp();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-primary text-sm">Carregando...</div>
+      </div>
+    );
+  }
+  if (!session) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+};
+
+const AppRoutes = () => {
+  const { session, loading } = useApp();
+
+  return (
+    <Routes>
+      <Route path="/login" element={
+        loading ? null : session ? <Navigate to="/" replace /> : <Login />
+      } />
+      <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><Index /></ProtectedRoute></AuthGuard>} />
+      <Route path="/estoque" element={<AuthGuard><Estoque /></AuthGuard>} />
+      <Route path="/sangrias" element={<AuthGuard><Sangrias /></AuthGuard>} />
+      <Route path="/apuracao" element={<AuthGuard><ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute></AuthGuard>} />
+      <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
+      <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
+      <Route path="/antifraude" element={<AuthGuard><ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute></AuthGuard>} />
+      <Route path="/evidencias" element={<AuthGuard><ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute></AuthGuard>} />
+      <Route path="/usuarios" element={<AuthGuard><ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute></AuthGuard>} />
+      <Route path="/configuracoes" element={<AuthGuard><ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute></AuthGuard>} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/components/ui/sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const roles = [
   { name: "Operador", desc: "Registra entradas e vendas", color: "bg-muted text-foreground" },
@@ -19,69 +20,97 @@ const roles = [
 ];
 
 interface UserProfile {
-  name: string;
+  id: string;
+  user_id: string;
+  nome: string;
   email: string;
-  phone: string;
-  role: string;
+  telefone: string;
+  cargo: string;
   status: string;
 }
 
-const initialUsers: UserProfile[] = [
-  { name: "Maria Silva", email: "maria@granja.com", phone: "(11) 99999-0001", role: "Operador", status: "ativo" },
-  { name: "João Santos", email: "joao@granja.com", phone: "(11) 99999-0002", role: "Supervisor", status: "ativo" },
-  { name: "Carlos Lima", email: "carlos@granja.com", phone: "(11) 99999-0003", role: "Administrador", status: "ativo" },
-  { name: "Ana Souza", email: "ana@granja.com", phone: "(11) 99999-0004", role: "Auditor", status: "ativo" },
-  { name: "Pedro Costa", email: "pedro@granja.com", phone: "(11) 99999-0005", role: "Operador", status: "inativo" },
-];
-
 const UsuariosPage = () => {
-  const { currentRole } = useApp();
-  const [users, setUsers] = useState<UserProfile[]>(initialUsers);
+  const { currentRole, refreshProfile } = useApp();
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [formUser, setFormUser] = useState({ name: "", email: "", phone: "", role: "Operador" });
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [formUser, setFormUser] = useState({ nome: "", email: "", telefone: "", cargo: "Operador" });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(true);
   const isAdmin = currentRole === "Administrador";
+  const isMobile = useIsMobile();
+
+  const fetchUsers = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (!error && data) {
+      setUsers(data as UserProfile[]);
+    }
+    setLoadingUsers(false);
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const openAdd = () => {
-    setEditIndex(null);
-    setFormUser({ name: "", email: "", phone: "", role: "Operador" });
+    setEditId(null);
+    setFormUser({ nome: "", email: "", telefone: "", cargo: "Operador" });
     setDialogOpen(true);
   };
 
-  const openEdit = (idx: number) => {
-    setEditIndex(idx);
-    const u = users[idx];
-    setFormUser({ name: u.name, email: u.email, phone: u.phone, role: u.role });
+  const openEdit = (user: UserProfile) => {
+    setEditId(user.id);
+    setFormUser({ nome: user.nome, email: user.email, telefone: user.telefone || "", cargo: user.cargo });
     setDialogOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (!formUser.name || (!formUser.email && !formUser.phone)) {
-      toast.error("Preencha o nome e pelo menos email ou telefone.");
+  const handleSubmit = async () => {
+    if (!formUser.nome || !formUser.email) {
+      toast.error("Preencha o nome e o email.");
       return;
     }
-    if (editIndex !== null) {
-      const updated = [...users];
-      updated[editIndex] = { ...updated[editIndex], ...formUser };
-      setUsers(updated);
+    if (editId) {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          nome: formUser.nome,
+          email: formUser.email,
+          telefone: formUser.telefone,
+          cargo: formUser.cargo,
+        })
+        .eq("id", editId);
+      if (error) {
+        toast.error("Erro ao atualizar: " + error.message);
+        return;
+      }
       toast.success("Perfil atualizado com sucesso!");
+      await refreshProfile();
     } else {
-      setUsers([...users, { ...formUser, status: "ativo" }]);
-      toast.success("Perfil adicionado com sucesso!");
+      toast.info("Para adicionar novos usuários, eles devem criar conta pela tela de login.");
+      setDialogOpen(false);
+      return;
     }
     setDialogOpen(false);
+    fetchUsers();
   };
 
-  const handleDelete = () => {
-    if (deleteIndex === null) return;
-    const deletedUser = users[deleteIndex];
-    setUsers(users.filter((_, i) => i !== deleteIndex));
-    toast.success(`Perfil de "${deletedUser.name}" excluído com sucesso!`);
-    setDeleteIndex(null);
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const userToDelete = users.find(u => u.id === deleteId);
+    const { error } = await supabase.from("profiles").delete().eq("id", deleteId);
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+    } else {
+      toast.success(`Perfil de "${userToDelete?.nome}" excluído com sucesso!`);
+      fetchUsers();
+    }
+    setDeleteId(null);
   };
 
-  const isMobile = useIsMobile();
+  const deleteUserName = users.find(u => u.id === deleteId)?.nome || "";
 
   return (
     <DashboardLayout>
@@ -90,15 +119,9 @@ const UsuariosPage = () => {
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">Usuários & Perfis</h1>
             <p className="text-muted-foreground text-xs md:text-sm mt-1">
-              Controle de permissões RBAC — nenhum perfil pode excluir registros
+              Gerencie os perfis dos usuários do sistema
             </p>
           </div>
-          {isAdmin && (
-            <Button onClick={openAdd} className="gap-2 w-full sm:w-auto h-12 md:h-10">
-              <UserPlus className="w-4 h-4" />
-              Adicionar Perfil
-            </Button>
-          )}
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -113,13 +136,17 @@ const UsuariosPage = () => {
           ))}
         </div>
 
-        {isMobile ? (
+        {loadingUsers ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">Carregando usuários...</div>
+        ) : users.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground text-sm">Nenhum usuário registrado.</div>
+        ) : isMobile ? (
           <div className="space-y-3">
-            {users.map((user, idx) => (
-              <div key={idx} className="glass-card rounded-xl p-4 space-y-3">
+            {users.map((user) => (
+              <div key={user.id} className="glass-card rounded-xl p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-medium">{user.name}</p>
+                    <p className="text-sm font-medium">{user.nome || "Sem nome"}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{user.email || "—"}</p>
                   </div>
                   <Badge
@@ -131,15 +158,15 @@ const UsuariosPage = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.role}</Badge>
-                    {user.phone && <span className="text-xs text-muted-foreground">{user.phone}</span>}
+                    <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
+                    {user.telefone && <span className="text-xs text-muted-foreground">{user.telefone}</span>}
                   </div>
                   {isAdmin && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary h-9">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary h-9">
                         <Pencil className="w-3.5 h-3.5" /> Editar
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteIndex(idx)} className="gap-1.5 text-destructive hover:text-destructive h-9">
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive h-9">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
@@ -166,12 +193,12 @@ const UsuariosPage = () => {
                 </thead>
                 <tbody>
                   {users.map((user, idx) => (
-                    <tr key={idx} className={`border-t border-border hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}>
-                      <td className="px-4 py-3 font-medium">{user.name}</td>
+                    <tr key={user.id} className={`border-t border-border hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}>
+                      <td className="px-4 py-3 font-medium">{user.nome || "Sem nome"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{user.email || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{user.phone || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{user.telefone || "—"}</td>
                       <td className="px-4 py-3">
-                        <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.role}</Badge>
+                        <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <Badge
@@ -184,10 +211,10 @@ const UsuariosPage = () => {
                       {isAdmin && (
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary">
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary">
                               <Pencil className="w-3.5 h-3.5" /> Editar
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => setDeleteIndex(idx)} className="gap-1.5 text-destructive hover:text-destructive">
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive">
                               <Trash2 className="w-3.5 h-3.5" /> Excluir
                             </Button>
                           </div>
@@ -201,59 +228,61 @@ const UsuariosPage = () => {
           </div>
         )}
 
-        {/* Dialog de adicionar/editar */}
+        {/* Dialog de editar */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editIndex !== null ? "Editar Perfil" : "Adicionar Novo Perfil"}</DialogTitle>
+              <DialogTitle>{editId ? "Editar Perfil" : "Informação"}</DialogTitle>
               <DialogDescription>
-                {editIndex !== null
+                {editId
                   ? "Atualize os dados do usuário. Apenas administradores podem fazer isso."
-                  : "Preencha os dados do novo usuário. Apenas administradores podem fazer isso."}
+                  : "Novos usuários devem criar conta pela tela de login."}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div>
-                <label className="text-sm font-medium text-foreground">Nome *</label>
-                <Input value={formUser.name} onChange={(e) => setFormUser({ ...formUser, name: e.target.value })} placeholder="Nome completo" className="h-10" />
+            {editId && (
+              <div className="space-y-4 py-2">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Nome *</label>
+                  <Input value={formUser.nome} onChange={(e) => setFormUser({ ...formUser, nome: e.target.value })} placeholder="Nome completo" className="h-10" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">Email</label>
+                  <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" className="h-10" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">Telefone</label>
+                  <Input value={formUser.telefone} onChange={(e) => setFormUser({ ...formUser, telefone: e.target.value })} placeholder="(00) 00000-0000" className="h-10" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground">Cargo *</label>
+                  <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Operador">Operador</SelectItem>
+                      <SelectItem value="Supervisor">Supervisor</SelectItem>
+                      <SelectItem value="Administrador">Administrador</SelectItem>
+                      <SelectItem value="Auditor">Auditor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Email</label>
-                <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" className="h-10" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Telefone</label>
-                <Input value={formUser.phone} onChange={(e) => setFormUser({ ...formUser, phone: e.target.value })} placeholder="(00) 00000-0000" className="h-10" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Cargo *</label>
-                <Select value={formUser.role} onValueChange={(v) => setFormUser({ ...formUser, role: v })}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Operador">Operador</SelectItem>
-                    <SelectItem value="Supervisor">Supervisor</SelectItem>
-                    <SelectItem value="Administrador">Administrador</SelectItem>
-                    <SelectItem value="Auditor">Auditor</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button onClick={handleSubmit}>{editIndex !== null ? "Salvar Alterações" : "Adicionar"}</Button>
+              {editId && <Button onClick={handleSubmit}>Salvar Alterações</Button>}
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Dialog de confirmação de exclusão */}
-        <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => { if (!open) setDeleteIndex(null); }}>
+        <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Excluir Perfil</AlertDialogTitle>
               <AlertDialogDescription>
-                Tem certeza que deseja excluir o perfil de "{deleteIndex !== null ? users[deleteIndex]?.name : ""}"? Esta ação não pode ser desfeita.
+                Tem certeza que deseja excluir o perfil de "{deleteUserName}"? Esta ação não pode ser desfeita.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

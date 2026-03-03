@@ -1,7 +1,8 @@
-import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera } from "lucide-react";
+import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const allLinks = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
@@ -21,7 +22,7 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
-  const { currentRole, setCurrentRole, canAccess } = useApp();
+  const { canAccess, profile, currentRole, signOut } = useApp();
 
   const filteredLinks = allLinks.filter((link) => canAccess(link.to));
   const sections = [...new Set(filteredLinks.map((l) => l.section))];
@@ -74,20 +75,23 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
         ))}
       </nav>
 
-      {/* Role switcher for demo */}
-      <div className="p-4 border-t border-sidebar-border space-y-2">
-        <p className="text-[10px] text-sidebar-foreground/40 uppercase tracking-wide">Perfil ativo</p>
-        <Select value={currentRole} onValueChange={(v) => setCurrentRole(v as any)}>
-          <SelectTrigger className="h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Operador">Operador</SelectItem>
-            <SelectItem value="Supervisor">Supervisor</SelectItem>
-            <SelectItem value="Administrador">Administrador</SelectItem>
-            <SelectItem value="Auditor">Auditor</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="p-4 border-t border-sidebar-border space-y-3">
+        {profile && (
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">{profile.nome || profile.email}</p>
+            <Badge variant="outline" className="border-primary/30 text-primary text-[10px]">
+              {currentRole}
+            </Badge>
+          </div>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { signOut(); onNavigate?.(); }}
+          className="w-full justify-start gap-2 text-sidebar-foreground/60 hover:text-destructive"
+        >
+          <LogOut className="w-4 h-4" /> Sair
+        </Button>
         <p className="text-[10px] text-sidebar-foreground/30 text-center tracking-wide">
           © 2026 Granja Sofhia
         </p>
