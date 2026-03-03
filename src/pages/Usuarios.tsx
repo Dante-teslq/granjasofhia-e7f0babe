@@ -1,11 +1,12 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Users, Shield, UserPlus, Pencil } from "lucide-react";
+import { Users, Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/components/ui/sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApp } from "@/contexts/AppContext";
@@ -39,6 +40,7 @@ const UsuariosPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [formUser, setFormUser] = useState({ name: "", email: "", phone: "", role: "Operador" });
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const isAdmin = currentRole === "Administrador";
 
   const openAdd = () => {
@@ -69,6 +71,14 @@ const UsuariosPage = () => {
       toast.success("Perfil adicionado com sucesso!");
     }
     setDialogOpen(false);
+  };
+
+  const handleDelete = () => {
+    if (deleteIndex === null) return;
+    const deletedUser = users[deleteIndex];
+    setUsers(users.filter((_, i) => i !== deleteIndex));
+    toast.success(`Perfil de "${deletedUser.name}" excluído com sucesso!`);
+    setDeleteIndex(null);
   };
 
   const isMobile = useIsMobile();
@@ -125,9 +135,14 @@ const UsuariosPage = () => {
                     {user.phone && <span className="text-xs text-muted-foreground">{user.phone}</span>}
                   </div>
                   {isAdmin && (
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary h-9">
-                      <Pencil className="w-3.5 h-3.5" /> Editar
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary h-9">
+                        <Pencil className="w-3.5 h-3.5" /> Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteIndex(idx)} className="gap-1.5 text-destructive hover:text-destructive h-9">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -168,9 +183,14 @@ const UsuariosPage = () => {
                       </td>
                       {isAdmin && (
                         <td className="px-4 py-3 text-center">
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary">
-                            <Pencil className="w-3.5 h-3.5" /> Editar
-                          </Button>
+                          <div className="flex items-center justify-center gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(idx)} className="gap-1.5 text-primary hover:text-primary">
+                              <Pencil className="w-3.5 h-3.5" /> Editar
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteIndex(idx)} className="gap-1.5 text-destructive hover:text-destructive">
+                              <Trash2 className="w-3.5 h-3.5" /> Excluir
+                            </Button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -181,6 +201,7 @@ const UsuariosPage = () => {
           </div>
         )}
 
+        {/* Dialog de adicionar/editar */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -225,6 +246,24 @@ const UsuariosPage = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog de confirmação de exclusão */}
+        <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => { if (!open) setDeleteIndex(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir Perfil</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o perfil de "{deleteIndex !== null ? users[deleteIndex]?.name : ""}"? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
