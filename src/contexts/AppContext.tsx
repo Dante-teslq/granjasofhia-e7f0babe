@@ -106,9 +106,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setLoading(false);
       }
-    });
+    }).catch(() => setLoading(false));
 
-    return () => subscription.unsubscribe();
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const currentRole: UserRole = profile?.cargo || "Operador";
