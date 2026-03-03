@@ -37,7 +37,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const ApuracaoPage = () => {
   const { currentRole } = useApp();
   const isAdmin = currentRole === "Administrador";
-  const { pontosVenda, anos, getStoreData, getRanking, upsertRegistro, deleteRegistro, addPontoVenda, loading, registros } = useVendasRegistros();
+  const { pontosVenda, anos, getStoreData, getRanking, upsertRegistro, deleteRegistro, loading, registros } = useVendasRegistros();
 
   const [selectedStore, setSelectedStore] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
@@ -49,9 +49,6 @@ const ApuracaoPage = () => {
   const [editMonth, setEditMonth] = useState(1);
   const [editValue, setEditValue] = useState("");
 
-  // New store modal
-  const [newStoreOpen, setNewStoreOpen] = useState(false);
-  const [newStoreName, setNewStoreName] = useState("");
 
   // Auto-select first store/year when data loads
   const activeStore = selectedStore || pontosVenda[0] || "";
@@ -117,20 +114,6 @@ const ApuracaoPage = () => {
     }
   };
 
-  const handleAddStore = async () => {
-    if (!newStoreName.trim()) {
-      toast.error("Informe o nome do ponto de venda.");
-      return;
-    }
-    const { error } = await addPontoVenda(newStoreName.trim());
-    if (error) {
-      toast.error("Erro ao criar ponto de venda.");
-    } else {
-      toast.success("Ponto de venda criado!");
-      setNewStoreOpen(false);
-      setNewStoreName("");
-    }
-  };
 
   const openEdit = (store: string, year: string, mes: number, currentVal: number) => {
     setEditStore(store);
@@ -164,11 +147,6 @@ const ApuracaoPage = () => {
             <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5 h-9">
               <Download className="w-3.5 h-3.5" /> CSV
             </Button>
-            {isAdmin && (
-              <Button size="sm" onClick={() => setNewStoreOpen(true)} className="gap-1.5 h-9">
-                <Plus className="w-3.5 h-3.5" /> Ponto de Venda
-              </Button>
-            )}
           </div>
         </div>
 
@@ -427,27 +405,6 @@ const ApuracaoPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* New Store Dialog */}
-      <Dialog open={newStoreOpen} onOpenChange={setNewStoreOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Novo Ponto de Venda</DialogTitle>
-          </DialogHeader>
-          <div className="py-2">
-            <label className="text-xs font-medium text-muted-foreground">Nome do Ponto de Venda</label>
-            <Input
-              className="mt-1"
-              value={newStoreName}
-              onChange={(e) => setNewStoreName(e.target.value)}
-              placeholder="Ex: Loja Centro"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setNewStoreOpen(false)}>Cancelar</Button>
-            <Button onClick={handleAddStore}>Criar</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };
