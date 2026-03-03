@@ -92,6 +92,42 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_registros: {
+        Row: {
+          ano: number
+          created_at: string
+          dados_customizados: Json | null
+          id: string
+          mes: number
+          ponto_venda: string
+          total_calculado: number
+          updated_at: string
+          usuario: string | null
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          dados_customizados?: Json | null
+          id?: string
+          mes: number
+          ponto_venda: string
+          total_calculado?: number
+          updated_at?: string
+          usuario?: string | null
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          dados_customizados?: Json | null
+          id?: string
+          mes?: number
+          ponto_venda?: string
+          total_calculado?: number
+          updated_at?: string
+          usuario?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
