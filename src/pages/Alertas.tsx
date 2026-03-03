@@ -184,14 +184,14 @@ const AlertasPage = () => {
                   crítico: "bg-destructive/10 text-destructive",
                 };
                 return (
-                  <div key={profile.user} className="flex items-center justify-between p-3 rounded-md bg-muted/30 border border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                  <div key={profile.user} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-md bg-muted/30 border border-border">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
                         {i + 1}
                       </div>
-                      <div>
-                        <span className="text-sm font-medium text-foreground">{profile.user}</span>
-                        <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
+                      <div className="min-w-0">
+                        <span className="text-sm font-medium text-foreground block truncate">{profile.user}</span>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground mt-0.5">
                           <span>Ajustes: {profile.totalAdjustments}</span>
                           <span>Elevados: {profile.highAdjustments}</span>
                           <span>Fora horário: {profile.afterHoursOps}</span>
@@ -199,12 +199,12 @@ const AlertasPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 pl-10 sm:pl-0 shrink-0">
                       <div className="text-right">
                         <p className="text-sm font-bold text-foreground">{profile.riskScore}</p>
                         <p className="text-[10px] text-muted-foreground">score</p>
                       </div>
-                      <Badge className={`text-[10px] ${riskColors[profile.riskLevel]}`}>
+                      <Badge className={`text-[10px] whitespace-nowrap ${riskColors[profile.riskLevel]}`}>
                         {profile.riskLevel}
                       </Badge>
                     </div>
