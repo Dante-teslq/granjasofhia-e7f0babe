@@ -202,8 +202,6 @@ const AuditoriaPage = () => {
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Ação</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Módulo</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Descrição</th>
-                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Antes</th>
-                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Depois</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">IP</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Dispositivo</th>
                   </tr>
@@ -230,19 +228,13 @@ const AuditoriaPage = () => {
                       </td>
                       <td className="px-4 py-3">{log.module}</td>
                       <td className="px-4 py-3">{log.item_description}</td>
-                      <td className="px-4 py-3 text-center text-xs text-muted-foreground max-w-[200px] truncate">
-                        {formatBeforeAfter(log.before_data)}
-                      </td>
-                      <td className="px-4 py-3 text-center text-xs font-medium max-w-[200px] truncate">
-                        {formatBeforeAfter(log.after_data)}
-                      </td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">{log.ip}</td>
                       <td className="px-4 py-3 text-muted-foreground text-xs">{log.device}</td>
                     </tr>
                   ))}
                   {filtered.length === 0 && !loading && (
                     <tr>
-                      <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         Nenhum registro encontrado no período selecionado.
                       </td>
                     </tr>
