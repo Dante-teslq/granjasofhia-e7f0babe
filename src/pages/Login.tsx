@@ -2,8 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 const LoginPage = () => {
@@ -11,7 +10,6 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
-  const [cargo, setCargo] = useState("Operador");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -36,7 +34,7 @@ const LoginPage = () => {
       email,
       password,
       options: {
-        data: { nome, cargo },
+        data: { nome },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -72,22 +70,6 @@ const LoginPage = () => {
               <div>
                 <label className="text-sm font-medium text-foreground">Nome</label>
                 <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo" className="h-11 mt-1" />
-              </div>
-            )}
-            {isSignup && (
-              <div>
-                <label className="text-sm font-medium text-foreground">Cargo</label>
-                <Select value={cargo} onValueChange={setCargo}>
-                  <SelectTrigger className="h-11 mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Operador">Operador</SelectItem>
-                    <SelectItem value="Supervisor">Supervisor</SelectItem>
-                    <SelectItem value="Administrador">Administrador</SelectItem>
-                    <SelectItem value="Auditor">Auditor</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             )}
             <div>
