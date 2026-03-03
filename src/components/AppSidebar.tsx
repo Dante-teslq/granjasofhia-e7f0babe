@@ -31,7 +31,7 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
     <aside className="w-full md:w-64 min-h-0 md:min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0">
       <div className="p-5 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-md overflow-hidden">
+          <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-sidebar-primary/40 shadow-lg">
             <img src="/logo.jpg" alt="Granja Sofhia" className="w-full h-full object-cover" />
           </div>
           <div>

@@ -24,9 +24,14 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               <AppSidebar onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
-          <h1 className="text-sm font-bold font-serif tracking-tight text-sidebar-foreground">
-            Granja Sofhia
-          </h1>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden ring-1 ring-sidebar-primary/40">
+              <img src="/logo.jpg" alt="Granja Sofhia" className="w-full h-full object-cover" />
+            </div>
+            <h1 className="text-sm font-bold font-serif tracking-tight text-sidebar-foreground">
+              Granja Sofhia
+            </h1>
+          </div>
           <div className="w-10" />
         </header>
         <main className="flex-1 overflow-auto">

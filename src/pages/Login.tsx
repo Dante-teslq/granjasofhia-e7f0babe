@@ -51,7 +51,7 @@ const LoginPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-20 h-20 rounded-xl overflow-hidden">
+          <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary/30 shadow-xl">
             <img src="/logo.jpg" alt="Granja Sofhia" className="w-full h-full object-cover" />
           </div>
           <div className="text-center">
