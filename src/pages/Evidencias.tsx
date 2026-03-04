@@ -337,12 +337,12 @@ const EvidenciasPage = () => {
             </div>
 
             {/* User + Save */}
-            <div className="flex items-center justify-between pt-2 border-t border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-border/50">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <User className="w-4 h-4" />
                 Responsável: <span className="font-semibold text-foreground">{currentRole}</span>
               </div>
-              <Button onClick={handleSave} disabled={saving} className="gap-2">
+              <Button onClick={handleSave} disabled={saving} className="gap-2 w-full sm:w-auto">
                 {saving ? (
                   <>Salvando...</>
                 ) : (
