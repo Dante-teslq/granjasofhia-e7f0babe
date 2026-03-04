@@ -1,54 +1,57 @@
-const CACHE_NAME = 'granja-sofhia-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/logo.jpg',
-  '/favicon.ico',
-  '/manifest.json',
-  '/offline.html'
-];
+const CACHE_NAME = 'granja-sofhia-v2';
+const STATIC_ASSETS = ['/', '/logo.jpg', '/favicon.ico', '/manifest.json', '/offline.html'];
 
-// Install — cache static assets
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)));
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
   );
   self.clients.claim();
 });
 
-// Fetch strategy
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET
   if (request.method !== 'GET') return;
-
-  // Skip OAuth routes
   if (url.pathname.startsWith('/~oauth')) return;
 
-  // Network First for API / Supabase calls
-  if (url.origin !== self.location.origin || url.pathname.startsWith('/rest/') || url.hostname.includes('supabase')) {
-    event.respondWith(
-      fetch(request).catch(() => caches.match(request))
-    );
+  const isViteDevRequest =
+    url.pathname.startsWith('/@vite') ||
+    url.pathname.startsWith('/@fs/') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/node_modules/.vite/');
+
+  if (isViteDevRequest) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // Cache First for static assets
-  if (request.destination === 'image' || request.destination === 'font' || request.destination === 'style' || request.destination === 'script') {
+  const isApiRequest =
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith('/rest/') ||
+    url.hostname.includes('supabase');
+
+  if (isApiRequest) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    return;
+  }
+
+  const isStaticAssetRequest =
+    url.pathname.startsWith('/assets/') ||
+    STATIC_ASSETS.includes(url.pathname) ||
+    request.destination === 'image' ||
+    request.destination === 'font';
+
+  if (isStaticAssetRequest) {
     event.respondWith(
       caches.match(request).then((cached) =>
-        cached || fetch(request).then((response) => {
+        cached ||
+        fetch(request).then((response) => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
@@ -58,13 +61,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network First for navigation
   event.respondWith(
-    fetch(request).then((response) => {
-      const clone = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-      return response;
-    }).catch(() => caches.match(request).then((cached) => cached || caches.match('/offline.html')))
+    fetch(request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        return response;
+      })
+      .catch(() => caches.match(request).then((cached) => cached || caches.match('/offline.html')))
   );
 });
 
