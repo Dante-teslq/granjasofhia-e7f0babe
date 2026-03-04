@@ -10,34 +10,20 @@ import { cn } from "@/lib/utils";
 const GlobalDateFilter = () => {
   const { dateRange, setDateRange } = useApp();
 
-  const handleFromSelect = (d: Date | undefined) => {
-    if (!d) return;
-    if (d > dateRange.to) {
-      setDateRange({ from: d, to: d });
-    } else {
-      setDateRange({ ...dateRange, from: d });
-    }
-  };
-
-  const handleToSelect = (d: Date | undefined) => {
-    if (!d) return;
-    setDateRange({ ...dateRange, to: d });
-  };
-
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+    <div className="flex items-center gap-2 flex-wrap">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="gap-1.5 px-2.5 sm:px-3 h-9 sm:h-10 border-border text-xs sm:text-sm">
-            <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <Button variant="outline" className="gap-2 w-fit border-border text-sm">
+            <CalendarIcon className="w-4 h-4 text-primary" />
             {format(dateRange.from, "dd/MM/yyyy")}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="end">
           <Calendar
             mode="single"
             selected={dateRange.from}
-            onSelect={handleFromSelect}
+            onSelect={(d) => d && setDateRange({ ...dateRange, from: d })}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />
@@ -46,17 +32,16 @@ const GlobalDateFilter = () => {
       <span className="text-muted-foreground text-xs">até</span>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" className="gap-1.5 px-2.5 sm:px-3 h-9 sm:h-10 border-border text-xs sm:text-sm">
-            <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <Button variant="outline" className="gap-2 w-fit border-border text-sm">
+            <CalendarIcon className="w-4 h-4 text-primary" />
             {format(dateRange.to, "dd/MM/yyyy")}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="end">
           <Calendar
             mode="single"
             selected={dateRange.to}
-            onSelect={handleToSelect}
-            disabled={(date) => date < dateRange.from}
+            onSelect={(d) => d && setDateRange({ ...dateRange, to: d })}
             initialFocus
             className={cn("p-3 pointer-events-auto")}
           />
