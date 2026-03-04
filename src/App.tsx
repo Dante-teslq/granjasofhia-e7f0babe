@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import { PwaInstallBanner } from "./components/PwaInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { PwaUpdateNotifier } from "./components/PwaUpdateNotifier";
+import { PwaDesktopInstallBanner } from "./components/PwaDesktopInstallBanner";
 
 const queryClient = new QueryClient();
 
