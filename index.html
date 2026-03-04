@@ -25,11 +25,24 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+
+        const host = window.location.hostname;
+        const isPreview = host.includes('id-preview--') || host.includes('lovableproject.com');
+
+        if (isPreview) {
+          navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => reg.unregister()));
+          if ('caches' in window) {
+            caches.keys().then((keys) => keys.forEach((key) => caches.delete(key)));
+          }
+          return;
+        }
+
+        window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js');
         });
-      }
+      })();
     </script>
   </body>
 </html>
