@@ -2,10 +2,19 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Granja Sofhia - Controle Operacional</title>
     <meta name="description" content="Sistema de Controle Operacional Granja Sofhia" />
     <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#b99936" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Granja Sofhia" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/logo.jpg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.jpg" />
 
     <meta property="og:title" content="Granja Sofhia" />
     <meta property="og:description" content="Sistema de Controle Operacional" />
@@ -15,5 +24,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
   </body>
 </html>
