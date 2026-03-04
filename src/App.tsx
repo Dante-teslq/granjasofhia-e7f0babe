@@ -19,6 +19,9 @@ import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import { PwaInstallBanner } from "./components/PwaInstallBanner";
+import { OfflineIndicator } from "./components/OfflineIndicator";
+import { PwaUpdateNotifier } from "./components/PwaUpdateNotifier";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +76,9 @@ const App = () => (
             <FraudProvider>
               <Toaster />
               <Sonner />
+              <OfflineIndicator />
+              <PwaInstallBanner />
+              <PwaUpdateNotifier />
               <BrowserRouter>
                 <AppRoutes />
               </BrowserRouter>
