@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
@@ -107,11 +107,11 @@ const LoginPage = () => {
 
             {!isSignup && (
               <div className="flex items-center gap-2">
-                <Checkbox
+                <Switch
                   id="remember"
                   checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  className="h-2.5 w-2.5 rounded-[2px]"
+                  onCheckedChange={setRememberMe}
+                  className="h-4 w-7 data-[state=checked]:bg-primary data-[state=unchecked]:bg-muted [&>span]:h-3 [&>span]:w-3 [&>span]:data-[state=checked]:translate-x-3"
                 />
                 <label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer select-none">
                   Manter login
