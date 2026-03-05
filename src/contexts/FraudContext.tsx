@@ -77,53 +77,9 @@ const calcRiskScore = (p: Omit<UserRiskProfile, "riskScore" | "riskLevel">): num
   return Math.min(s, 100);
 };
 
-// Seed data
-const seedAlerts: FraudAlert[] = [
-  {
-    id: "fa-1", type: "ajuste_elevado", severity: "crítica", status: "ativo",
-    message: "Ajuste manual de -15 unidades (12% do estoque) sem justificativa — Ovo Grande Sofhia",
-    operator: "Operador 2", timestamp: "19/02/2026 16:30", link: "/estoque",
-  },
-  {
-    id: "fa-2", type: "fora_horario", severity: "média", status: "ativo",
-    message: "Movimentação registrada às 05:45 — fora do horário padrão (06h-22h)",
-    operator: "Operador 1", timestamp: "18/02/2026 05:45", link: "/auditoria",
-  },
-  {
-    id: "fa-3", type: "frequencia_anormal", severity: "crítica", status: "ativo",
-    message: "Operador 3 realizou 8 ajustes em 10 minutos — padrão atípico detectado",
-    operator: "Operador 3", timestamp: "16/02/2026 11:20", link: "/auditoria",
-  },
-  {
-    id: "fa-4", type: "multiplas_alteracoes", severity: "média", status: "analisado",
-    message: "Registro do produto Ovo Tipo A alterado 5 vezes no mesmo dia pelo mesmo operador",
-    operator: "Operador 2", timestamp: "20/02/2026 14:00", link: "/estoque",
-    analyst: "Supervisor João",
-  },
-  {
-    id: "fa-5", type: "ajuste_elevado", severity: "média", status: "ativo",
-    message: "Perdas totais atingiram 6.2% no produto Ovo Tipo A hoje",
-    operator: "—", timestamp: "16/02/2026 10:00", link: "/estoque",
-  },
-  {
-    id: "fa-6", type: "comportamento_atipico", severity: "baixa", status: "ativo",
-    message: "Operador 3 apresenta score de risco elevado — 3 alertas nos últimos 7 dias",
-    operator: "Operador 3", timestamp: "20/02/2026 09:00", link: "/alertas",
-  },
-];
-
-const seedRiskProfiles: UserRiskProfile[] = [
-  { user: "Operador 1", totalAdjustments: 12, highAdjustments: 0, afterHoursOps: 1, multiEditCount: 0, riskScore: 0, riskLevel: "baixo" },
-  { user: "Operador 2", totalAdjustments: 18, highAdjustments: 2, afterHoursOps: 0, multiEditCount: 3, riskScore: 0, riskLevel: "baixo" },
-  { user: "Operador 3", totalAdjustments: 35, highAdjustments: 4, afterHoursOps: 2, multiEditCount: 1, riskScore: 0, riskLevel: "baixo" },
-].map((p) => {
-  const score = calcRiskScore(p);
-  return { ...p, riskScore: score, riskLevel: calcRiskLevel(score) };
-});
-
 export const FraudProvider = ({ children }: { children: ReactNode }) => {
-  const [alerts, setAlerts] = useState<FraudAlert[]>(seedAlerts);
-  const [userRiskProfiles, setUserRiskProfiles] = useState<UserRiskProfile[]>(seedRiskProfiles);
+  const [alerts, setAlerts] = useState<FraudAlert[]>([]);
+  const [userRiskProfiles, setUserRiskProfiles] = useState<UserRiskProfile[]>([]);
   const [fraudSettings, setFraudSettings] = useState<FraudSettings>(() => {
     const saved = localStorage.getItem("fraudSettings");
     return saved ? JSON.parse(saved) : { adjustmentThresholdPercent: 5, maxAdjustmentsPerHour: 5, maxEditsPerRecord: 3 };

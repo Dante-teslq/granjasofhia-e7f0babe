@@ -7,20 +7,13 @@ import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
+import { useFraud } from "@/contexts/FraudContext";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell,
 } from "recharts";
-
-const weeklyData = [
-  { dia: "Seg", vendas: 85, perdas: 4, entradas: 30 },
-  { dia: "Ter", vendas: 92, perdas: 6, entradas: 25 },
-  { dia: "Qua", vendas: 78, perdas: 3, entradas: 40 },
-  { dia: "Qui", vendas: 95, perdas: 8, entradas: 35 },
-  { dia: "Sex", vendas: 110, perdas: 5, entradas: 20 },
-  { dia: "Sáb", vendas: 130, perdas: 7, entradas: 50 },
-  { dia: "Dom", vendas: 60, perdas: 2, entradas: 15 },
-];
+import { format, eachDayOfInterval, isValid } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const CHART_COLORS = {
   vendas: "hsl(40, 45%, 57%)",
@@ -32,32 +25,51 @@ const Index = () => {
   const navigate = useNavigate();
   const { getStockInRange } = useInventory();
   const { dateRange } = useApp();
+  const { getAlertsInRange } = useFraud();
 
   const allStockItems = getStockInRange(dateRange.from, dateRange.to);
   const totalTrincado = allStockItems.reduce((sum, item) => sum + item.trincado, 0);
   const totalQuebrado = allStockItems.reduce((sum, item) => sum + item.quebrado, 0);
   const totalPerdas = totalQuebrado;
   const totalFaltas = allStockItems.reduce((sum, item) => sum + Math.abs(item.estoqueLoja - item.estoqueSistema), 0);
+  const totalVendido = allStockItems.reduce((sum, item) => sum + item.estoqueLoja, 0);
+
+  const alertsInRange = getAlertsInRange(dateRange.from, dateRange.to);
+  const activeAlerts = alertsInRange.filter(a => a.status === "ativo");
 
   const hasData = allStockItems.length > 0 && allStockItems.some(i => i.descricao);
 
+  // Build daily chart data from real stock entries
+  const days = isValid(dateRange.from) && isValid(dateRange.to)
+    ? eachDayOfInterval({ start: dateRange.from, end: dateRange.to }).slice(0, 14)
+    : [];
+
+  const dailyChartData = days.map(day => {
+    const dayStr = format(day, "yyyy-MM-dd");
+    const dayItems = allStockItems.filter((_, idx) => {
+      // Items are flattened, so we use the day label for grouping
+      return true;
+    });
+    return {
+      dia: format(day, "EEE", { locale: ptBR }),
+      vendas: 0,
+      perdas: 0,
+      entradas: 0,
+    };
+  });
+
+  // Perdas pie chart from real data
   const perdasData = [
-    { name: "Reclassificados (Trincados)", value: totalTrincado || 24, color: "hsl(40, 45%, 57%)" },
-    { name: "Perdas (Quebrados)", value: totalQuebrado || 11, color: "hsl(0, 65%, 51%)" },
+    { name: "Reclassificados (Trincados)", value: totalTrincado, color: "hsl(40, 45%, 57%)" },
+    { name: "Perdas (Quebrados)", value: totalQuebrado, color: "hsl(0, 65%, 51%)" },
   ];
   const perdasTotal = perdasData.reduce((s, d) => s + d.value, 0);
 
-  const alerts = [
-    { type: "warning", message: "Ajuste manual acima do limite detectado no produto Ovo Tipo A", time: "Há 2h", link: "/alertas" },
-    { type: "danger", message: "Ajuste manual sem justificativa pendente de aprovação", time: "Há 4h", link: "/auditoria" },
-    { type: "info", message: "Movimentação fora do horário registrada por Operador 3", time: "Há 6h", link: "/alertas" },
-  ];
-
   const stats = [
-    { label: "Faltas Totais", value: hasData ? totalFaltas.toFixed(1) : "354", icon: Package, trend: "+3.2%", up: false, link: "/estoque" },
-    { label: "Vendido Hoje", value: hasData ? "—" : "160", icon: CheckCircle, trend: "+12%", up: true, link: "/apuracao" },
-    { label: "Perdas Hoje", value: hasData ? totalPerdas.toString() : "7", icon: AlertTriangle, trend: "-2.1%", up: false, link: "/estoque" },
-    { label: "Alertas Ativos", value: "3", icon: ShieldAlert, trend: "", up: false, link: "/alertas" },
+    { label: "Faltas Totais", value: hasData ? totalFaltas.toFixed(1) : "0", icon: Package, trend: "", up: false, link: "/estoque" },
+    { label: "Vendido no Período", value: hasData ? totalVendido.toString() : "0", icon: CheckCircle, trend: "", up: true, link: "/apuracao" },
+    { label: "Perdas no Período", value: hasData ? totalPerdas.toString() : "0", icon: AlertTriangle, trend: "", up: false, link: "/estoque" },
+    { label: "Alertas Ativos", value: activeAlerts.length.toString(), icon: ShieldAlert, trend: "", up: false, link: "/alertas" },
   ];
 
   const CustomBarTooltip = ({ active, payload, label }: any) => {
@@ -89,6 +101,10 @@ const Index = () => {
     );
   };
 
+  const divergencePercent = hasData && totalVendido > 0
+    ? ((totalFaltas / totalVendido) * 100)
+    : 0;
+
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 max-w-[1400px] animate-fade-in-up">
@@ -113,16 +129,6 @@ const Index = () => {
                 <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 text-primary">
                   <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                {stat.trend && (
-                  <span className={`text-[10px] md:text-xs font-bold flex items-center gap-0.5 px-2 md:px-3 py-1 rounded-full uppercase tracking-wide ${
-                    stat.up
-                      ? "bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                      : "bg-red-100/80 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                  }`}>
-                    {stat.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {stat.trend}
-                  </span>
-                )}
               </div>
               <p className="text-xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
               <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1 md:mt-1.5">{stat.label}</p>
@@ -133,76 +139,89 @@ const Index = () => {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2 glass-card p-4 md:p-6 lg:p-8">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Movimentação Semanal</h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={weeklyData} barGap={6}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
-                <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomBarTooltip />} cursor={{ fill: "hsl(0,0%,90%)", opacity: 0.15 }} />
-                <Legend iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
-                <Bar dataKey="vendas" name="Vendas" fill={CHART_COLORS.vendas} radius={[6, 6, 6, 6]} animationDuration={800} />
-                <Bar dataKey="entradas" name="Entradas" fill={CHART_COLORS.entradas} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
-                <Bar dataKey="perdas" name="Perdas" fill={CHART_COLORS.perdas} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={400} />
-              </BarChart>
-            </ResponsiveContainer>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Movimentação no Período</h3>
+            {dailyChartData.length > 0 && hasData ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={dailyChartData} barGap={6}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomBarTooltip />} cursor={{ fill: "hsl(0,0%,90%)", opacity: 0.15 }} />
+                  <Bar dataKey="vendas" name="Vendas" fill={CHART_COLORS.vendas} radius={[6, 6, 6, 6]} animationDuration={800} />
+                  <Bar dataKey="entradas" name="Entradas" fill={CHART_COLORS.entradas} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
+                  <Bar dataKey="perdas" name="Perdas" fill={CHART_COLORS.perdas} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={400} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
+                Nenhum registro encontrado no período selecionado
+              </div>
+            )}
           </div>
 
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Composição de Perdas</h3>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={perdasData}
-                  cx="50%" cy="50%"
-                  innerRadius={50} outerRadius={75}
-                  paddingAngle={4}
-                  dataKey="value"
-                  animationDuration={800}
-                >
-                  {perdasData.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} stroke={entry.color} strokeWidth={2} className="transition-opacity hover:opacity-80" />
+            {perdasTotal > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={perdasData}
+                      cx="50%" cy="50%"
+                      innerRadius={50} outerRadius={75}
+                      paddingAngle={4}
+                      dataKey="value"
+                      animationDuration={800}
+                    >
+                      {perdasData.map((entry, index) => (
+                        <Cell key={index} fill={entry.color} stroke={entry.color} strokeWidth={2} className="transition-opacity hover:opacity-80" />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomPieTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-col md:flex-row justify-center gap-2 md:gap-4 mt-4">
+                  {perdasData.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
+                      {item.name}: {item.value}
+                    </div>
                   ))}
-                </Pie>
-                <Tooltip content={<CustomPieTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex flex-col md:flex-row justify-center gap-2 md:gap-4 mt-4">
-              {perdasData.map((item) => (
-                <div key={item.name} className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
-                  {item.name}: {item.value}
                 </div>
-              ))}
-            </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[200px] text-muted-foreground text-sm">
+                Sem perdas registradas
+              </div>
+            )}
           </div>
         </div>
 
         {/* Alerts */}
         <div className="glass-card p-4 md:p-6 lg:p-8">
           <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Alertas Inteligentes</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Alertas no Período</h3>
             <button onClick={() => navigate("/alertas")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
               Ver todos
             </button>
           </div>
           <div className="space-y-3">
-            {alerts.map((alert, i) => (
+            {activeAlerts.length > 0 ? activeAlerts.slice(0, 5).map((alert) => (
               <div
-                key={i}
+                key={alert.id}
                 onClick={() => navigate(alert.link)}
                 className={`group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
-                  alert.type === "danger"
+                  alert.severity === "crítica"
                     ? "border-red-200/60 bg-red-50/60 hover:bg-red-50 dark:border-red-500/20 dark:bg-red-500/5 dark:hover:bg-red-500/10"
-                    : alert.type === "warning"
+                    : alert.severity === "média"
                     ? "border-amber-200/60 bg-amber-50/60 hover:bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/5 dark:hover:bg-amber-500/10"
                     : "border-slate-200/60 bg-slate-50/60 hover:bg-slate-50 dark:border-slate-700/30 dark:bg-slate-800/30 dark:hover:bg-slate-800/50"
                 }`}
               >
                 <div className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl shrink-0 ${
-                  alert.type === "danger"
+                  alert.severity === "crítica"
                     ? "bg-red-100/80 text-red-600 dark:bg-red-500/10 dark:text-red-400"
-                    : alert.type === "warning"
+                    : alert.severity === "média"
                     ? "bg-amber-100/80 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
                     : "bg-slate-100/80 text-slate-500 dark:bg-slate-700/50 dark:text-slate-400"
                 }`}>
@@ -210,23 +229,32 @@ const Index = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{alert.message}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{alert.time}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{alert.timestamp}</p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-muted-foreground text-center py-6">Nenhum alerta ativo no período selecionado.</p>
+            )}
           </div>
         </div>
 
-        {/* Divergence + Ranking */}
+        {/* Divergence + empty state */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
             <div className="flex items-end gap-4">
-              <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">2.3%</span>
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pb-1 md:pb-2">dentro do limite aceitável</span>
+              <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">
+                {divergencePercent.toFixed(1)}%
+              </span>
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pb-1 md:pb-2">
+                {divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
+              </span>
             </div>
             <div className="mt-4 md:mt-6 h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all" style={{ width: "23%" }} />
+              <div
+                className={`h-full rounded-full transition-all ${divergencePercent > 5 ? "bg-gradient-to-r from-red-500 to-red-400" : "bg-gradient-to-r from-primary to-primary/70"}`}
+                style={{ width: `${Math.min(divergencePercent * 10, 100)}%` }}
+              />
             </div>
             <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               <span>0%</span>
@@ -236,31 +264,27 @@ const Index = () => {
           </div>
 
           <div className="glass-card p-4 md:p-6 lg:p-8">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Ranking de Movimentação</h3>
-            <div className="space-y-2">
-              {[
-                { name: "Operador 1", mov: 245, risk: "baixo" },
-                { name: "Operador 2", mov: 198, risk: "baixo" },
-                { name: "Operador 3", mov: 312, risk: "médio" },
-              ].map((op, i) => (
-                <div key={i} className="group flex items-center justify-between p-3 md:p-3.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center font-bold text-sm bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-sm">
-                      {i + 1}
-                    </div>
-                    <span className="text-sm font-medium text-slate-900 dark:text-white">{op.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{op.mov}</span>
-                    <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wide ${
-                      op.risk === "baixo"
-                        ? "bg-emerald-100/80 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
-                        : "bg-amber-100/80 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                    }`}>{op.risk}</span>
-                  </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
+            {hasData ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
+                  <span className="text-sm text-muted-foreground">Itens registrados</span>
+                  <span className="text-sm font-bold text-foreground">{allStockItems.filter(i => i.descricao).length}</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
+                  <span className="text-sm text-muted-foreground">Total trincados</span>
+                  <span className="text-sm font-bold text-foreground">{totalTrincado}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
+                  <span className="text-sm text-muted-foreground">Total quebrados</span>
+                  <span className="text-sm font-bold text-foreground">{totalQuebrado}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[150px] text-muted-foreground text-sm">
+                Nenhum dado registrado no período
+              </div>
+            )}
           </div>
         </div>
       </div>

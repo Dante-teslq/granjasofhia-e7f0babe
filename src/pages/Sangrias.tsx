@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Save, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import DashboardLayout from "@/components/DashboardLayout";
-import GlobalDateFilter from "@/components/GlobalDateFilter";
 import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
 import { useInventory } from "@/contexts/InventoryContext";
@@ -44,9 +43,8 @@ const SangriasPage = () => {
         <div className="flex flex-col gap-3 md:gap-4">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">Sangrias e Insumos</h1>
-            <p className="text-muted-foreground text-xs md:text-sm mt-1">Controle de sangrias, cartelas e barbantes</p>
+            <p className="text-muted-foreground text-xs md:text-sm mt-1">Controle diário de sangrias, cartelas e barbantes</p>
           </div>
-          <GlobalDateFilter />
         </div>
         <SangriasTable items={sangriaItems} onChange={setSangriaItems} />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
