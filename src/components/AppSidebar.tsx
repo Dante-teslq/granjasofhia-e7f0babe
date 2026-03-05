@@ -78,9 +78,9 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
 
       <div className="p-4 border-t border-sidebar-border space-y-3">
         {profile && (
-          <div className="space-y-1">
+          <div className="flex items-center gap-2 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{profile.nome || profile.email}</p>
-            <Badge variant="outline" className="border-primary/30 text-primary text-[10px]">
+            <Badge variant="outline" className="border-primary/30 text-primary text-[10px] shrink-0 whitespace-nowrap">
               {currentRole}
             </Badge>
           </div>
