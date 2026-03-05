@@ -47,7 +47,7 @@ export const useApp = () => {
   return ctx;
 };
 
-const operatorAllowed = new Set(["/estoque", "/sangrias", "/evidencias"]);
+const operatorAllowed = new Set(["/estoque", "/sangrias", "/evidencias", "/vendas-diarias"]);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
