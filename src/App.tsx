@@ -19,6 +19,7 @@ import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import VendasDiarias from "./pages/VendasDiarias";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { PwaInstallBanner } from "./components/PwaInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
@@ -69,6 +70,7 @@ const AppRoutes = () => {
       <Route path="/login" element={
         loading ? null : session ? <Navigate to="/" replace /> : <Login />
       } />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute></AuthGuard>} />
       <Route path="/estoque" element={<AuthGuard><Estoque /></AuthGuard>} />
       <Route path="/sangrias" element={<AuthGuard><Sangrias /></AuthGuard>} />
