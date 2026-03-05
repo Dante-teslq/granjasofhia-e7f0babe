@@ -111,7 +111,7 @@ const LoginPage = () => {
                   id="remember"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked === true)}
-                  className="h-3 w-3"
+                  className="h-2.5 w-2.5 rounded-[2px]"
                 />
                 <label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer select-none">
                   Manter login
