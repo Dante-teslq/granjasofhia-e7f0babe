@@ -176,6 +176,45 @@ export type Database = {
         }
         Relationships: []
       }
+      sangrias: {
+        Row: {
+          barbantes: string
+          cartelas_vazias: string
+          created_at: string
+          data: string
+          id: string
+          notacoes: string
+          ponto_venda: string
+          sangria: string
+          updated_at: string
+          usuario: string | null
+        }
+        Insert: {
+          barbantes?: string
+          cartelas_vazias?: string
+          created_at?: string
+          data?: string
+          id?: string
+          notacoes?: string
+          ponto_venda: string
+          sangria?: string
+          updated_at?: string
+          usuario?: string | null
+        }
+        Update: {
+          barbantes?: string
+          cartelas_vazias?: string
+          created_at?: string
+          data?: string
+          id?: string
+          notacoes?: string
+          ponto_venda?: string
+          sangria?: string
+          updated_at?: string
+          usuario?: string | null
+        }
+        Relationships: []
+      }
       vendas_diarias: {
         Row: {
           codigo_produto: string

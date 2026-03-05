@@ -16,6 +16,7 @@ export interface SangriaItem {
   cartelasVazias: string;
   barbantes: string;
   notacoes: string;
+  pontoVenda: string;
 }
 
 // Faltas: apenas diferença entre loja e sistema (quebras e trincados não entram)
