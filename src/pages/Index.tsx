@@ -1,22 +1,24 @@
 import {
   Package, AlertTriangle, ShieldAlert, ShoppingCart, DollarSign,
+  TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Trophy, AlertCircle, Heart,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { useApp } from "@/contexts/AppContext";
 import { useFraud } from "@/contexts/FraudContext";
-import { useEstoqueData } from "@/hooks/useEstoqueData";
-import { useVendasDiarias } from "@/hooks/useVendasDiarias";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Area, ComposedChart,
 } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const CHART_COLORS = {
-  vendas: "hsl(40, 45%, 57%)",
-  entradas: "hsl(0, 0%, 65%)",
+const HEALTH_COLORS = {
+  Saudável: "hsl(142, 40%, 45%)",
+  Atenção: "hsl(44, 91%, 52%)",
+  Crítico: "hsl(0, 65%, 51%)",
 };
 
 const Index = () => {
@@ -25,55 +27,68 @@ const Index = () => {
   const { getAlertsInRange } = useFraud();
 
   const {
-    totalFaltas,
-    hasData, porDia, alertas: dbAlertas,
-    divergencePercent, loading, records,
-  } = useEstoqueData({ from: dateRange.from, to: dateRange.to });
-
-  const {
-    totalHoje, totalPeriodo, qtdHoje, qtdPeriodo,
-    porDia: vendasPorDia,
-  } = useVendasDiarias({ from: dateRange.from, to: dateRange.to });
+    loading, vendas, estoque, comparison, trendLine,
+    stockHealth, rankings,
+  } = useDashboardData({ from: dateRange.from, to: dateRange.to });
 
   const alertsInRange = getAlertsInRange(dateRange.from, dateRange.to);
   const activeAlerts = alertsInRange.filter(a => a.status === "ativo");
-
   const allAlerts = [
-    ...dbAlertas.map(a => ({ ...a, timestamp: "", status: "ativo" as const })),
+    ...estoque.alertas.map(a => ({ ...a, timestamp: "", status: "ativo" as const })),
     ...activeAlerts,
   ];
 
-  // Daily chart data from DB (estoque)
-  const dailyChartData = porDia.slice(0, 14).map(d => ({
+  const VariationBadge = ({ value }: { value: number }) => {
+    if (value === 0) return null;
+    const isUp = value > 0;
+    return (
+      <span className={`inline-flex items-center gap-0.5 text-[10px] md:text-xs font-bold ${isUp ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
+        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+        {Math.abs(value).toFixed(1)}%
+      </span>
+    );
+  };
+
+  const stats = [
+    { label: "Vendas Hoje", value: `R$ ${vendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias", variation: comparison.vendasHojeVar },
+    { label: "Vendas no Período", value: `R$ ${vendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias", variation: comparison.vendasPeriodoVar },
+    { label: "Faltas Totais", value: estoque.hasData ? estoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque", variation: comparison.faltasVar, invertColor: true },
+    { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas", variation: 0 },
+  ];
+
+  // Chart data
+  const vendasChartData = trendLine.map(d => ({
+    dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
+    total: d.total,
+    anterior: d.anterior,
+    tendencia: d.tendencia,
+    isBest: d.isBest,
+  }));
+
+  // Estoque daily chart
+  const dailyChartData = estoque.porDia.slice(0, 14).map(d => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
     estoque: d.vendas,
     entradas: d.entradas,
   }));
 
-  // Daily sales chart
-  const vendasChartData = vendasPorDia.slice(-14).map(d => ({
-    dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
-    total: d.total,
-    quantidade: d.quantidade,
-  }));
+  // Stock health pie data
+  const healthPieData = [
+    { name: "Saudável", value: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
+    { name: "Atenção", value: stockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
+    { name: "Crítico", value: stockHealth.critico, color: HEALTH_COLORS["Crítico"] },
+  ].filter(d => d.value > 0);
 
-  const stats = [
-    { label: "Faltas Totais", value: hasData ? totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
-    { label: "Vendas Hoje", value: `R$ ${totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
-    { label: "Vendas no Período", value: `R$ ${totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
-    { label: "Alertas Ativos", value: (allAlerts.length).toString(), icon: ShieldAlert, link: "/alertas" },
-  ];
-
-  const CustomBarTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload) return null;
     return (
-      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-none rounded-xl p-4 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]">
-        <p className="text-sm font-bold text-slate-900 dark:text-white mb-2">{label}</p>
+      <div className="bg-card/95 backdrop-blur-xl border border-border rounded-xl p-4 shadow-lg">
+        <p className="text-sm font-bold text-foreground mb-2">{label}</p>
         {payload.map((entry: any, i: number) => (
           <p key={i} className="text-xs flex items-center gap-2 py-0.5">
-            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: entry.color }} />
-            <span className="text-slate-500 dark:text-slate-400">{entry.name}:</span>
-            <span className="font-semibold text-slate-900 dark:text-white">{entry.value}</span>
+            <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: entry.color || entry.stroke }} />
+            <span className="text-muted-foreground">{entry.name}:</span>
+            <span className="font-semibold text-foreground">{typeof entry.value === 'number' ? entry.value.toLocaleString('pt-BR') : entry.value}</span>
           </p>
         ))}
       </div>
@@ -86,8 +101,8 @@ const Index = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Dashboard Executivo</h1>
-            <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1 md:mt-2">Visão geral operacional — Granja Sofhia</p>
+            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Dashboard Executivo</h1>
+            <p className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1 md:mt-2">Visão estratégica — Granja Sofhia</p>
           </div>
           <GlobalDateFilter />
         </div>
@@ -98,7 +113,7 @@ const Index = () => {
           </div>
         )}
 
-        {/* Stats Cards */}
+        {/* Stats Cards with Variation */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {stats.map((stat) => (
             <div
@@ -110,55 +125,227 @@ const Index = () => {
                 <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 text-primary">
                   <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
+                <VariationBadge value={stat.invertColor ? -stat.variation : stat.variation} />
               </div>
-              <p className="text-xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
-              <p className="text-[10px] md:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1 md:mt-1.5">{stat.label}</p>
+              <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{stat.value}</p>
+              <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1 md:mt-1.5">{stat.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Charts Row */}
+        {/* Charts Row: Vendas com Tendência + Movimentação de Estoque */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Movimentação de Estoque</h3>
-            {dailyChartData.length > 0 && hasData ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={dailyChartData} barGap={6}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomBarTooltip />} cursor={{ fill: "hsl(0,0%,90%)", opacity: 0.15 }} />
-                  <Bar dataKey="estoque" name="Estoque Loja" fill={CHART_COLORS.vendas} radius={[6, 6, 6, 6]} animationDuration={800} />
-                  <Bar dataKey="entradas" name="Estoque Sistema" fill={CHART_COLORS.entradas} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
-                Nenhum registro encontrado no período selecionado
-              </div>
-            )}
-          </div>
-
+          {/* Vendas com Tendência */}
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Vendas Diárias</h3>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Vendas com Tendência</h3>
+              </div>
               <button onClick={() => navigate("/vendas-diarias")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
                 Ver todas
               </button>
             </div>
             {vendasChartData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={220}>
+                  <ComposedChart data={vendasChartData} barGap={6}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
+                    <Bar dataKey="total" name="Atual (R$)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
+                    <Bar dataKey="anterior" name="Anterior (R$)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
+                    <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} animationDuration={1000} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+                <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1"><span className="w-3 h-2 rounded-sm bg-primary inline-block" /> Atual</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-2 rounded-sm bg-muted-foreground/30 inline-block" /> Anterior</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-destructive inline-block" style={{ borderTop: "2px dashed" }} /> Tendência</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
+                Nenhuma venda registrada no período
+              </div>
+            )}
+          </div>
+
+          {/* Movimentação de Estoque */}
+          <div className="glass-card p-4 md:p-6 lg:p-8">
+            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Movimentação de Estoque</h3>
+            {dailyChartData.length > 0 && estoque.hasData ? (
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={vendasChartData} barGap={6}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
-                  <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <Tooltip content={<CustomBarTooltip />} cursor={{ fill: "hsl(0,0%,90%)", opacity: 0.15 }} />
-                  <Bar dataKey="total" name="Total (R$)" fill="hsl(40, 45%, 57%)" radius={[6, 6, 6, 6]} animationDuration={800} />
+                <BarChart data={dailyChartData} barGap={6}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                  <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
+                  <Bar dataKey="estoque" name="Estoque Loja" fill="hsl(40, 45%, 57%)" radius={[6, 6, 6, 6]} animationDuration={800} />
+                  <Bar dataKey="entradas" name="Estoque Sistema" fill="hsl(0, 0%, 65%)" radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
-                Nenhuma venda registrada no período
+                Nenhum registro encontrado no período
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Saúde do Estoque + Divergência */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Saúde do Estoque */}
+          <div className="glass-card p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-2 mb-4 md:mb-6">
+              <Heart className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Saúde do Estoque</h3>
+            </div>
+            {stockHealth.total > 0 ? (
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="w-[160px] h-[160px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={healthPieData}
+                        cx="50%" cy="50%"
+                        innerRadius={45} outerRadius={70}
+                        dataKey="value"
+                        animationDuration={800}
+                        strokeWidth={2}
+                        stroke="hsl(var(--card))"
+                      >
+                        {healthPieData.map((entry, i) => (
+                          <Cell key={i} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-2 w-full">
+                  {[
+                    { label: "Saudável", count: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"], icon: "✓" },
+                    { label: "Atenção", count: stockHealth.atencao, color: HEALTH_COLORS["Atenção"], icon: "!" },
+                    { label: "Crítico", count: stockHealth.critico, color: HEALTH_COLORS["Crítico"], icon: "✕" },
+                  ].map(item => (
+                    <div key={item.label} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ background: item.color }} />
+                        <span className="text-sm text-foreground font-medium">{item.label}</span>
+                      </div>
+                      <span className="text-sm font-bold text-foreground">{item.count} {item.count === 1 ? "produto" : "produtos"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[160px] text-muted-foreground text-sm">
+                Nenhum dado de estoque no período
+              </div>
+            )}
+          </div>
+
+          {/* Divergência */}
+          <div className="glass-card p-4 md:p-6 lg:p-8">
+            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
+            <div className="flex items-end gap-4">
+              <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">
+                {estoque.divergencePercent.toFixed(1)}%
+              </span>
+              <span className="text-xs font-medium text-muted-foreground pb-1 md:pb-2">
+                {estoque.divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
+              </span>
+            </div>
+            <div className="mt-4 md:mt-6 h-3 rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${estoque.divergencePercent > 5 ? "bg-gradient-to-r from-destructive to-destructive/70" : "bg-gradient-to-r from-primary to-primary/70"}`}
+                style={{ width: `${Math.min(estoque.divergencePercent * 10, 100)}%` }}
+              />
+            </div>
+            <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span>0%</span>
+              <span className="text-destructive">Limite: 5%</span>
+              <span>10%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Rankings */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          {/* Top Vendidos */}
+          <div className="glass-card p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-2 mb-4 md:mb-6">
+              <Trophy className="w-4 h-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Mais Vendidos</h3>
+            </div>
+            {rankings.topVendidos.length > 0 ? (
+              <div className="space-y-2">
+                {rankings.topVendidos.map((p, i) => {
+                  const maxTotal = rankings.topVendidos[0]?.total || 1;
+                  const pct = (p.total / maxTotal) * 100;
+                  return (
+                    <div key={p.produto} className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                        i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-foreground truncate">{p.produto}</span>
+                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">R$ {p.total.toLocaleString('pt-BR')}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
+                Nenhuma venda no período
+              </div>
+            )}
+          </div>
+
+          {/* Top Perdas */}
+          <div className="glass-card p-4 md:p-6 lg:p-8">
+            <div className="flex items-center gap-2 mb-4 md:mb-6">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Maiores Perdas</h3>
+            </div>
+            {rankings.topPerdas.length > 0 ? (
+              <div className="space-y-2">
+                {rankings.topPerdas.map((p, i) => {
+                  const maxQuebrado = rankings.topPerdas[0]?.quebrado || 1;
+                  const pct = (p.quebrado / maxQuebrado) * 100;
+                  return (
+                    <div key={p.descricao} className="flex items-center gap-3">
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                        i === 0 ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-foreground truncate">{p.descricao}</span>
+                          <span className="text-xs font-bold text-destructive ml-2 shrink-0">{p.quebrado} un.</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-full rounded-full bg-destructive/60 transition-all" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
+                Nenhuma perda registrada no período
               </div>
             )}
           </div>
@@ -167,7 +354,7 @@ const Index = () => {
         {/* Alerts */}
         <div className="glass-card p-4 md:p-6 lg:p-8">
           <div className="flex items-center justify-between mb-4 md:mb-6">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Alertas no Período</h3>
+            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Alertas no Período</h3>
             <button onClick={() => navigate("/alertas")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
               Ver todos
             </button>
@@ -179,25 +366,25 @@ const Index = () => {
                 onClick={() => navigate(alert.link)}
                 className={`group flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl cursor-pointer transition-all duration-200 border ${
                   alert.severity === "crítica"
-                    ? "border-red-200/60 bg-red-50/60 hover:bg-red-50 dark:border-red-500/20 dark:bg-red-500/5 dark:hover:bg-red-500/10"
+                    ? "border-destructive/20 bg-destructive/5 hover:bg-destructive/10"
                     : alert.severity === "média"
-                    ? "border-amber-200/60 bg-amber-50/60 hover:bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/5 dark:hover:bg-amber-500/10"
-                    : "border-slate-200/60 bg-slate-50/60 hover:bg-slate-50 dark:border-slate-700/30 dark:bg-slate-800/30 dark:hover:bg-slate-800/50"
+                    ? "border-warning/20 bg-warning/5 hover:bg-warning/10"
+                    : "border-border bg-muted/30 hover:bg-muted/50"
                 }`}
               >
                 <div className={`flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-xl shrink-0 ${
                   alert.severity === "crítica"
-                    ? "bg-red-100/80 text-red-600 dark:bg-red-500/10 dark:text-red-400"
+                    ? "bg-destructive/10 text-destructive"
                     : alert.severity === "média"
-                    ? "bg-amber-100/80 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
-                    : "bg-slate-100/80 text-slate-500 dark:bg-slate-700/50 dark:text-slate-400"
+                    ? "bg-warning/10 text-warning"
+                    : "bg-muted text-muted-foreground"
                 }`}>
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">{alert.message}</p>
+                  <p className="text-sm font-medium text-foreground">{alert.message}</p>
                   {"timestamp" in alert && alert.timestamp && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{alert.timestamp}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{alert.timestamp}</p>
                   )}
                 </div>
               </div>
@@ -207,53 +394,21 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Divergence + Summary */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
-            <div className="flex items-end gap-4">
-              <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">
-                {divergencePercent.toFixed(1)}%
-              </span>
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pb-1 md:pb-2">
-                {divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
-              </span>
-            </div>
-            <div className="mt-4 md:mt-6 h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${divergencePercent > 5 ? "bg-gradient-to-r from-red-500 to-red-400" : "bg-gradient-to-r from-primary to-primary/70"}`}
-                style={{ width: `${Math.min(divergencePercent * 10, 100)}%` }}
-              />
-            </div>
-            <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              <span>0%</span>
-              <span className="text-red-500 dark:text-red-400">Limite: 5%</span>
-              <span>10%</span>
-            </div>
-          </div>
-
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
-            {hasData || totalPeriodo > 0 ? (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-                  <span className="text-sm text-muted-foreground">Itens de estoque</span>
-                  <span className="text-sm font-bold text-foreground">{records.length}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-                  <span className="text-sm text-muted-foreground">Vendas hoje (un.)</span>
-                  <span className="text-sm font-bold text-foreground">{qtdHoje}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-                  <span className="text-sm text-muted-foreground">Vendas período (un.)</span>
-                  <span className="text-sm font-bold text-foreground">{qtdPeriodo}</span>
-                </div>
+        {/* Resumo do Período */}
+        <div className="glass-card p-4 md:p-6 lg:p-8">
+          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: "Itens de estoque", value: estoque.records.length.toString() },
+              { label: "Produtos únicos", value: estoque.uniqueProducts.toString() },
+              { label: "Vendas hoje (un.)", value: vendas.qtdHoje.toString() },
+              { label: "Vendas período (un.)", value: vendas.qtdPeriodo.toString() },
+            ].map(item => (
+              <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
+                <span className="text-xs text-muted-foreground">{item.label}</span>
+                <span className="text-lg font-bold text-foreground mt-1">{item.value}</span>
               </div>
-            ) : (
-              <div className="flex items-center justify-center h-[150px] text-muted-foreground text-sm">
-                Nenhum dado registrado no período
-              </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
