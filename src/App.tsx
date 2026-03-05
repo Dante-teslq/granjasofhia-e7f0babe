@@ -85,7 +85,8 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
+const App = () => {
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AppProvider>
@@ -108,6 +109,7 @@ const App = () => (
       </AppProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
