@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,25 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Wait for Supabase to process the recovery token from the URL
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || (session && event === "SIGNED_IN")) {
+        setSessionReady(true);
+      }
+    });
+
+    // Check if there's already an active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setSessionReady(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -27,12 +45,19 @@ const ResetPassword = () => {
       return;
     }
 
+    if (!sessionReady) {
+      toast.error("Sessão de recuperação não encontrada. Solicite um novo link.");
+      return;
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       if (error.message.includes("same_password") || error.message.includes("should be different")) {
-        toast.error("A nova senha não pode ser igual à senha atual.");
+        toast.error("A nova senha não pode ser igual à senha atual. Escolha uma senha diferente.");
+      } else if (error.message.includes("session")) {
+        toast.error("Sessão expirada. Solicite um novo link de recuperação.");
       } else {
         toast.error(error.message);
       }
