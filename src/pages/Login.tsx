@@ -164,14 +164,14 @@ const LoginPage = () => {
 
                 {view === "login" && (
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id="remember"
                         checked={rememberMe}
                         onCheckedChange={(checked) => setRememberMe(checked === true)}
-                        className="h-3 w-3 rounded-full border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        className="h-3.5 w-3.5 rounded-full border-muted-foreground/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
-                      <label htmlFor="remember" className="text-xs font-medium text-muted-foreground cursor-pointer select-none leading-none">
+                      <label htmlFor="remember" className="text-sm font-medium text-muted-foreground cursor-pointer select-none leading-none">
                         Manter login
                       </label>
                     </div>
