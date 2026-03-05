@@ -100,9 +100,30 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      if (currentSession?.user?.id) {
-        fetchProfile(currentSession.user.id).finally(() => setLoading(false));
+      if (currentSession) {
+        // Check session persistence: if no "remember_login" and no "session_active", sign out
+        const rememberLogin = localStorage.getItem("remember_login");
+        const sessionActive = sessionStorage.getItem("session_active");
+
+        if (!rememberLogin && !sessionActive) {
+          // User didn't choose "remember me" and this is a new tab/browser session
+          supabase.auth.signOut().then(() => {
+            setSession(null);
+            setProfile(null);
+            setLoading(false);
+          });
+          return;
+        }
+
+        // Mark current tab as active
+        sessionStorage.setItem("session_active", "true");
+
+        setSession(currentSession);
+        if (currentSession.user?.id) {
+          fetchProfile(currentSession.user.id).finally(() => setLoading(false));
+        } else {
+          setLoading(false);
+        }
       } else {
         setLoading(false);
       }
@@ -131,6 +152,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    localStorage.removeItem("remember_login");
+    sessionStorage.removeItem("session_active");
     await supabase.auth.signOut();
     setProfile(null);
     setSession(null);
