@@ -53,6 +53,54 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque_registros: {
+        Row: {
+          codigo: string
+          created_at: string
+          data: string
+          descricao: string
+          estoque_loja: number
+          estoque_sistema: number
+          id: string
+          loja: string
+          obs: string
+          quebrado: number
+          trincado: number
+          updated_at: string
+          usuario: string | null
+        }
+        Insert: {
+          codigo?: string
+          created_at?: string
+          data: string
+          descricao?: string
+          estoque_loja?: number
+          estoque_sistema?: number
+          id?: string
+          loja: string
+          obs?: string
+          quebrado?: number
+          trincado?: number
+          updated_at?: string
+          usuario?: string | null
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          data?: string
+          descricao?: string
+          estoque_loja?: number
+          estoque_sistema?: number
+          id?: string
+          loja?: string
+          obs?: string
+          quebrado?: number
+          trincado?: number
+          updated_at?: string
+          usuario?: string | null
+        }
+        Relationships: []
+      }
       evidencias_perdas: {
         Row: {
           created_at: string

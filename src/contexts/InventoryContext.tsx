@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode, useCallback } from "react";
 import { StockItem, SangriaItem, STORES, type StoreName } from "@/types/inventory";
 import { format } from "date-fns";
+import { persistStockToDB } from "@/hooks/useEstoquePersist";
 
 // Key = "YYYY-MM-DD|StoreName"
 type StockKey = string;
@@ -71,6 +72,8 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     const key = makeKey(date, currentStore);
     setAllSavedStock((prev) => ({ ...prev, [key]: [...stockItems] }));
     setLastStockSave(new Date());
+    // Persist to database for reactive dashboard
+    persistStockToDB(stockItems, date, currentStore);
   }, [stockItems, currentStore]);
 
   const saveSangrias = useCallback((date: Date) => {

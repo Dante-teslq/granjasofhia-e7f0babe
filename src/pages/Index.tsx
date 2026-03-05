@@ -1,18 +1,17 @@
 import {
   Package, AlertTriangle, CheckCircle, ShieldAlert,
-  ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
-import { useInventory } from "@/contexts/InventoryContext";
 import { useApp } from "@/contexts/AppContext";
 import { useFraud } from "@/contexts/FraudContext";
+import { useEstoqueData } from "@/hooks/useEstoqueData";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
-import { format, eachDayOfInterval, isValid } from "date-fns";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const CHART_COLORS = {
@@ -23,42 +22,34 @@ const CHART_COLORS = {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { getStockInRange } = useInventory();
   const { dateRange } = useApp();
   const { getAlertsInRange } = useFraud();
 
-  const allStockItems = getStockInRange(dateRange.from, dateRange.to);
-  const totalTrincado = allStockItems.reduce((sum, item) => sum + item.trincado, 0);
-  const totalQuebrado = allStockItems.reduce((sum, item) => sum + item.quebrado, 0);
-  const totalPerdas = totalQuebrado;
-  const totalFaltas = allStockItems.reduce((sum, item) => sum + Math.abs(item.estoqueLoja - item.estoqueSistema), 0);
-  const totalVendido = allStockItems.reduce((sum, item) => sum + item.estoqueLoja, 0);
+  // Reactive DB data with realtime subscription
+  const {
+    totalFaltas, totalTrincado, totalQuebrado, totalPerdas, totalVendido,
+    hasData, porDia, porProduto, alertas: dbAlertas,
+    divergencePercent, loading, records,
+  } = useEstoqueData({ from: dateRange.from, to: dateRange.to });
 
   const alertsInRange = getAlertsInRange(dateRange.from, dateRange.to);
   const activeAlerts = alertsInRange.filter(a => a.status === "ativo");
 
-  const hasData = allStockItems.length > 0 && allStockItems.some(i => i.descricao);
+  // Merge DB-computed alerts with fraud context alerts
+  const allAlerts = [
+    ...dbAlertas.map(a => ({ ...a, timestamp: "", status: "ativo" as const })),
+    ...activeAlerts,
+  ];
 
-  // Build daily chart data from real stock entries
-  const days = isValid(dateRange.from) && isValid(dateRange.to)
-    ? eachDayOfInterval({ start: dateRange.from, end: dateRange.to }).slice(0, 14)
-    : [];
+  // Daily chart data from DB
+  const dailyChartData = porDia.slice(0, 14).map(d => ({
+    dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
+    vendas: d.vendas,
+    perdas: d.perdas,
+    entradas: d.entradas,
+  }));
 
-  const dailyChartData = days.map(day => {
-    const dayStr = format(day, "yyyy-MM-dd");
-    const dayItems = allStockItems.filter((_, idx) => {
-      // Items are flattened, so we use the day label for grouping
-      return true;
-    });
-    return {
-      dia: format(day, "EEE", { locale: ptBR }),
-      vendas: 0,
-      perdas: 0,
-      entradas: 0,
-    };
-  });
-
-  // Perdas pie chart from real data
+  // Perdas pie chart
   const perdasData = [
     { name: "Reclassificados (Trincados)", value: totalTrincado, color: "hsl(40, 45%, 57%)" },
     { name: "Perdas (Quebrados)", value: totalQuebrado, color: "hsl(0, 65%, 51%)" },
@@ -69,7 +60,7 @@ const Index = () => {
     { label: "Faltas Totais", value: hasData ? totalFaltas.toFixed(1) : "0", icon: Package, trend: "", up: false, link: "/estoque" },
     { label: "Vendido no Período", value: hasData ? totalVendido.toString() : "0", icon: CheckCircle, trend: "", up: true, link: "/apuracao" },
     { label: "Perdas no Período", value: hasData ? totalPerdas.toString() : "0", icon: AlertTriangle, trend: "", up: false, link: "/estoque" },
-    { label: "Alertas Ativos", value: activeAlerts.length.toString(), icon: ShieldAlert, trend: "", up: false, link: "/alertas" },
+    { label: "Alertas Ativos", value: (allAlerts.length).toString(), icon: ShieldAlert, trend: "", up: false, link: "/alertas" },
   ];
 
   const CustomBarTooltip = ({ active, payload, label }: any) => {
@@ -101,10 +92,6 @@ const Index = () => {
     );
   };
 
-  const divergencePercent = hasData && totalVendido > 0
-    ? ((totalFaltas / totalVendido) * 100)
-    : 0;
-
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 max-w-[1400px] animate-fade-in-up">
@@ -116,6 +103,12 @@ const Index = () => {
           </div>
           <GlobalDateFilter />
         </div>
+
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-pulse text-sm text-muted-foreground">Carregando dados...</div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
@@ -206,7 +199,7 @@ const Index = () => {
             </button>
           </div>
           <div className="space-y-3">
-            {activeAlerts.length > 0 ? activeAlerts.slice(0, 5).map((alert) => (
+            {allAlerts.length > 0 ? allAlerts.slice(0, 5).map((alert) => (
               <div
                 key={alert.id}
                 onClick={() => navigate(alert.link)}
@@ -229,7 +222,9 @@ const Index = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white">{alert.message}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{alert.timestamp}</p>
+                  {"timestamp" in alert && alert.timestamp && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{alert.timestamp}</p>
+                  )}
                 </div>
               </div>
             )) : (
@@ -238,7 +233,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Divergence + empty state */}
+        {/* Divergence + Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
@@ -269,7 +264,7 @@ const Index = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
                   <span className="text-sm text-muted-foreground">Itens registrados</span>
-                  <span className="text-sm font-bold text-foreground">{allStockItems.filter(i => i.descricao).length}</span>
+                  <span className="text-sm font-bold text-foreground">{records.length}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
                   <span className="text-sm text-muted-foreground">Total trincados</span>
