@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { Save, CheckCircle, Store, Camera } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import GlobalDateFilter from "@/components/GlobalDateFilter";
 import StockTable from "@/components/StockTable";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -175,7 +174,6 @@ const EstoquePage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <GlobalDateFilter />
           </div>
         </div>
         <StockTable items={stockItems} onChange={setStockItems} />
