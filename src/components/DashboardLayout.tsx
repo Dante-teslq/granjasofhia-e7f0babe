@@ -12,10 +12,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   if (isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
-        <header className="sticky top-0 z-40 flex items-center justify-between h-14 px-4 border-b border-border bg-sidebar text-sidebar-foreground">
+        <header className="sticky top-0 z-40 flex items-center justify-between px-4 border-b border-border bg-sidebar text-sidebar-foreground"
+          style={{ height: 'calc(3.5rem + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent">
+              <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent min-h-[44px] min-w-[44px]">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>

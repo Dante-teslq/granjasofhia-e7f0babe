@@ -28,13 +28,17 @@ import { PWAInstallBanner } from "./components/PwaUnifiedInstallBanner";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ path, children }: { path: string; children: React.ReactNode }) => {
-  const { canAccess } = useApp();
-  if (!canAccess(path)) return <Navigate to="/estoque" replace />;
+  const { canAccess, currentRole } = useApp();
+  if (!canAccess(path)) {
+    // Redirect based on role
+    const fallback = currentRole === "Administrador" ? "/" : "/estoque";
+    return <Navigate to={fallback} replace />;
+  }
   return <>{children}</>;
 };
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading } = useApp();
+  const { session, loading, currentRole } = useApp();
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -44,6 +48,16 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   }
   if (!session) return <Navigate to="/login" replace />;
   return <>{children}</>;
+};
+
+/** After login, redirect to the correct home based on role */
+const RoleBasedHome = () => {
+  const { currentRole } = useApp();
+  if (currentRole === "Operador") {
+    return <Navigate to="/estoque" replace />;
+  }
+  // Administrador, Supervisor, Auditor → Dashboard
+  return <Index />;
 };
 
 const AppRoutes = () => {
