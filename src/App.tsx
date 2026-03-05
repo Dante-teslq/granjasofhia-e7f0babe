@@ -19,6 +19,7 @@ import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import VendasDiarias from "./pages/VendasDiarias";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import { PwaInstallBanner } from "./components/PwaInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
