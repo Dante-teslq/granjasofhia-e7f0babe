@@ -37,7 +37,7 @@ const ResetPassword = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const waitForRecoverySession = async (timeoutMs = 15000) => {
+  const waitForRecoverySession = async (timeoutMs = 300000) => {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       const { data: { session } } = await supabase.auth.getSession();
