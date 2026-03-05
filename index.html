@@ -4,47 +4,76 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Granja Sofhia</title>
-    <meta name="description" content="Painel administrativo">
+    <meta name="description" content="Sistema de gestão operacional — Granja Sofhia">
+    <meta name="application-name" content="Granja Sofhia">
+
+    <!-- PWA Core -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#b99936" />
+    <meta name="theme-color" content="#F0F0F0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS / Safari -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Granja Sofhia" />
-    <link rel="apple-touch-icon" sizes="120x120" href="/logo.jpg" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/logo.jpg" />
-    <link rel="apple-touch-icon" sizes="167x167" href="/logo.jpg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/logo.jpg" />
-
-    <!-- PWA additional meta -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="msapplication-TileColor" content="#b99936">
-    <meta name="msapplication-TileImage" content="/logo.jpg">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
 
     <!-- Apple Splash Screens -->
-    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPhone SE 2nd/3rd (375x667 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPhone 8 Plus (414x736 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone X / XS / 11 Pro (375x812 @3x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
-    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone XR / 11 (414x896 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPhone XS Max / 11 Pro Max (414x896 @3x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 12 mini (360x780 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 12 / 12 Pro / 13 / 13 Pro / 14 (390x844 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 12 Pro Max / 13 Pro Max / 14 Plus (428x926 @3x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 14 Pro (393x852 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 14 Pro Max / 15 Plus / 15 Pro Max (430x932 @3x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 15 / 15 Pro (393x852 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 16 (402x874 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 16 Pro (440x956 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPhone 16 Pro Max (440x956 @3x) -->
+    <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)">
+    <!-- iPad mini (768x1024 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPad Air (820x1180 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPad Pro 11" (834x1194 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)">
+    <!-- iPad Pro 12.9" (1024x1366 @2x) -->
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
 
-    
+    <!-- Windows / Edge -->
+    <meta name="msapplication-TileColor" content="#F0F0F0">
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+
+    <!-- OG -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Granja Sofhia">
-  <meta name="twitter:title" content="Granja Sofhia">
-  <meta property="og:description" content="Painel administrativo">
-  <meta name="twitter:description" content="Painel administrativo">
-  <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2b37ec17-004c-49c2-b5c4-42524710615c/id-preview-cc07129d--6faa9250-125f-4857-b569-472525efe3da.lovable.app-1772664782406.png">
-  <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2b37ec17-004c-49c2-b5c4-42524710615c/id-preview-cc07129d--6faa9250-125f-4857-b569-472525efe3da.lovable.app-1772664782406.png">
-  <meta name="twitter:card" content="summary_large_image">
-</head>
+    <meta name="twitter:title" content="Granja Sofhia">
+    <meta property="og:description" content="Sistema de gestão operacional — Granja Sofhia">
+    <meta name="twitter:description" content="Sistema de gestão operacional — Granja Sofhia">
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2b37ec17-004c-49c2-b5c4-42524710615c/id-preview-cc07129d--6faa9250-125f-4857-b569-472525efe3da.lovable.app-1772664782406.png">
+    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2b37ec17-004c-49c2-b5c4-42524710615c/id-preview-cc07129d--6faa9250-125f-4857-b569-472525efe3da.lovable.app-1772664782406.png">
+    <meta name="twitter:card" content="summary_large_image">
+  </head>
 
   <body>
     <div id="root"></div>

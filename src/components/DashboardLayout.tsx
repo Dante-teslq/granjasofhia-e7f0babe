@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AppSidebar from "./AppSidebar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -42,10 +42,13 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     );
   }
 
+  // Desktop: sidebar fixed, content scrolls independently
   return (
     <div className="flex min-h-screen">
-      <AppSidebar />
-      <main className="flex-1 overflow-auto">
+      <div className="fixed top-0 left-0 h-screen w-64 z-30">
+        <AppSidebar />
+      </div>
+      <main className="flex-1 ml-64 overflow-auto min-h-screen">
         {children}
       </main>
     </div>

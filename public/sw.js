@@ -1,15 +1,24 @@
-const CACHE_NAME = 'granja-sofhia-v3';
+const CACHE_NAME = 'granja-sofhia-v4';
 const STATIC_ASSETS = [
   '/',
   '/logo.jpg',
   '/favicon.ico',
   '/manifest.json',
   '/offline.html',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-144x144.png',
+  '/icons/icon-152x152.png',
+  '/icons/icon-167x167.png',
+  '/icons/icon-180x180.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-256x256.png',
+  '/icons/icon-384x384.png',
   '/icons/icon-512x512.png',
-  '/icons/icon-512x512-maskable.png'
+  '/icons/icon-512x512-maskable.png',
+  '/icons/icon-1024x1024.png'
 ];
-
-const APP_ROUTES = ['/', '/estoque', '/apuracao', '/alertas'];
 
 // ── Helpers ──────────────────────────────────────────────────
 const isViteDevAsset = (url) =>
@@ -158,12 +167,12 @@ async function processOfflineQueue() {
           body: action.body,
         });
       } catch (e) {
-        console.warn('[SW] Failed to replay offline action:', e);
+        // silently retry next sync
       }
     }
     await cache.delete('/__offline_queue__');
   } catch (e) {
-    console.warn('[SW] processOfflineQueue error:', e);
+    // silent
   }
 }
 

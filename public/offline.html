@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <title>Granja Sofhia - Offline</title>
   <style>
-    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;background:#f7f7f7;color:#262626}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif;background:#F0F0F0;color:#262626}
     .container{text-align:center;padding:2rem}
-    .logo{width:80px;height:80px;border-radius:16px;margin-bottom:1.5rem}
+    .logo{width:96px;height:96px;border-radius:50%;margin:0 auto 1.5rem;box-shadow:0 4px 20px rgba(0,0,0,0.08)}
     h1{font-family:'Cormorant Garamond',serif;font-size:1.5rem;margin-bottom:0.5rem;color:#b99936}
-    p{font-size:0.875rem;color:#757575;margin-bottom:1.5rem}
-    button{background:#b99936;color:#fff;border:none;padding:0.625rem 1.5rem;border-radius:0.5rem;font-size:0.875rem;cursor:pointer}
+    p{font-size:0.875rem;color:#757575;margin-bottom:1.5rem;max-width:280px;margin-left:auto;margin-right:auto}
+    button{background:#b99936;color:#fff;border:none;padding:0.625rem 1.5rem;border-radius:0.5rem;font-size:0.875rem;cursor:pointer;font-weight:500}
+    button:active{opacity:0.9}
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="/logo.jpg" alt="Granja Sofhia" class="logo"/>
-    <h1>Sem conexão</h1>
-    <p>Verifique sua internet e tente novamente.</p>
+    <img src="/icons/icon-192x192.png" alt="Granja Sofhia" class="logo"/>
+    <h1>Você está offline</h1>
+    <p>Os dados salvos ainda estão disponíveis. Verifique sua conexão e tente novamente.</p>
     <button onclick="location.reload()">Tentar novamente</button>
   </div>
 </body>
