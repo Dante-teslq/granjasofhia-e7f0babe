@@ -29,6 +29,7 @@ import { PWAInstallBanner } from "./components/PwaUnifiedInstallBanner";
 
 const queryClient = new QueryClient();
 
+
 const ProtectedRoute = ({ path, children }: { path: string; children: React.ReactNode }) => {
   const { canAccess, currentRole } = useApp();
   if (!canAccess(path)) {
