@@ -176,6 +176,57 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_diarias: {
+        Row: {
+          codigo_produto: string
+          created_at: string
+          data: string
+          forma_pagamento: string
+          id: string
+          observacao: string
+          ponto_venda: string
+          produto: string
+          quantidade: number
+          status: string
+          total: number | null
+          updated_at: string
+          usuario: string | null
+          valor_unitario: number
+        }
+        Insert: {
+          codigo_produto?: string
+          created_at?: string
+          data?: string
+          forma_pagamento?: string
+          id?: string
+          observacao?: string
+          ponto_venda: string
+          produto: string
+          quantidade?: number
+          status?: string
+          total?: number | null
+          updated_at?: string
+          usuario?: string | null
+          valor_unitario?: number
+        }
+        Update: {
+          codigo_produto?: string
+          created_at?: string
+          data?: string
+          forma_pagamento?: string
+          id?: string
+          observacao?: string
+          ponto_venda?: string
+          produto?: string
+          quantidade?: number
+          status?: string
+          total?: number | null
+          updated_at?: string
+          usuario?: string | null
+          valor_unitario?: number
+        }
+        Relationships: []
+      }
       vendas_registros: {
         Row: {
           ano: number

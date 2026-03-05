@@ -17,6 +17,7 @@ import Usuarios from "./pages/Usuarios";
 import Configuracoes from "./pages/Configuracoes";
 import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
+import VendasDiarias from "./pages/VendasDiarias";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { PwaInstallBanner } from "./components/PwaInstallBanner";
@@ -75,6 +76,7 @@ const AppRoutes = () => {
       <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
       <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
       <Route path="/antifraude" element={<AuthGuard><ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute></AuthGuard>} />
+      <Route path="/vendas-diarias" element={<AuthGuard><ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute></AuthGuard>} />
       <Route path="/evidencias" element={<AuthGuard><ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute></AuthGuard>} />
       <Route path="/usuarios" element={<AuthGuard><ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute></AuthGuard>} />
       <Route path="/configuracoes" element={<AuthGuard><ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute></AuthGuard>} />

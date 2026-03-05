@@ -1,4 +1,4 @@
-import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut } from "lucide-react";
+import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ const allLinks = [
   { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
   { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
   { to: "/sangrias", icon: ClipboardList, label: "Sangrias & Insumos", section: "Operacional" },
+  { to: "/vendas-diarias", icon: ShoppingCart, label: "Vendas Diárias", section: "Operacional" },
   { to: "/evidencias", icon: Camera, label: "Evidências de Perdas", section: "Operacional" },
   { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
