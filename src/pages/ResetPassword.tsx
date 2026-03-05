@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { useNavigate } from "react-router-dom";
+
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -12,26 +13,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event from the URL hash
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setReady(true);
-      }
-    });
-
-    // Also check current hash for type=recovery
-    const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
-      setReady(true);
-    }
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -77,12 +59,7 @@ const ResetPassword = () => {
         <div className="glass-card rounded-xl p-6 space-y-5">
           <h2 className="text-lg font-semibold text-center text-foreground">Redefinir Senha</h2>
 
-          {!ready ? (
-            <p className="text-sm text-muted-foreground text-center">
-              Verificando link de recuperação...
-            </p>
-          ) : (
-            <form onSubmit={handleReset} className="space-y-4">
+          <form onSubmit={handleReset} className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-foreground">Nova senha</label>
                 <div className="relative mt-1">
@@ -125,7 +102,6 @@ const ResetPassword = () => {
                 )}
               </Button>
             </form>
-          )}
         </div>
 
         <p className="text-[10px] text-muted-foreground text-center">© 2026 Granja Sofhia</p>
