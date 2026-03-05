@@ -88,6 +88,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    const isRecoveryFlow = () => {
+      if (typeof window === "undefined") return false;
+      return window.location.pathname === "/reset-password" || window.location.hash.includes("type=recovery") || window.location.hash.includes("access_token=");
+    };
+
     // Set up auth listener BEFORE getSession
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
@@ -101,11 +106,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       if (currentSession) {
-        // Check session persistence: if no "remember_login" and no "session_active", sign out
+        // Keep recovery-link sessions valid even without remember/session flags (e.g., opened in another browser)
+        const inRecoveryFlow = isRecoveryFlow();
         const rememberLogin = localStorage.getItem("remember_login");
         const sessionActive = sessionStorage.getItem("session_active");
 
-        if (!rememberLogin && !sessionActive) {
+        if (!inRecoveryFlow && !rememberLogin && !sessionActive) {
           // User didn't choose "remember me" and this is a new tab/browser session
           supabase.auth.signOut().then(() => {
             setSession(null);

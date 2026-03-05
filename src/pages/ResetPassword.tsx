@@ -54,9 +54,15 @@ const ResetPassword = () => {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      if (error.message.includes("same_password") || error.message.includes("should be different")) {
+      const message = error.message.toLowerCase();
+      const isSamePasswordError =
+        message.includes("same_password") ||
+        message.includes("should be different") ||
+        (message.includes("same") && message.includes("password"));
+
+      if (isSamePasswordError) {
         toast.error("A nova senha não pode ser igual à senha atual. Escolha uma senha diferente.");
-      } else if (error.message.includes("session")) {
+      } else if (message.includes("session")) {
         toast.error("Sessão expirada. Solicite um novo link de recuperação.");
       } else {
         toast.error(error.message);
