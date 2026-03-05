@@ -49,7 +49,11 @@ const ResetPassword = () => {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      toast.error(error.message);
+      if (error.message.includes("same_password") || error.message.includes("should be different")) {
+        toast.error("A nova senha não pode ser igual à senha atual.");
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success("Senha redefinida com sucesso!");
       setTimeout(() => navigate("/login"), 1500);
