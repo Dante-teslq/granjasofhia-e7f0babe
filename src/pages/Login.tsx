@@ -22,7 +22,14 @@ const LoginPage = () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast.error(error.message === "Invalid login credentials" ? "Email ou senha inválidos." : error.message);
+      const msg = error.message.toLowerCase();
+      if (msg.includes("email not confirmed") || msg.includes("email_not_confirmed")) {
+        toast.error("Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e clique no link de confirmação.");
+      } else if (msg.includes("invalid login credentials") || msg.includes("invalid_credentials")) {
+        toast.error("Email ou senha inválidos. Se acabou de se cadastrar, confirme seu e-mail antes de entrar.");
+      } else {
+        toast.error(error.message);
+      }
     } else {
       if (rememberMe) {
         localStorage.setItem("remember_login", "true");
@@ -52,7 +59,7 @@ const LoginPage = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Conta criada com sucesso! Faça login para continuar.");
+      toast.success("Conta criada! Verifique seu e-mail para confirmar antes de fazer login.");
       setView("login");
     }
     setLoading(false);
