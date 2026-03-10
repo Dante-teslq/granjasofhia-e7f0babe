@@ -52,7 +52,7 @@ const LoginPage = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+      toast.success("Conta criada com sucesso! Faça login para continuar.");
       setView("login");
     }
     setLoading(false);
