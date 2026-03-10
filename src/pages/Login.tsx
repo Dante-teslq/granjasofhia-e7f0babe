@@ -59,7 +59,7 @@ const LoginPage = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Conta criada com sucesso! Faça login para continuar.");
+      toast.success("Conta criada! Verifique seu e-mail para confirmar antes de fazer login.");
       setView("login");
     }
     setLoading(false);
