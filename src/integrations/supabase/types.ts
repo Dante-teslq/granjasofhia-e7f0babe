@@ -53,6 +53,47 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque_pdv: {
+        Row: {
+          created_at: string
+          id: string
+          pdv_id: string
+          produto_codigo: string
+          produto_descricao: string
+          quantidade: number
+          quantidade_minima: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pdv_id: string
+          produto_codigo: string
+          produto_descricao?: string
+          quantidade?: number
+          quantidade_minima?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pdv_id?: string
+          produto_codigo?: string
+          produto_descricao?: string
+          quantidade?: number
+          quantidade_minima?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_pdv_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estoque_registros: {
         Row: {
           codigo: string
@@ -140,6 +181,90 @@ export type Database = {
         }
         Relationships: []
       }
+      movimentacoes_estoque: {
+        Row: {
+          created_at: string
+          id: string
+          observacao: string | null
+          pdv_destino_id: string | null
+          pdv_origem_id: string | null
+          produto_codigo: string
+          produto_descricao: string
+          quantidade: number
+          tipo: string
+          usuario: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          pdv_destino_id?: string | null
+          pdv_origem_id?: string | null
+          produto_codigo: string
+          produto_descricao?: string
+          quantidade: number
+          tipo: string
+          usuario?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          pdv_destino_id?: string | null
+          pdv_origem_id?: string | null
+          produto_codigo?: string
+          produto_descricao?: string
+          quantidade?: number
+          tipo?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_pdv_destino_id_fkey"
+            columns: ["pdv_destino_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_estoque_pdv_origem_id_fkey"
+            columns: ["pdv_origem_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pontos_de_venda: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          permite_venda: boolean
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          permite_venda?: boolean
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          permite_venda?: boolean
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cargo: string
@@ -147,6 +272,7 @@ export type Database = {
           email: string
           id: string
           nome: string
+          pdv_id: string | null
           status: string
           telefone: string | null
           updated_at: string
@@ -158,6 +284,7 @@ export type Database = {
           email?: string
           id?: string
           nome?: string
+          pdv_id?: string | null
           status?: string
           telefone?: string | null
           updated_at?: string
@@ -169,12 +296,21 @@ export type Database = {
           email?: string
           id?: string
           nome?: string
+          pdv_id?: string | null
           status?: string
           telefone?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sangrias: {
         Row: {
