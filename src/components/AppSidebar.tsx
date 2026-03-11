@@ -1,20 +1,20 @@
-import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart } from "lucide-react";
+import {
+  Package, LayoutDashboard, Settings, Users, LogOut, ShoppingCart, ArrowLeftRight, MapPin, Warehouse, FileText,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 const allLinks = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
-  { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
-  { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
-  { to: "/sangrias", icon: ClipboardList, label: "Insumos", section: "Operacional" },
-  { to: "/vendas-diarias", icon: ShoppingCart, label: "Vendas Diárias", section: "Operacional" },
-  { to: "/evidencias", icon: Camera, label: "Evidências de Perdas", section: "Operacional" },
-  { to: "/auditoria", icon: FileText, label: "Log de Auditoria", section: "Segurança" },
-  { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
-  { to: "/antifraude", icon: ShieldAlert, label: "Painel de Segurança", section: "Segurança" },
-  { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Principal" },
+  { to: "/vendas-diarias", icon: ShoppingCart, label: "Vendas", section: "Operacional" },
+  { to: "/estoque-pdv", icon: Warehouse, label: "Estoque por PDV", section: "Operacional" },
+  { to: "/transferencias", icon: ArrowLeftRight, label: "Transferências", section: "Operacional" },
+  { to: "/estoque", icon: Package, label: "Conferência Estoque", section: "Operacional" },
+  { to: "/relatorios", icon: FileText, label: "Relatórios", section: "Gestão" },
+  { to: "/pontos-de-venda", icon: MapPin, label: "Pontos de Venda", section: "Gestão" },
+  { to: "/usuarios", icon: Users, label: "Usuários", section: "Sistema" },
   { to: "/configuracoes", icon: Settings, label: "Configurações", section: "Sistema" },
 ];
 
@@ -27,6 +27,8 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
 
   const filteredLinks = allLinks.filter((link) => canAccess(link.to));
   const sections = [...new Set(filteredLinks.map((l) => l.section))];
+
+  const roleLabel = currentRole === "Admin" ? "Administrador" : currentRole === "Operador Depósito" ? "Op. Depósito" : "Vendedor";
 
   return (
     <aside className="w-full md:w-64 min-h-0 md:min-h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0">
@@ -81,7 +83,7 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
           <div className="flex items-center gap-2 min-w-0">
             <p className="text-sm font-medium text-sidebar-foreground truncate">{profile.nome || profile.email}</p>
             <Badge variant="outline" className="border-primary/30 text-primary text-[10px] shrink-0 whitespace-nowrap">
-              {currentRole}
+              {roleLabel}
             </Badge>
           </div>
         )}

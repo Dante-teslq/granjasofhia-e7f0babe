@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  ShoppingCart, Plus, Lock, Trash2, DollarSign, TrendingUp, Package, Calendar,
+  ShoppingCart, Plus, Lock, Trash2, DollarSign, TrendingUp, Package, AlertCircle,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,17 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/contexts/AppContext";
 import { useVendasDiarias } from "@/hooks/useVendasDiarias";
-import { STORES, PRODUCT_CATALOG } from "@/types/inventory";
+import { usePontosDeVenda } from "@/hooks/usePontosDeVenda";
+import { useEstoquePdv } from "@/hooks/useEstoquePdv";
+import { PRODUCT_CATALOG } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 
 const FORMAS_PAGAMENTO = ["Dinheiro", "PIX", "Cartão Crédito", "Cartão Débito", "Boleto", "Outros"];
 
 const VendasDiariasPage = () => {
-  const { dateRange, profile } = useApp();
+  const { dateRange, profile, currentRole } = useApp();
+  const { pdvsVenda } = usePontosDeVenda();
   const {
     records, loading, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo,
     porProduto, diaFechado, addVenda, deleteVenda, fecharDia,
@@ -31,20 +34,39 @@ const VendasDiariasPage = () => {
   const [filterProduto, setFilterProduto] = useState("all");
   const [filterPdv, setFilterPdv] = useState("all");
 
+  // For vendedor, filter to their PDV
+  const userPdvId = profile?.pdv_id;
+
+  // Available PDVs for this user
+  const availablePdvs = currentRole === "Vendedor" && userPdvId
+    ? pdvsVenda.filter(p => p.id === userPdvId)
+    : pdvsVenda;
+
+  const defaultPdvName = availablePdvs.length > 0 ? availablePdvs[0].nome : "";
+
   // Form state
   const [formProduto, setFormProduto] = useState("");
   const [formCodigo, setFormCodigo] = useState("");
-  const [formPdv, setFormPdv] = useState(STORES[0] as string);
+  const [formPdv, setFormPdv] = useState(defaultPdvName);
   const [formQtd, setFormQtd] = useState("");
   const [formValor, setFormValor] = useState("");
   const [formPagamento, setFormPagamento] = useState("Dinheiro");
   const [formObs, setFormObs] = useState("");
+
+  // Get stock for selected PDV
+  const selectedPdvObj = pdvsVenda.find(p => p.nome === formPdv);
+  const { items: stockItems } = useEstoquePdv(selectedPdvObj?.id);
 
   const todayStr = format(dateRange.from, "yyyy-MM-dd");
 
   const filtered = records.filter(r => {
     if (filterProduto !== "all" && r.produto !== filterProduto) return false;
     if (filterPdv !== "all" && r.ponto_venda !== filterPdv) return false;
+    // Vendedor sees only their PDV sales
+    if (currentRole === "Vendedor" && userPdvId) {
+      const userPdvObj = pdvsVenda.find(p => p.id === userPdvId);
+      if (userPdvObj && r.ponto_venda !== userPdvObj.nome) return false;
+    }
     return true;
   });
 
@@ -56,11 +78,29 @@ const VendasDiariasPage = () => {
     if (cat) setFormCodigo(cat.codigo);
   };
 
+  const handleOpenAdd = () => {
+    if (availablePdvs.length > 0) setFormPdv(availablePdvs[0].nome);
+    setShowAdd(true);
+  };
+
   const handleAdd = async () => {
     if (!formProduto || !formQtd || !formValor) {
       toast.error("Preencha produto, quantidade e valor.");
       return;
     }
+    if (!formPdv) {
+      toast.error("Selecione o ponto de venda.");
+      return;
+    }
+
+    // Check stock availability
+    const stockItem = stockItems.find(s => s.produto_codigo === formCodigo);
+    const available = stockItem?.quantidade || 0;
+    if (available < Number(formQtd)) {
+      toast.error(`Estoque insuficiente! Disponível: ${available} unidades neste PDV.`);
+      return;
+    }
+
     try {
       await addVenda({
         data: todayStr,
@@ -73,6 +113,26 @@ const VendasDiariasPage = () => {
         usuario: profile?.nome || profile?.email || "Sistema",
         observacao: formObs,
       });
+
+      // Decrease stock in PDV
+      if (selectedPdvObj && stockItem) {
+        const { supabase } = await import("@/integrations/supabase/client");
+        await supabase.from("estoque_pdv").update({
+          quantidade: available - Number(formQtd),
+        } as any).eq("id", stockItem.id);
+
+        // Record movement
+        await supabase.from("movimentacoes_estoque").insert([{
+          produto_codigo: formCodigo,
+          produto_descricao: formProduto,
+          quantidade: Number(formQtd),
+          tipo: "venda",
+          pdv_origem_id: selectedPdvObj.id,
+          usuario: profile?.nome || profile?.email || "Sistema",
+          observacao: `Venda registrada - ${formPdv}`,
+        }] as any);
+      }
+
       toast.success("Venda registrada!");
       setShowAdd(false);
       setFormProduto(""); setFormCodigo(""); setFormQtd(""); setFormValor(""); setFormObs("");
@@ -99,6 +159,10 @@ const VendasDiariasPage = () => {
     }
   };
 
+  // Stock info for selected product
+  const selectedStockItem = stockItems.find(s => s.produto_codigo === formCodigo);
+  const selectedStockQtd = selectedStockItem?.quantidade || 0;
+
   const stats = [
     { label: "Total Hoje", value: `R$ ${totalHoje.toFixed(2)}`, icon: DollarSign },
     { label: "Qtd Hoje", value: qtdHoje.toString(), icon: ShoppingCart },
@@ -109,7 +173,6 @@ const VendasDiariasPage = () => {
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 lg:p-10 space-y-6 max-w-[1400px] animate-fade-in-up">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Vendas Diárias</h1>
@@ -120,7 +183,6 @@ const VendasDiariasPage = () => {
           <GlobalDateFilter />
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {stats.map(stat => (
             <div key={stat.label} className="glass-card p-4 md:p-6">
@@ -133,37 +195,36 @@ const VendasDiariasPage = () => {
           ))}
         </div>
 
-        {/* Filters + Actions */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             <Select value={filterProduto} onValueChange={setFilterProduto}>
-              <SelectTrigger className="w-[180px] h-10 text-sm">
-                <SelectValue placeholder="Produto" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[180px] h-10 text-sm"><SelectValue placeholder="Produto" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Produtos</SelectItem>
                 {uniqueProducts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={filterPdv} onValueChange={setFilterPdv}>
-              <SelectTrigger className="w-[180px] h-10 text-sm">
-                <SelectValue placeholder="PDV" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os PDVs</SelectItem>
-                {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {currentRole !== "Vendedor" && (
+              <Select value={filterPdv} onValueChange={setFilterPdv}>
+                <SelectTrigger className="w-[180px] h-10 text-sm"><SelectValue placeholder="PDV" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os PDVs</SelectItem>
+                  {availablePdvs.map(s => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             {!diaFechado && (
               <>
-                <Button onClick={() => setShowAdd(true)} className="gap-2 flex-1 sm:flex-initial h-12 md:h-10">
+                <Button onClick={handleOpenAdd} className="gap-2 flex-1 sm:flex-initial h-12 md:h-10">
                   <Plus className="w-4 h-4" /> Nova Venda
                 </Button>
-                <Button variant="outline" onClick={handleFecharDia} className="gap-2 flex-1 sm:flex-initial h-12 md:h-10 border-destructive/30 text-destructive hover:bg-destructive/10">
-                  <Lock className="w-4 h-4" /> Fechar Dia
-                </Button>
+                {currentRole === "Admin" && (
+                  <Button variant="outline" onClick={handleFecharDia} className="gap-2 flex-1 sm:flex-initial h-12 md:h-10 border-destructive/30 text-destructive hover:bg-destructive/10">
+                    <Lock className="w-4 h-4" /> Fechar Dia
+                  </Button>
+                )}
               </>
             )}
             {diaFechado && (
@@ -174,7 +235,6 @@ const VendasDiariasPage = () => {
           </div>
         </div>
 
-        {/* Ranking */}
         {porProduto.length > 0 && (
           <div className="glass-card p-4 md:p-6">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">🏆 Ranking de Produtos</h3>
@@ -192,7 +252,6 @@ const VendasDiariasPage = () => {
           </div>
         )}
 
-        {/* Table */}
         <div className="glass-card overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -252,7 +311,6 @@ const VendasDiariasPage = () => {
         </div>
       </div>
 
-      {/* Add Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -261,6 +319,15 @@ const VendasDiariasPage = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Ponto de Venda *</label>
+              <Select value={formPdv} onValueChange={setFormPdv}>
+                <SelectTrigger><SelectValue placeholder="Selecione o PDV" /></SelectTrigger>
+                <SelectContent>
+                  {availablePdvs.map(s => <SelectItem key={s.id} value={s.nome}>{s.nome}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Produto *</label>
               <Select value={formProduto} onValueChange={handleSelectProduct}>
@@ -271,15 +338,20 @@ const VendasDiariasPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Ponto de Venda *</label>
-              <Select value={formPdv} onValueChange={setFormPdv}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {formCodigo && selectedPdvObj && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Package className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">Estoque disponível:</span>
+                  <span className={`font-bold ${selectedStockQtd <= 0 ? "text-destructive" : "text-foreground"}`}>
+                    {selectedStockQtd} un.
+                  </span>
+                  {selectedStockQtd <= 0 && (
+                    <span className="flex items-center gap-1 text-destructive">
+                      <AlertCircle className="w-3 h-3" /> Sem estoque
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">

@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const ApuracaoPage = () => {
   const { currentRole } = useApp();
-  const isAdmin = currentRole === "Administrador";
+  const isAdmin = currentRole === "Admin";
   const { pontosVenda, anos, getStoreData, getRanking, getRankingByMonth, upsertRegistro, deleteRegistro, loading, registros } = useVendasRegistros();
 
   const [selectedStore, setSelectedStore] = useState("");

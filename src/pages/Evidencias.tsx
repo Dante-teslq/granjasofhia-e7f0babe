@@ -202,7 +202,7 @@ const EvidenciasPage = () => {
     }
   };
 
-  const isAdmin = currentRole === "Administrador";
+  const isAdmin = currentRole === "Admin";
   const uniqueUsers = [...new Set(records.map((r) => r.usuario))];
 
   return (

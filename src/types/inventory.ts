@@ -12,11 +12,45 @@ export interface StockItem {
 
 export interface SangriaItem {
   id: string;
-  sangria: string; // kept for DB compat, unused in UI
+  sangria: string;
   cartelasVazias: string;
   barbantes: string;
   notacoes: string;
   pontoVenda: string;
+}
+
+export interface PontoDeVenda {
+  id: string;
+  nome: string;
+  tipo: 'rota' | 'deposito' | 'loja';
+  permite_venda: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EstoquePdv {
+  id: string;
+  produto_codigo: string;
+  produto_descricao: string;
+  pdv_id: string;
+  quantidade: number;
+  quantidade_minima: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MovimentacaoEstoque {
+  id: string;
+  produto_codigo: string;
+  produto_descricao: string;
+  quantidade: number;
+  tipo: 'entrada' | 'saida' | 'transferencia' | 'ajuste' | 'venda';
+  pdv_origem_id: string | null;
+  pdv_destino_id: string | null;
+  usuario: string | null;
+  observacao: string;
+  created_at: string;
 }
 
 // Faltas: apenas diferença entre loja e sistema (quebras e trincados não entram)
@@ -29,6 +63,7 @@ export function calcularEstoqueFinal(item: StockItem): number {
   return item.estoqueSistema - item.estoqueLoja - item.quebrado;
 }
 
+// Keep old STORES for backward compat
 export const STORES = [
   "CEASA",
   "Formosa",

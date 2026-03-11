@@ -52,7 +52,7 @@ const SangriasPage = () => {
   const [editItems, setEditItems] = useState<SangriaItem[]>([emptyRow()]);
   const [editPDV, setEditPDV] = useState<string>(STORES[0]);
 
-  const isAdmin = currentRole === "Administrador";
+  const isAdmin = currentRole === "Admin";
 
   const handleSave = async () => {
     if (!editPDV) {
