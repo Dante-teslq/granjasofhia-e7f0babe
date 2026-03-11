@@ -259,10 +259,9 @@ const UsuariosPage = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Operador">Operador</SelectItem>
-                      <SelectItem value="Supervisor">Supervisor</SelectItem>
-                      <SelectItem value="Administrador">Administrador</SelectItem>
-                      <SelectItem value="Auditor">Auditor</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="Vendedor">Vendedor</SelectItem>
+                      <SelectItem value="Operador Depósito">Operador Depósito</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
