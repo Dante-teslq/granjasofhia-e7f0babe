@@ -52,7 +52,7 @@ const LoginPage = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Conta criada com sucesso! Faça login para continuar.");
+      toast.success("Conta criada! Verifique seu e-mail para confirmar.");
       setView("login");
     }
     setLoading(false);
@@ -178,7 +178,7 @@ const LoginPage = () => {
                     <button
                       type="button"
                       onClick={() => setView("forgot")}
-                      className="text-[13px] text-primary hover:underline font-medium"
+                      className="text-[11px] text-primary hover:underline font-medium"
                     >
                       Esqueceu a senha?
                     </button>
