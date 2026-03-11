@@ -42,7 +42,7 @@ const EstoquePage = () => {
   const [evidenceJustification, setEvidenceJustification] = useState("");
   const [evidencePhoto, setEvidencePhoto] = useState<File | null>(null);
 
-  const isAdmin = currentRole === "Administrador";
+  const isAdmin = currentRole === "Admin";
   const selectedDate = dateRange.from;
 
   const setSelectedDate = (date: Date) => {
