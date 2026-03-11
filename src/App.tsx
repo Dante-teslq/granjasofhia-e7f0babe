@@ -64,7 +64,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 /** After login, redirect to the correct home based on role */
 const RoleBasedHome = () => {
   const { currentRole } = useApp();
-  if (currentRole === "Operador") {
+  if (currentRole === "Operador" || currentRole === "Vendedor") {
     return <Navigate to="/estoque" replace />;
   }
   // Administrador, Supervisor, Auditor → Dashboard
