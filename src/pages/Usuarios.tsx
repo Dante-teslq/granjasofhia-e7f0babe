@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Shield, Pencil, Trash2 } from "lucide-react";
+import { Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +10,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from "@/components/ui/sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useApp } from "@/contexts/AppContext";
-import { usePontosDeVenda } from "@/hooks/usePontosDeVenda";
 import { supabase } from "@/integrations/supabase/client";
 
 const roles = [
-  { name: "Admin", desc: "Acesso completo ao sistema", color: "bg-primary/20 text-primary" },
-  { name: "Vendedor", desc: "Registra vendas no PDV vinculado", color: "bg-muted text-foreground" },
-  { name: "Operador Depósito", desc: "Estoque, transferências e ajustes", color: "bg-primary/10 text-primary" },
+  { name: "Operador", desc: "Registra entradas e vendas", color: "bg-muted text-foreground" },
+  { name: "Supervisor", desc: "Aprova ajustes manuais", color: "bg-primary/10 text-primary" },
+  { name: "Administrador", desc: "Visualiza relatórios completos", color: "bg-primary/20 text-primary" },
+  { name: "Auditor", desc: "Acesso somente leitura", color: "bg-muted text-muted-foreground" },
 ];
 
 interface UserProfile {
@@ -27,49 +27,71 @@ interface UserProfile {
   telefone: string;
   cargo: string;
   status: string;
-  pdv_id: string | null;
 }
 
 const UsuariosPage = () => {
   const { currentRole, refreshProfile } = useApp();
-  const { pdvs } = usePontosDeVenda();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [formUser, setFormUser] = useState({ nome: "", email: "", telefone: "", cargo: "Vendedor", pdv_id: "" });
+  const [formUser, setFormUser] = useState({ nome: "", email: "", telefone: "", cargo: "Operador" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const isAdmin = currentRole === "Admin";
+  const isAdmin = currentRole === "Administrador";
   const isMobile = useIsMobile();
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: true });
-    if (!error && data) setUsers(data as UserProfile[]);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (!error && data) {
+      setUsers(data as UserProfile[]);
+    }
     setLoadingUsers(false);
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const openAdd = () => {
+    setEditId(null);
+    setFormUser({ nome: "", email: "", telefone: "", cargo: "Operador" });
+    setDialogOpen(true);
+  };
 
   const openEdit = (user: UserProfile) => {
     setEditId(user.id);
-    setFormUser({ nome: user.nome, email: user.email, telefone: user.telefone || "", cargo: user.cargo, pdv_id: user.pdv_id || "" });
+    setFormUser({ nome: user.nome, email: user.email, telefone: user.telefone || "", cargo: user.cargo });
     setDialogOpen(true);
   };
 
   const handleSubmit = async () => {
-    if (!formUser.nome || !formUser.email) { toast.error("Preencha nome e email."); return; }
+    if (!formUser.nome || !formUser.email) {
+      toast.error("Preencha o nome e o email.");
+      return;
+    }
     if (editId) {
-      const updateData: any = {
-        nome: formUser.nome,
-        email: formUser.email,
-        telefone: formUser.telefone,
-        cargo: formUser.cargo,
-        pdv_id: formUser.pdv_id || null,
-      };
-      const { error } = await supabase.from("profiles").update(updateData).eq("id", editId);
-      if (error) { toast.error("Erro: " + error.message); return; }
-      toast.success("Perfil atualizado!");
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          nome: formUser.nome,
+          email: formUser.email,
+          telefone: formUser.telefone,
+          cargo: formUser.cargo,
+        })
+        .eq("id", editId);
+      if (error) {
+        toast.error("Erro ao atualizar: " + error.message);
+        return;
+      }
+      toast.success("Perfil atualizado com sucesso!");
       await refreshProfile();
+    } else {
+      toast.info("Para adicionar novos usuários, eles devem criar conta pela tela de login.");
+      setDialogOpen(false);
+      return;
     }
     setDialogOpen(false);
     fetchUsers();
@@ -79,14 +101,13 @@ const UsuariosPage = () => {
     if (!deleteId) return;
     const userToDelete = users.find(u => u.id === deleteId);
     const { error } = await supabase.from("profiles").delete().eq("id", deleteId);
-    if (error) { toast.error("Erro: " + error.message); }
-    else { toast.success(`Perfil de "${userToDelete?.nome}" excluído!`); fetchUsers(); }
+    if (error) {
+      toast.error("Erro ao excluir: " + error.message);
+    } else {
+      toast.success(`Perfil de "${userToDelete?.nome}" excluído com sucesso!`);
+      fetchUsers();
+    }
     setDeleteId(null);
-  };
-
-  const getPdvName = (pdvId: string | null) => {
-    if (!pdvId) return "—";
-    return pdvs.find(p => p.id === pdvId)?.nome || "—";
   };
 
   const deleteUserName = users.find(u => u.id === deleteId)?.nome || "";
@@ -94,12 +115,16 @@ const UsuariosPage = () => {
   return (
     <DashboardLayout>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold text-foreground">Usuários & Perfis</h1>
-          <p className="text-muted-foreground text-xs md:text-sm mt-1">Gerencie os perfis e vincule usuários a pontos de venda</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">Usuários & Perfis</h1>
+            <p className="text-muted-foreground text-xs md:text-sm mt-1">
+              Gerencie os perfis dos usuários do sistema
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {roles.map((role) => (
             <div key={role.name} className="glass-card rounded-lg p-3 md:p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -112,9 +137,9 @@ const UsuariosPage = () => {
         </div>
 
         {loadingUsers ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>
+          <div className="text-center py-8 text-muted-foreground text-sm">Carregando usuários...</div>
         ) : users.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">Nenhum usuário.</div>
+          <div className="text-center py-8 text-muted-foreground text-sm">Nenhum usuário registrado.</div>
         ) : isMobile ? (
           <div className="space-y-3">
             {users.map((user) => (
@@ -122,21 +147,28 @@ const UsuariosPage = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium">{user.nome || "Sem nome"}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{user.email || "—"}</p>
                   </div>
-                  <Badge variant={user.status === "ativo" ? "default" : "secondary"} className={user.status === "ativo" ? "bg-success text-success-foreground" : ""}>
+                  <Badge
+                    variant={user.status === "ativo" ? "default" : "secondary"}
+                    className={user.status === "ativo" ? "bg-success text-success-foreground" : ""}
+                  >
                     {user.status}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
                     <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
-                    {user.pdv_id && <Badge variant="secondary" className="text-[10px]">{getPdvName(user.pdv_id)}</Badge>}
+                    {user.telefone && <span className="text-xs text-muted-foreground">{user.telefone}</span>}
                   </div>
                   {isAdmin && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="text-primary h-9"><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="text-destructive h-9"><Trash2 className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary h-9">
+                        <Pencil className="w-3.5 h-3.5" /> Editar
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive h-9">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -151,29 +183,40 @@ const UsuariosPage = () => {
                   <tr className="bg-muted/50 text-foreground">
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Nome</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Email</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Telefone</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Perfil</th>
-                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">PDV Vinculado</th>
                     <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Status</th>
-                    {isAdmin && <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>}
+                    {isAdmin && (
+                      <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user, idx) => (
                     <tr key={user.id} className={`border-t border-border hover:bg-muted/30 ${idx % 2 === 0 ? "" : "bg-muted/20"}`}>
                       <td className="px-4 py-3 font-medium">{user.nome || "Sem nome"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
-                      <td className="px-4 py-3"><Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge></td>
-                      <td className="px-4 py-3 text-muted-foreground">{getPdvName(user.pdv_id)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{user.email || "—"}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{user.telefone || "—"}</td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
+                      </td>
                       <td className="px-4 py-3 text-center">
-                        <Badge variant={user.status === "ativo" ? "default" : "secondary"} className={user.status === "ativo" ? "bg-success text-success-foreground" : ""}>
+                        <Badge
+                          variant={user.status === "ativo" ? "default" : "secondary"}
+                          className={user.status === "ativo" ? "bg-success text-success-foreground" : ""}
+                        >
                           {user.status}
                         </Badge>
                       </td>
                       {isAdmin && (
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="text-primary"><Pencil className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary">
+                              <Pencil className="w-3.5 h-3.5" /> Editar
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive">
+                              <Trash2 className="w-3.5 h-3.5" /> Excluir
+                            </Button>
                           </div>
                         </td>
                       )}
@@ -185,45 +228,42 @@ const UsuariosPage = () => {
           </div>
         )}
 
+        {/* Dialog de editar */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Editar Perfil</DialogTitle>
-              <DialogDescription>Atualize os dados e vincule o usuário a um ponto de venda.</DialogDescription>
+              <DialogTitle>{editId ? "Editar Perfil" : "Informação"}</DialogTitle>
+              <DialogDescription>
+                {editId
+                  ? "Atualize os dados do usuário. Apenas administradores podem fazer isso."
+                  : "Novos usuários devem criar conta pela tela de login."}
+              </DialogDescription>
             </DialogHeader>
             {editId && (
               <div className="space-y-4 py-2">
                 <div>
                   <label className="text-sm font-medium text-foreground">Nome *</label>
-                  <Input value={formUser.nome} onChange={(e) => setFormUser({ ...formUser, nome: e.target.value })} className="h-10" />
+                  <Input value={formUser.nome} onChange={(e) => setFormUser({ ...formUser, nome: e.target.value })} placeholder="Nome completo" className="h-10" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground">Email</label>
-                  <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} className="h-10" />
+                  <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" className="h-10" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground">Telefone</label>
-                  <Input value={formUser.telefone} onChange={(e) => setFormUser({ ...formUser, telefone: e.target.value })} className="h-10" />
+                  <Input value={formUser.telefone} onChange={(e) => setFormUser({ ...formUser, telefone: e.target.value })} placeholder="(00) 00000-0000" className="h-10" />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground">Cargo *</label>
                   <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
-                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Vendedor">Vendedor</SelectItem>
-                      <SelectItem value="Operador Depósito">Operador Depósito</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">PDV Vinculado</label>
-                  <p className="text-[10px] text-muted-foreground mb-1">Vendedores só terão acesso ao PDV vinculado</p>
-                  <Select value={formUser.pdv_id} onValueChange={(v) => setFormUser({ ...formUser, pdv_id: v })}>
-                    <SelectTrigger className="h-10"><SelectValue placeholder="Nenhum (acesso livre)" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
-                      {pdvs.map(p => <SelectItem key={p.id} value={p.id}>{p.nome} ({p.tipo})</SelectItem>)}
+                      <SelectItem value="Operador">Operador</SelectItem>
+                      <SelectItem value="Supervisor">Supervisor</SelectItem>
+                      <SelectItem value="Administrador">Administrador</SelectItem>
+                      <SelectItem value="Auditor">Auditor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -231,20 +271,25 @@ const UsuariosPage = () => {
             )}
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              {editId && <Button onClick={handleSubmit}>Salvar</Button>}
+              {editId && <Button onClick={handleSubmit}>Salvar Alterações</Button>}
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
+        {/* Dialog de confirmação de exclusão */}
         <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Excluir Perfil</AlertDialogTitle>
-              <AlertDialogDescription>Excluir o perfil de "{deleteUserName}"? Esta ação não pode ser desfeita.</AlertDialogDescription>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o perfil de "{deleteUserName}"? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Excluir</AlertDialogAction>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Excluir
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

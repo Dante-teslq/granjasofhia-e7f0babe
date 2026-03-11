@@ -18,10 +18,6 @@ import Configuracoes from "./pages/Configuracoes";
 import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import VendasDiarias from "./pages/VendasDiarias";
-import PontosDeVenda from "./pages/PontosDeVenda";
-import EstoquePdv from "./pages/EstoquePdv";
-import Transferencias from "./pages/Transferencias";
-import Relatorios from "./pages/Relatorios";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -33,10 +29,12 @@ import { PWAInstallBanner } from "./components/PwaUnifiedInstallBanner";
 
 const queryClient = new QueryClient();
 
+
 const ProtectedRoute = ({ path, children }: { path: string; children: React.ReactNode }) => {
   const { canAccess, currentRole } = useApp();
   if (!canAccess(path)) {
-    const fallback = currentRole === "Admin" ? "/" : currentRole === "Vendedor" ? "/vendas-diarias" : "/estoque-pdv";
+    // Redirect based on role
+    const fallback = currentRole === "Administrador" ? "/" : "/estoque";
     return <Navigate to={fallback} replace />;
   }
   return <>{children}</>;
@@ -52,6 +50,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     );
   }
   if (!session) return <Navigate to="/login" replace />;
+  // Wait for profile to load before rendering children (prevents wrong role redirect)
   if (session && !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -62,14 +61,13 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+/** After login, redirect to the correct home based on role */
 const RoleBasedHome = () => {
   const { currentRole } = useApp();
-  if (currentRole === "Vendedor") {
-    return <Navigate to="/vendas-diarias" replace />;
+  if (currentRole === "Operador") {
+    return <Navigate to="/estoque" replace />;
   }
-  if (currentRole === "Operador Depósito") {
-    return <Navigate to="/estoque-pdv" replace />;
-  }
+  // Administrador, Supervisor, Auditor → Dashboard
   return <Index />;
 };
 
@@ -83,17 +81,13 @@ const AppRoutes = () => {
       } />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute></AuthGuard>} />
-      <Route path="/vendas-diarias" element={<AuthGuard><ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/estoque-pdv" element={<AuthGuard><ProtectedRoute path="/estoque-pdv"><EstoquePdv /></ProtectedRoute></AuthGuard>} />
-      <Route path="/transferencias" element={<AuthGuard><ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/estoque" element={<AuthGuard><ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute></AuthGuard>} />
-      <Route path="/relatorios" element={<AuthGuard><ProtectedRoute path="/relatorios"><Relatorios /></ProtectedRoute></AuthGuard>} />
-      <Route path="/pontos-de-venda" element={<AuthGuard><ProtectedRoute path="/pontos-de-venda"><PontosDeVenda /></ProtectedRoute></AuthGuard>} />
-      <Route path="/sangrias" element={<AuthGuard><ProtectedRoute path="/sangrias"><Sangrias /></ProtectedRoute></AuthGuard>} />
+      <Route path="/estoque" element={<AuthGuard><Estoque /></AuthGuard>} />
+      <Route path="/sangrias" element={<AuthGuard><Sangrias /></AuthGuard>} />
       <Route path="/apuracao" element={<AuthGuard><ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute></AuthGuard>} />
       <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
       <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
       <Route path="/antifraude" element={<AuthGuard><ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute></AuthGuard>} />
+      <Route path="/vendas-diarias" element={<AuthGuard><ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute></AuthGuard>} />
       <Route path="/evidencias" element={<AuthGuard><ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute></AuthGuard>} />
       <Route path="/usuarios" element={<AuthGuard><ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute></AuthGuard>} />
       <Route path="/configuracoes" element={<AuthGuard><ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute></AuthGuard>} />
