@@ -282,12 +282,18 @@ const VendasDiariasPage = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Ponto de Venda *</label>
-              <Select value={formPdv} onValueChange={setFormPdv}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {isOperator && userPdvName ? (
+                <div className="h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                  {userPdvName}
+                </div>
+              ) : (
+                <Select value={formPdv} onValueChange={setFormPdv}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
