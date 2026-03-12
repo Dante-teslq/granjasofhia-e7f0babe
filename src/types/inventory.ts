@@ -31,13 +31,14 @@ export function calcularEstoqueFinal(item: StockItem): number {
 
 export const STORES = [
   "CEASA",
+  "Depósito Sofhia",
+  "Depósito Timon",
   "Formosa",
-  "Parque Alvorada",
-  "São Benedito",
   "Frente de Loja",
-  "Rota Timon",
+  "Parque Alvorada",
   "Rota Externo",
-  "Deposito Sofhia",
+  "Rota Timon",
+  "São Benedito",
 ] as const;
 
 export type StoreName = (typeof STORES)[number];
