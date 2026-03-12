@@ -58,6 +58,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userPdvName, setUserPdvName] = useState<string | null>(null);
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
