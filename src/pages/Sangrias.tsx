@@ -36,7 +36,7 @@ const emptyRow = (): SangriaItem => ({
 });
 
 const SangriasPage = () => {
-  const { currentRole, profile } = useApp();
+  const { currentRole, profile, isOperator, userPdvName } = useApp();
   const { addLog } = useAudit();
   const {
     records,
@@ -50,9 +50,16 @@ const SangriasPage = () => {
   } = useSangriasDB();
 
   const [editItems, setEditItems] = useState<SangriaItem[]>([emptyRow()]);
-  const [editPDV, setEditPDV] = useState<string>(STORES[0]);
+  const [editPDV, setEditPDV] = useState<string>(isOperator && userPdvName ? userPdvName : STORES[0]);
 
   const isAdmin = currentRole === "Administrador";
+
+  // Lock PDV filter for operators
+  useEffect(() => {
+    if (isOperator && userPdvName && selectedPDV !== userPdvName) {
+      setSelectedPDV(userPdvName);
+    }
+  }, [isOperator, userPdvName, selectedPDV, setSelectedPDV]);
 
   const handleSave = async () => {
     if (!editPDV) {
