@@ -21,7 +21,7 @@ import GlobalDateFilter from "@/components/GlobalDateFilter";
 const FORMAS_PAGAMENTO = ["Dinheiro", "PIX", "Cartão Crédito", "Cartão Débito", "Boleto", "Outros"];
 
 const VendasDiariasPage = () => {
-  const { dateRange, profile } = useApp();
+  const { dateRange, profile, isOperator, userPdvName } = useApp();
   const {
     records, loading, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo,
     porProduto, diaFechado, addVenda, deleteVenda, fecharDia,
@@ -29,12 +29,12 @@ const VendasDiariasPage = () => {
 
   const [showAdd, setShowAdd] = useState(false);
   const [filterProduto, setFilterProduto] = useState("all");
-  const [filterPdv, setFilterPdv] = useState("all");
+  const [filterPdv, setFilterPdv] = useState(isOperator && userPdvName ? userPdvName : "all");
 
   // Form state
   const [formProduto, setFormProduto] = useState("");
   const [formCodigo, setFormCodigo] = useState("");
-  const [formPdv, setFormPdv] = useState(STORES[0] as string);
+  const [formPdv, setFormPdv] = useState(isOperator && userPdvName ? userPdvName : STORES[0] as string);
   const [formQtd, setFormQtd] = useState("");
   const [formValor, setFormValor] = useState("");
   const [formPagamento, setFormPagamento] = useState("Dinheiro");
