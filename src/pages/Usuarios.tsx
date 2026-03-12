@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Shield, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Shield, Pencil, Trash2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,18 +27,40 @@ interface UserProfile {
   telefone: string;
   cargo: string;
   status: string;
+  pdv_id: string | null;
+}
+
+interface PdvOption {
+  id: string;
+  nome: string;
 }
 
 const UsuariosPage = () => {
   const { currentRole, refreshProfile } = useApp();
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [pdvList, setPdvList] = useState<PdvOption[]>([]);
+  const [pdvMap, setPdvMap] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [formUser, setFormUser] = useState({ nome: "", email: "", telefone: "", cargo: "Operador" });
+  const [formUser, setFormUser] = useState({ nome: "", email: "", telefone: "", cargo: "Operador", pdv_id: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [loadingUsers, setLoadingUsers] = useState(true);
-  const isAdmin = currentRole === "Administrador";
+  const isAdmin = currentRole === "Administrador" || currentRole === "Admin";
   const isMobile = useIsMobile();
+
+  const fetchPdvs = async () => {
+    const { data } = await supabase
+      .from("pontos_de_venda")
+      .select("id, nome")
+      .eq("status", "ativo")
+      .order("nome");
+    if (data) {
+      setPdvList(data);
+      const map: Record<string, string> = {};
+      data.forEach((p) => { map[p.id] = p.nome; });
+      setPdvMap(map);
+    }
+  };
 
   const fetchUsers = async () => {
     const { data, error } = await supabase
@@ -52,18 +74,19 @@ const UsuariosPage = () => {
   };
 
   useEffect(() => {
+    fetchPdvs();
     fetchUsers();
   }, []);
 
-  const openAdd = () => {
-    setEditId(null);
-    setFormUser({ nome: "", email: "", telefone: "", cargo: "Operador" });
-    setDialogOpen(true);
-  };
-
   const openEdit = (user: UserProfile) => {
     setEditId(user.id);
-    setFormUser({ nome: user.nome, email: user.email, telefone: user.telefone || "", cargo: user.cargo });
+    setFormUser({
+      nome: user.nome,
+      email: user.email,
+      telefone: user.telefone || "",
+      cargo: user.cargo,
+      pdv_id: user.pdv_id || "",
+    });
     setDialogOpen(true);
   };
 
@@ -80,6 +103,7 @@ const UsuariosPage = () => {
           email: formUser.email,
           telefone: formUser.telefone,
           cargo: formUser.cargo,
+          pdv_id: formUser.pdv_id || null,
         })
         .eq("id", editId);
       if (error) {
@@ -88,10 +112,6 @@ const UsuariosPage = () => {
       }
       toast.success("Perfil atualizado com sucesso!");
       await refreshProfile();
-    } else {
-      toast.info("Para adicionar novos usuários, eles devem criar conta pela tela de login.");
-      setDialogOpen(false);
-      return;
     }
     setDialogOpen(false);
     fetchUsers();
@@ -111,6 +131,7 @@ const UsuariosPage = () => {
   };
 
   const deleteUserName = users.find(u => u.id === deleteId)?.nome || "";
+  const getPdvName = (pdvId: string | null) => pdvId ? pdvMap[pdvId] || "—" : "—";
 
   return (
     <DashboardLayout>
@@ -156,22 +177,23 @@ const UsuariosPage = () => {
                     {user.status}
                   </Badge>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
-                    {user.telefone && <span className="text-xs text-muted-foreground">{user.telefone}</span>}
-                  </div>
-                  {isAdmin && (
-                    <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary h-9">
-                        <Pencil className="w-3.5 h-3.5" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive h-9">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <MapPin className="w-3 h-3" /> {getPdvName(user.pdv_id)}
+                  </Badge>
+                  {user.telefone && <span className="text-xs text-muted-foreground">{user.telefone}</span>}
                 </div>
+                {isAdmin && (
+                  <div className="flex items-center gap-1 justify-end">
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(user)} className="gap-1.5 text-primary hover:text-primary h-9">
+                      <Pencil className="w-3.5 h-3.5" /> Editar
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteId(user.id)} className="gap-1.5 text-destructive hover:text-destructive h-9">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -185,6 +207,7 @@ const UsuariosPage = () => {
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Email</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Telefone</th>
                     <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">Perfil</th>
+                    <th className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">PDV</th>
                     <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Status</th>
                     {isAdmin && (
                       <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
@@ -199,6 +222,11 @@ const UsuariosPage = () => {
                       <td className="px-4 py-3 text-muted-foreground">{user.telefone || "—"}</td>
                       <td className="px-4 py-3">
                         <Badge variant="outline" className="border-primary/30 text-primary text-xs">{user.cargo}</Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="text-xs gap-1">
+                          <MapPin className="w-3 h-3" /> {getPdvName(user.pdv_id)}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <Badge
@@ -228,55 +256,65 @@ const UsuariosPage = () => {
           </div>
         )}
 
-        {/* Dialog de editar */}
+        {/* Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editId ? "Editar Perfil" : "Informação"}</DialogTitle>
+              <DialogTitle>Editar Perfil</DialogTitle>
               <DialogDescription>
-                {editId
-                  ? "Atualize os dados do usuário. Apenas administradores podem fazer isso."
-                  : "Novos usuários devem criar conta pela tela de login."}
+                Atualize os dados do usuário. Apenas administradores podem fazer isso.
               </DialogDescription>
             </DialogHeader>
-            {editId && (
-              <div className="space-y-4 py-2">
-                <div>
-                  <label className="text-sm font-medium text-foreground">Nome *</label>
-                  <Input value={formUser.nome} onChange={(e) => setFormUser({ ...formUser, nome: e.target.value })} placeholder="Nome completo" className="h-10" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Email</label>
-                  <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" className="h-10" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Telefone</label>
-                  <Input value={formUser.telefone} onChange={(e) => setFormUser({ ...formUser, telefone: e.target.value })} placeholder="(00) 00000-0000" className="h-10" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground">Cargo *</label>
-                  <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
-                    <SelectTrigger className="h-10">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Operador">Operador</SelectItem>
-                      <SelectItem value="Supervisor">Supervisor</SelectItem>
-                      <SelectItem value="Administrador">Administrador</SelectItem>
-                      <SelectItem value="Auditor">Auditor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="space-y-4 py-2">
+              <div>
+                <label className="text-sm font-medium text-foreground">Nome *</label>
+                <Input value={formUser.nome} onChange={(e) => setFormUser({ ...formUser, nome: e.target.value })} placeholder="Nome completo" className="h-10" />
               </div>
-            )}
+              <div>
+                <label className="text-sm font-medium text-foreground">Email</label>
+                <Input type="email" value={formUser.email} onChange={(e) => setFormUser({ ...formUser, email: e.target.value })} placeholder="email@granja.com" className="h-10" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Telefone</label>
+                <Input value={formUser.telefone} onChange={(e) => setFormUser({ ...formUser, telefone: e.target.value })} placeholder="(00) 00000-0000" className="h-10" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Cargo *</label>
+                <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Vendedor">Operador</SelectItem>
+                    <SelectItem value="Supervisor">Supervisor</SelectItem>
+                    <SelectItem value="Admin">Administrador</SelectItem>
+                    <SelectItem value="Auditor">Auditor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground">Ponto de Venda</label>
+                <Select value={formUser.pdv_id || "none"} onValueChange={(v) => setFormUser({ ...formUser, pdv_id: v === "none" ? "" : v })}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Selecione o PDV" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Nenhum (acesso a todos)</SelectItem>
+                    {pdvList.map((pdv) => (
+                      <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              {editId && <Button onClick={handleSubmit}>Salvar Alterações</Button>}
+              <Button onClick={handleSubmit}>Salvar Alterações</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Dialog de confirmação de exclusão */}
+        {/* Delete Confirmation */}
         <AlertDialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
           <AlertDialogContent>
             <AlertDialogHeader>
