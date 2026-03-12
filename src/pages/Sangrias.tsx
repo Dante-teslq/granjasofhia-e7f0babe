@@ -127,17 +127,23 @@ const SangriasPage = () => {
             </PopoverContent>
           </Popover>
 
-          <Select value={selectedPDV} onValueChange={setSelectedPDV}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Ponto de Venda" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os PDVs</SelectItem>
-              {STORES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isOperator && userPdvName ? (
+            <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+              {userPdvName}
+            </div>
+          ) : (
+            <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Ponto de Venda" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os PDVs</SelectItem>
+                {STORES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {isAdmin && records.length > 0 && (
             <AlertDialog>
