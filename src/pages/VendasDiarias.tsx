@@ -45,6 +45,8 @@ const VendasDiariasPage = () => {
   const filtered = records.filter(r => {
     if (filterProduto !== "all" && r.produto !== filterProduto) return false;
     if (filterPdv !== "all" && r.ponto_venda !== filterPdv) return false;
+    // Operators only see their PDV data
+    if (isOperator && userPdvName && r.ponto_venda !== userPdvName) return false;
     return true;
   });
 
