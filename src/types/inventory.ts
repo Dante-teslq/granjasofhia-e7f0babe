@@ -35,6 +35,9 @@ export const STORES = [
   "Parque Alvorada",
   "São Benedito",
   "Frente de Loja",
+  "Rota Timon",
+  "Rota Externo",
+  "Deposito Sofhia",
 ] as const;
 
 export type StoreName = (typeof STORES)[number];
