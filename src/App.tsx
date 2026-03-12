@@ -34,7 +34,7 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   const { canAccess, currentRole } = useApp();
   if (!canAccess(path)) {
     // Redirect based on role
-    const fallback = currentRole === "Administrador" ? "/" : "/estoque";
+    const fallback = (currentRole === "Operador" || currentRole === "Vendedor") ? "/vendas-diarias" : "/";
     return <Navigate to={fallback} replace />;
   }
   return <>{children}</>;
