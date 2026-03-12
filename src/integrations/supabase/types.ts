@@ -181,6 +181,48 @@ export type Database = {
         }
         Relationships: []
       }
+      fraud_alerts: {
+        Row: {
+          analyst: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          link: string
+          message: string
+          observation: string | null
+          operator: string
+          severity: string
+          status: string
+          type: string
+        }
+        Insert: {
+          analyst?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          link?: string
+          message?: string
+          observation?: string | null
+          operator?: string
+          severity?: string
+          status?: string
+          type: string
+        }
+        Update: {
+          analyst?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          link?: string
+          message?: string
+          observation?: string | null
+          operator?: string
+          severity?: string
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
       movimentacoes_estoque: {
         Row: {
           created_at: string
@@ -348,6 +390,42 @@ export type Database = {
           sangria?: string
           updated_at?: string
           usuario?: string | null
+        }
+        Relationships: []
+      }
+      user_risk_profiles: {
+        Row: {
+          after_hours_ops: number
+          high_adjustments: number
+          id: string
+          multi_edit_count: number
+          risk_level: string
+          risk_score: number
+          total_adjustments: number
+          updated_at: string
+          user_name: string
+        }
+        Insert: {
+          after_hours_ops?: number
+          high_adjustments?: number
+          id?: string
+          multi_edit_count?: number
+          risk_level?: string
+          risk_score?: number
+          total_adjustments?: number
+          updated_at?: string
+          user_name: string
+        }
+        Update: {
+          after_hours_ops?: number
+          high_adjustments?: number
+          id?: string
+          multi_edit_count?: number
+          risk_level?: string
+          risk_score?: number
+          total_adjustments?: number
+          updated_at?: string
+          user_name?: string
         }
         Relationships: []
       }
