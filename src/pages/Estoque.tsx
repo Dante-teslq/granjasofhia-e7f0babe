@@ -33,7 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const EstoquePage = () => {
   const { stockItems, setStockItems, saveStock, lastStockSave, currentStore, setCurrentStore, loadStockForDate, allSavedStock } = useInventory();
-  const { currentRole, dateRange, setDateRange, settings, profile } = useApp();
+  const { currentRole, dateRange, setDateRange, settings, profile, isOperator, userPdvName } = useApp();
   const { addLog } = useAudit();
   const { fraudSettings, addAlert, updateRiskProfile } = useFraud();
   const prevStockRef = useRef<string | null>(null);
@@ -44,6 +44,13 @@ const EstoquePage = () => {
 
   const isAdmin = currentRole === "Administrador";
   const selectedDate = dateRange.from;
+
+  // If operator, lock to their PDV
+  useEffect(() => {
+    if (isOperator && userPdvName && currentStore !== userPdvName) {
+      setCurrentStore(userPdvName as any);
+    }
+  }, [isOperator, userPdvName, currentStore, setCurrentStore]);
 
   const setSelectedDate = (date: Date) => {
     setDateRange({ from: date, to: date });
@@ -233,16 +240,22 @@ const EstoquePage = () => {
             {/* Store Selector */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Store className="w-4 h-4 text-primary shrink-0" />
-              <Select value={currentStore} onValueChange={(v) => setCurrentStore(v as any)}>
-                <SelectTrigger className="flex-1 sm:w-[180px] h-10 md:h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STORES.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isOperator && userPdvName ? (
+                <div className="flex-1 sm:w-[180px] h-10 md:h-9 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                  {userPdvName}
+                </div>
+              ) : (
+                <Select value={currentStore} onValueChange={(v) => setCurrentStore(v as any)}>
+                  <SelectTrigger className="flex-1 sm:w-[180px] h-10 md:h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STORES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             {/* Admin Delete */}

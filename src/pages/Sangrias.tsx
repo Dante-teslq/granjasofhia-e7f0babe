@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Trash2, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -36,7 +36,7 @@ const emptyRow = (): SangriaItem => ({
 });
 
 const SangriasPage = () => {
-  const { currentRole, profile } = useApp();
+  const { currentRole, profile, isOperator, userPdvName } = useApp();
   const { addLog } = useAudit();
   const {
     records,
@@ -50,9 +50,16 @@ const SangriasPage = () => {
   } = useSangriasDB();
 
   const [editItems, setEditItems] = useState<SangriaItem[]>([emptyRow()]);
-  const [editPDV, setEditPDV] = useState<string>(STORES[0]);
+  const [editPDV, setEditPDV] = useState<string>(isOperator && userPdvName ? userPdvName : STORES[0]);
 
   const isAdmin = currentRole === "Administrador";
+
+  // Lock PDV filter for operators
+  useEffect(() => {
+    if (isOperator && userPdvName && selectedPDV !== userPdvName) {
+      setSelectedPDV(userPdvName);
+    }
+  }, [isOperator, userPdvName, selectedPDV, setSelectedPDV]);
 
   const handleSave = async () => {
     if (!editPDV) {
@@ -120,17 +127,23 @@ const SangriasPage = () => {
             </PopoverContent>
           </Popover>
 
-          <Select value={selectedPDV} onValueChange={setSelectedPDV}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Ponto de Venda" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os PDVs</SelectItem>
-              {STORES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isOperator && userPdvName ? (
+            <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+              {userPdvName}
+            </div>
+          ) : (
+            <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Ponto de Venda" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os PDVs</SelectItem>
+                {STORES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           {isAdmin && records.length > 0 && (
             <AlertDialog>
@@ -176,16 +189,22 @@ const SangriasPage = () => {
         {/* New entry form */}
         <div className="border-t border-border pt-4 space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Novo Registro</h2>
-          <Select value={editPDV} onValueChange={setEditPDV}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Selecione o PDV" />
-            </SelectTrigger>
-            <SelectContent>
-              {STORES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isOperator && userPdvName ? (
+            <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+              {userPdvName}
+            </div>
+          ) : (
+            <Select value={editPDV} onValueChange={setEditPDV}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Selecione o PDV" />
+              </SelectTrigger>
+              <SelectContent>
+                {STORES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <SangriasTable items={editItems} onChange={setEditItems} />
           <div className="flex justify-end">
             <Button onClick={handleSave} className="gap-2 w-full sm:w-auto h-12 md:h-10">

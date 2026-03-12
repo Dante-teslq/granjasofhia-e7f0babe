@@ -21,7 +21,7 @@ import GlobalDateFilter from "@/components/GlobalDateFilter";
 const FORMAS_PAGAMENTO = ["Dinheiro", "PIX", "Cartão Crédito", "Cartão Débito", "Boleto", "Outros"];
 
 const VendasDiariasPage = () => {
-  const { dateRange, profile } = useApp();
+  const { dateRange, profile, isOperator, userPdvName } = useApp();
   const {
     records, loading, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo,
     porProduto, diaFechado, addVenda, deleteVenda, fecharDia,
@@ -29,12 +29,12 @@ const VendasDiariasPage = () => {
 
   const [showAdd, setShowAdd] = useState(false);
   const [filterProduto, setFilterProduto] = useState("all");
-  const [filterPdv, setFilterPdv] = useState("all");
+  const [filterPdv, setFilterPdv] = useState(isOperator && userPdvName ? userPdvName : "all");
 
   // Form state
   const [formProduto, setFormProduto] = useState("");
   const [formCodigo, setFormCodigo] = useState("");
-  const [formPdv, setFormPdv] = useState(STORES[0] as string);
+  const [formPdv, setFormPdv] = useState(isOperator && userPdvName ? userPdvName : STORES[0] as string);
   const [formQtd, setFormQtd] = useState("");
   const [formValor, setFormValor] = useState("");
   const [formPagamento, setFormPagamento] = useState("Dinheiro");
@@ -45,6 +45,8 @@ const VendasDiariasPage = () => {
   const filtered = records.filter(r => {
     if (filterProduto !== "all" && r.produto !== filterProduto) return false;
     if (filterPdv !== "all" && r.ponto_venda !== filterPdv) return false;
+    // Operators only see their PDV data
+    if (isOperator && userPdvName && r.ponto_venda !== userPdvName) return false;
     return true;
   });
 
@@ -145,15 +147,21 @@ const VendasDiariasPage = () => {
                 {uniqueProducts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={filterPdv} onValueChange={setFilterPdv}>
-              <SelectTrigger className="w-[180px] h-10 text-sm">
-                <SelectValue placeholder="PDV" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os PDVs</SelectItem>
-                {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {isOperator && userPdvName ? (
+              <div className="w-[180px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                {userPdvName}
+              </div>
+            ) : (
+              <Select value={filterPdv} onValueChange={setFilterPdv}>
+                <SelectTrigger className="w-[180px] h-10 text-sm">
+                  <SelectValue placeholder="PDV" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os PDVs</SelectItem>
+                  {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             {!diaFechado && (
@@ -274,12 +282,18 @@ const VendasDiariasPage = () => {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Ponto de Venda *</label>
-              <Select value={formPdv} onValueChange={setFormPdv}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              {isOperator && userPdvName ? (
+                <div className="h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                  {userPdvName}
+                </div>
+              ) : (
+                <Select value={formPdv} onValueChange={setFormPdv}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">

@@ -1,21 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LogIn, UserPlus, Eye, EyeOff, ArrowLeft, Mail } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
 type View = "login" | "signup" | "forgot";
+
+interface PdvOption {
+  id: string;
+  nome: string;
+}
 
 const LoginPage = () => {
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
+  const [pdvId, setPdvId] = useState("");
+  const [pdvList, setPdvList] = useState<PdvOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("pontos_de_venda")
+      .select("id, nome")
+      .eq("status", "ativo")
+      .order("nome")
+      .then(({ data }) => {
+        if (data) setPdvList(data);
+      });
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +59,16 @@ const LoginPage = () => {
       toast.error("Informe seu nome.");
       return;
     }
+    if (!pdvId) {
+      toast.error("Selecione o ponto de venda.");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { nome },
+        data: { nome, pdv_id: pdvId },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -135,10 +158,25 @@ const LoginPage = () => {
             <>
               <form onSubmit={view === "signup" ? handleSignup : handleLogin} className="space-y-4">
                 {view === "signup" && (
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Nome</label>
-                    <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo" className="h-11 mt-1" />
-                  </div>
+                  <>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Nome</label>
+                      <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome completo" className="h-11 mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground">Ponto de Venda *</label>
+                      <Select value={pdvId} onValueChange={setPdvId}>
+                        <SelectTrigger className="h-11 mt-1">
+                          <SelectValue placeholder="Selecione seu PDV" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pdvList.map((pdv) => (
+                            <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
                 )}
                 <div>
                   <label className="text-sm font-medium text-foreground">Email</label>

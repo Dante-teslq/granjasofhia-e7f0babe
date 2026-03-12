@@ -23,6 +23,7 @@ interface UserProfile {
   telefone: string;
   cargo: UserRole;
   status: string;
+  pdv_id: string | null;
 }
 
 interface AppContextData {
@@ -37,6 +38,10 @@ interface AppContextData {
   canAccess: (page: string) => boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** The PDV name linked to the user (null for admins/supervisors) */
+  userPdvName: string | null;
+  /** Whether the current user is restricted to a single PDV */
+  isOperator: boolean;
 }
 
 const AppContext = createContext<AppContextData | null>(null);
@@ -53,6 +58,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userPdvName, setUserPdvName] = useState<string | null>(null);
 
   const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
@@ -77,7 +83,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", userId)
       .single();
     if (data) {
-      setProfile(data as UserProfile);
+      const p = data as UserProfile;
+      setProfile(p);
+      // Fetch PDV name if pdv_id exists
+      if (p.pdv_id) {
+        const { data: pdvData } = await supabase
+          .from("pontos_de_venda")
+          .select("nome")
+          .eq("id", p.pdv_id)
+          .single();
+        setUserPdvName(pdvData?.nome || null);
+      } else {
+        setUserPdvName(null);
+      }
     }
   };
 
@@ -153,6 +171,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const currentRole: UserRole = profile?.cargo || "Operador";
+  const isOperator = currentRole === "Operador" || currentRole === "Vendedor";
 
   const updateSettings = (partial: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
@@ -175,7 +194,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AppContext.Provider
-      value={{ currentRole, session, profile, loading, dateRange, setDateRange, settings, updateSettings, canAccess, signOut, refreshProfile }}
+      value={{ currentRole, session, profile, loading, dateRange, setDateRange, settings, updateSettings, canAccess, signOut, refreshProfile, userPdvName, isOperator }}
     >
       {children}
     </AppContext.Provider>

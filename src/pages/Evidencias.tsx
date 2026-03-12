@@ -34,11 +34,11 @@ interface EvidenciaRecord {
 }
 
 const EvidenciasPage = () => {
-  const { currentRole, dateRange } = useApp();
+  const { currentRole, dateRange, isOperator, userPdvName } = useApp();
   
 
   // Form state
-  const [pontoDeVenda, setPontoDeVenda] = useState<string>(STORES[0]);
+  const [pontoDeVenda, setPontoDeVenda] = useState<string>(isOperator && userPdvName ? userPdvName : STORES[0]);
   const [tipoPerda, setTipoPerda] = useState<string>("Quebrado");
   const [quantidade, setQuantidade] = useState<string>("");
   const [justificativa, setJustificativa] = useState("");
@@ -245,7 +245,7 @@ const EvidenciasPage = () => {
                 <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" /> Ponto de Venda
                 </label>
-                <Select value={pontoDeVenda} onValueChange={setPontoDeVenda}>
+                <Select value={pontoDeVenda} onValueChange={setPontoDeVenda} disabled={isOperator && !!userPdvName}>
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
