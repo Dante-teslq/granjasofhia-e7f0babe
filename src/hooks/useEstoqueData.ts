@@ -27,14 +27,18 @@ export function useEstoqueData({ from, to }: UseEstoqueDataOptions = {}) {
   const [records, setRecords] = useState<EstoqueRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Stabilize date strings to prevent unnecessary refetches
+  const fromStr = from && isValid(from) ? format(from, "yyyy-MM-dd") : undefined;
+  const toStr = to && isValid(to) ? format(to, "yyyy-MM-dd") : undefined;
+
   const fetchData = useCallback(async () => {
     let query = supabase.from("estoque_registros").select("*");
 
-    if (from && isValid(from)) {
-      query = query.gte("data", format(from, "yyyy-MM-dd"));
+    if (fromStr) {
+      query = query.gte("data", fromStr);
     }
-    if (to && isValid(to)) {
-      query = query.lte("data", format(to, "yyyy-MM-dd"));
+    if (toStr) {
+      query = query.lte("data", toStr);
     }
 
     const { data, error } = await query.order("data", { ascending: true });
@@ -42,7 +46,7 @@ export function useEstoqueData({ from, to }: UseEstoqueDataOptions = {}) {
       setRecords(data as EstoqueRecord[]);
     }
     setLoading(false);
-  }, [from, to]);
+  }, [fromStr, toStr]);
 
   // Initial fetch
   useEffect(() => {

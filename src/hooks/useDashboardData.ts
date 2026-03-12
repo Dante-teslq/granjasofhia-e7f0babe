@@ -23,25 +23,30 @@ export function useDashboardData({ from, to }: UseDashboardDataOptions) {
 
   const loading = estoque.loading || vendas.loading;
 
+  // Stabilize values to prevent re-render flickering
+  const vendasTotalHoje = vendas.totalHoje;
+  const vendasTotalPeriodo = vendas.totalPeriodo;
+  const vendasPrevTotalPeriodo = vendasPrev.totalPeriodo;
+  const vendasPrevRecords = vendasPrev.records;
+  const estoqueTotalFaltas = estoque.totalFaltas;
+  const estoquePrevTotalFaltas = estoquePrev.totalFaltas;
+
   const comparison = useMemo(() => {
     const calcVariation = (current: number, previous: number) => {
       if (previous === 0) return current > 0 ? 100 : 0;
       return ((current - previous) / previous) * 100;
     };
 
-    const today = format(new Date(), "yyyy-MM-dd");
     const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
-
-    // Vendas ontem para comparação com hoje
-    const vendasOntem = vendasPrev.records.filter(r => r.data === yesterday);
+    const vendasOntem = vendasPrevRecords.filter(r => r.data === yesterday);
     const totalOntem = vendasOntem.reduce((s, r) => s + r.total, 0);
 
     return {
-      vendasHojeVar: calcVariation(vendas.totalHoje, totalOntem),
-      vendasPeriodoVar: calcVariation(vendas.totalPeriodo, vendasPrev.totalPeriodo),
-      faltasVar: calcVariation(estoque.totalFaltas, estoquePrev.totalFaltas),
+      vendasHojeVar: calcVariation(vendasTotalHoje, totalOntem),
+      vendasPeriodoVar: calcVariation(vendasTotalPeriodo, vendasPrevTotalPeriodo),
+      faltasVar: calcVariation(estoqueTotalFaltas, estoquePrevTotalFaltas),
     };
-  }, [vendas, vendasPrev, estoque, estoquePrev]);
+  }, [vendasTotalHoje, vendasTotalPeriodo, vendasPrevTotalPeriodo, vendasPrevRecords, estoqueTotalFaltas, estoquePrevTotalFaltas]);
 
   // Vendas por dia com destaque do melhor dia
   const vendasChartEnhanced = useMemo(() => {

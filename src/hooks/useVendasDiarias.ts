@@ -28,14 +28,18 @@ export function useVendasDiarias({ from, to }: UseVendasDiariasOptions = {}) {
   const [records, setRecords] = useState<VendaDiaria[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Stabilize date strings to prevent unnecessary refetches
+  const fromStr = from && isValid(from) ? format(from, "yyyy-MM-dd") : undefined;
+  const toStr = to && isValid(to) ? format(to, "yyyy-MM-dd") : undefined;
+
   const fetchData = useCallback(async () => {
     let query = supabase.from("vendas_diarias").select("*");
-    if (from && isValid(from)) query = query.gte("data", format(from, "yyyy-MM-dd"));
-    if (to && isValid(to)) query = query.lte("data", format(to, "yyyy-MM-dd"));
+    if (fromStr) query = query.gte("data", fromStr);
+    if (toStr) query = query.lte("data", toStr);
     const { data, error } = await query.order("created_at", { ascending: false });
     if (!error && data) setRecords(data as VendaDiaria[]);
     setLoading(false);
-  }, [from, to]);
+  }, [fromStr, toStr]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
