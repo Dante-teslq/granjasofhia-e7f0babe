@@ -83,7 +83,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .eq("user_id", userId)
       .single();
     if (data) {
-      setProfile(data as UserProfile);
+      const p = data as UserProfile;
+      setProfile(p);
+      // Fetch PDV name if pdv_id exists
+      if (p.pdv_id) {
+        const { data: pdvData } = await supabase
+          .from("pontos_de_venda")
+          .select("nome")
+          .eq("id", p.pdv_id)
+          .single();
+        setUserPdvName(pdvData?.nome || null);
+      } else {
+        setUserPdvName(null);
+      }
     }
   };
 
