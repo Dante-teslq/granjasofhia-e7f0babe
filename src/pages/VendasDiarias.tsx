@@ -147,15 +147,21 @@ const VendasDiariasPage = () => {
                 {uniqueProducts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={filterPdv} onValueChange={setFilterPdv}>
-              <SelectTrigger className="w-[180px] h-10 text-sm">
-                <SelectValue placeholder="PDV" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os PDVs</SelectItem>
-                {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            {isOperator && userPdvName ? (
+              <div className="w-[180px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                {userPdvName}
+              </div>
+            ) : (
+              <Select value={filterPdv} onValueChange={setFilterPdv}>
+                <SelectTrigger className="w-[180px] h-10 text-sm">
+                  <SelectValue placeholder="PDV" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os PDVs</SelectItem>
+                  {STORES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             {!diaFechado && (
