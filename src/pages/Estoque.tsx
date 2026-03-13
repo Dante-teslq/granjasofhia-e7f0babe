@@ -84,14 +84,37 @@ const EstoquePage = () => {
   };
 
   const executeSave = () => {
+    // Validate all fields are filled
     for (const item of stockItems) {
-      if (!item.descricao) continue;
-      if (currentRole === "Operador de Venda" || currentRole === "Operador de Depósito") {
-        if ((item.trincado > 0 || item.quebrado > 0) && !item.obs.trim()) {
-          toast.error(`"${item.descricao}": Operadores devem preencher a observação ao registrar perdas.`);
-          return;
-        }
+      if (!item.descricao) {
+        toast.error("Selecione o produto em todas as linhas antes de salvar.");
+        return;
       }
+      if (item.estoqueSistema === 0 && item.estoqueLoja === 0) {
+        toast.error(`"${item.descricao}": Preencha o Estoque Sistema e o Estoque Loja.`);
+        return;
+      }
+      if (!item.estoqueSistema && item.estoqueSistema !== 0) {
+        toast.error(`"${item.descricao}": Preencha o campo Estoque Sistema.`);
+        return;
+      }
+      if (!item.estoqueLoja && item.estoqueLoja !== 0) {
+        toast.error(`"${item.descricao}": Preencha o campo Estoque Loja.`);
+        return;
+      }
+      if (!item.obs.trim()) {
+        toast.error(`"${item.descricao}": Preencha o campo de observação.`);
+        return;
+      }
+      if ((currentRole === "Operador de Venda" || currentRole === "Operador de Depósito") && (item.trincado > 0 || item.quebrado > 0) && !item.obs.trim()) {
+        toast.error(`"${item.descricao}": Operadores devem preencher a observação ao registrar perdas.`);
+        return;
+      }
+    }
+
+    if (stockItems.length === 0) {
+      toast.error("Adicione pelo menos uma linha antes de salvar.");
+      return;
     }
 
     const isNew = !prevStockRef.current;
