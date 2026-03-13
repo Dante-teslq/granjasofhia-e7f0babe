@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
-export type UserRole = "Operador" | "Supervisor" | "Administrador" | "Auditor" | "Admin" | "Vendedor";
+export type UserRole = "Operador de Venda" | "Operador de Depósito" | "Supervisor" | "Administrador" | "Auditor" | "Admin";
 
 interface AppSettings {
   lossLimitPercent: number;
