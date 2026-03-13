@@ -281,7 +281,7 @@ const UsuariosPage = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Cargo *</label>
-                <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
+                <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v, pdv_id: "" })}>
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
