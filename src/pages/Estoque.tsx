@@ -86,7 +86,7 @@ const EstoquePage = () => {
   const executeSave = () => {
     for (const item of stockItems) {
       if (!item.descricao) continue;
-      if (currentRole === "Operador") {
+      if (currentRole === "Operador de Venda" || currentRole === "Operador de Depósito") {
         if ((item.trincado > 0 || item.quebrado > 0) && !item.obs.trim()) {
           toast.error(`"${item.descricao}": Operadores devem preencher a observação ao registrar perdas.`);
           return;

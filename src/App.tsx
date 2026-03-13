@@ -34,7 +34,7 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   const { canAccess, currentRole } = useApp();
   if (!canAccess(path)) {
     // Redirect based on role
-    const fallback = (currentRole === "Operador" || currentRole === "Vendedor") ? "/estoque" : "/";
+    const fallback = (currentRole === "Operador de Venda" || currentRole === "Operador de Depósito") ? "/estoque" : "/";
     return <Navigate to={fallback} replace />;
   }
   return <>{children}</>;
@@ -64,8 +64,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 /** After login, redirect to the correct home based on role */
 const RoleBasedHome = () => {
   const { currentRole } = useApp();
-  if (currentRole === "Operador" || currentRole === "Vendedor") {
+  if (currentRole === "Operador de Venda") {
     return <Navigate to="/vendas-diarias" replace />;
+  }
+  if (currentRole === "Operador de Depósito") {
+    return <Navigate to="/estoque" replace />;
   }
   // Administrador, Supervisor, Auditor → Dashboard
   return <Index />;

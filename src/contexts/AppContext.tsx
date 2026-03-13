@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
-export type UserRole = "Operador" | "Supervisor" | "Administrador" | "Auditor" | "Admin" | "Vendedor";
+export type UserRole = "Operador de Venda" | "Operador de Depósito" | "Supervisor" | "Administrador" | "Auditor" | "Admin";
 
 interface AppSettings {
   lossLimitPercent: number;
@@ -52,7 +52,8 @@ export const useApp = () => {
   return ctx;
 };
 
-const operatorAllowed = new Set(["/estoque", "/sangrias", "/evidencias", "/vendas-diarias"]);
+const vendaAllowed = new Set(["/estoque", "/sangrias", "/evidencias", "/vendas-diarias"]);
+const depositoAllowed = new Set(["/estoque", "/sangrias", "/evidencias"]);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -170,8 +171,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const currentRole: UserRole = profile?.cargo || "Operador";
-  const isOperator = currentRole === "Operador" || currentRole === "Vendedor";
+  const currentRole: UserRole = (profile?.cargo as UserRole) || "Operador de Venda";
+  const isOperator = currentRole === "Operador de Venda" || currentRole === "Operador de Depósito";
 
   const updateSettings = (partial: Partial<AppSettings>) => {
     setSettings((prev) => ({ ...prev, ...partial }));
@@ -181,7 +182,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (currentRole === "Administrador" || currentRole === "Admin") return true;
     if (currentRole === "Supervisor") return page !== "/antifraude";
     if (currentRole === "Auditor") return page !== "/configuracoes" && page !== "/usuarios" && page !== "/antifraude";
-    return operatorAllowed.has(page);
+    if (currentRole === "Operador de Depósito") return depositoAllowed.has(page);
+    return vendaAllowed.has(page);
   };
 
   const signOut = async () => {
