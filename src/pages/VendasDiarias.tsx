@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  ShoppingCart, Plus, Lock, Trash2, DollarSign, TrendingUp, Package, Calendar,
+  ShoppingCart, Plus, Lock, Trash2, TrendingUp, Package, Calendar,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -102,10 +102,10 @@ const VendasDiariasPage = () => {
   };
 
   const stats = [
-    { label: "Total Hoje", value: `R$ ${totalHoje.toFixed(2)}`, icon: DollarSign },
-    { label: "Qtd Hoje", value: qtdHoje.toString(), icon: ShoppingCart },
-    { label: "Total Período", value: `R$ ${totalPeriodo.toFixed(2)}`, icon: TrendingUp },
-    { label: "Qtd Período", value: qtdPeriodo.toString(), icon: Package },
+    { label: "Cartelas Hoje", value: `${qtdHoje} cartelas`, icon: ShoppingCart },
+    { label: "Cartelas no Período", value: `${qtdPeriodo} cartelas`, icon: Package },
+    { label: "Produtos Hoje", value: `${new Set(records.filter(r => r.data === format(new Date(), "yyyy-MM-dd")).map(r => r.produto)).size} tipos`, icon: TrendingUp },
+    { label: "Registros no Período", value: records.length.toString(), icon: Calendar },
   ];
 
   return (
@@ -192,7 +192,7 @@ const VendasDiariasPage = () => {
                   <span className="text-lg font-extrabold text-primary w-8 text-center">{i + 1}º</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{p.produto}</p>
-                    <p className="text-xs text-muted-foreground">{p.quantidade} un — R$ {p.total.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{p.quantidade} cartelas</p>
                   </div>
                 </div>
               ))}
