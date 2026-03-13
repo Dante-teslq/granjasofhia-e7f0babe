@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  ShoppingCart, Plus, Lock, Trash2, TrendingUp, Package, Calendar,
+  ShoppingCart, Plus, Lock, Trash2, Package, Calendar, AlertTriangle,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useVendasDiarias } from "@/hooks/useVendasDiarias";
 import { STORES, PRODUCT_CATALOG } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 
 const FORMAS_PAGAMENTO = ["Dinheiro", "PIX", "Cartão Crédito", "Cartão Débito", "Boleto", "Outros"];
@@ -41,6 +42,46 @@ const VendasDiariasPage = () => {
   const [formObs, setFormObs] = useState("");
 
   const todayStr = format(dateRange.from, "yyyy-MM-dd");
+
+  // Monthly data for quebras and insumos
+  const mesInicio = format(startOfMonth(dateRange.from), "yyyy-MM-dd");
+  const mesFim = format(endOfMonth(dateRange.from), "yyyy-MM-dd");
+
+  const [quebrasMensal, setQuebrasMensal] = useState(0);
+  const [insumosMensal, setInsumosMensal] = useState(0);
+
+  useEffect(() => {
+    const fetchMonthlyData = async () => {
+      const { data: estoqueData } = await supabase
+        .from("estoque_registros")
+        .select("quebrado")
+        .gte("data", mesInicio)
+        .lte("data", mesFim);
+      if (estoqueData) {
+        setQuebrasMensal(estoqueData.reduce((s, r) => s + Math.abs(Number(r.quebrado)), 0));
+      }
+
+      const { data: sangriasData } = await supabase
+        .from("sangrias")
+        .select("cartelas_vazias, barbantes")
+        .gte("data", mesInicio)
+        .lte("data", mesFim);
+      if (sangriasData) {
+        const total = sangriasData.reduce((s, r) => {
+          const cartelas = r.cartelas_vazias ? r.cartelas_vazias.split(",").filter(Boolean).length : 0;
+          const barbantes = r.barbantes ? r.barbantes.split(",").filter(Boolean).length : 0;
+          return s + cartelas + barbantes;
+        }, 0);
+        setInsumosMensal(total);
+      }
+    };
+    fetchMonthlyData();
+  }, [mesInicio, mesFim]);
+
+  const vendasMensal = useMemo(() => {
+    return records.filter(r => r.data >= mesInicio && r.data <= mesFim)
+      .reduce((s, r) => s + r.quantidade, 0);
+  }, [records, mesInicio, mesFim]);
 
   const filtered = records.filter(r => {
     if (filterProduto !== "all" && r.produto !== filterProduto) return false;
@@ -102,10 +143,10 @@ const VendasDiariasPage = () => {
   };
 
   const stats = [
-    { label: "Cartelas Hoje", value: `${qtdHoje} cartelas`, icon: ShoppingCart },
-    { label: "Cartelas no Período", value: `${qtdPeriodo} cartelas`, icon: Package },
-    { label: "Produtos Hoje", value: `${new Set(records.filter(r => r.data === format(new Date(), "yyyy-MM-dd")).map(r => r.produto)).size} tipos`, icon: TrendingUp },
-    { label: "Registros no Período", value: records.length.toString(), icon: Calendar },
+    { label: "Vendas Diárias (Cartelas)", value: `${qtdHoje}`, icon: ShoppingCart },
+    { label: "Vendas Mensal (Cartelas)", value: `${vendasMensal}`, icon: Calendar },
+    { label: "Quebras Mensal", value: `${quebrasMensal}`, icon: AlertTriangle },
+    { label: "Insumos Mensal", value: `${insumosMensal}`, icon: Package },
   ];
 
   return (
