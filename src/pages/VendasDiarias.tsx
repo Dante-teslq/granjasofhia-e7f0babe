@@ -43,6 +43,46 @@ const VendasDiariasPage = () => {
 
   const todayStr = format(dateRange.from, "yyyy-MM-dd");
 
+  // Monthly data for quebras and insumos
+  const mesInicio = format(startOfMonth(dateRange.from), "yyyy-MM-dd");
+  const mesFim = format(endOfMonth(dateRange.from), "yyyy-MM-dd");
+
+  const [quebrasMensal, setQuebrasMensal] = useState(0);
+  const [insumosMensal, setInsumosMensal] = useState(0);
+
+  useEffect(() => {
+    const fetchMonthlyData = async () => {
+      const { data: estoqueData } = await supabase
+        .from("estoque_registros")
+        .select("quebrado")
+        .gte("data", mesInicio)
+        .lte("data", mesFim);
+      if (estoqueData) {
+        setQuebrasMensal(estoqueData.reduce((s, r) => s + Math.abs(Number(r.quebrado)), 0));
+      }
+
+      const { data: sangriasData } = await supabase
+        .from("sangrias")
+        .select("cartelas_vazias, barbantes")
+        .gte("data", mesInicio)
+        .lte("data", mesFim);
+      if (sangriasData) {
+        const total = sangriasData.reduce((s, r) => {
+          const cartelas = r.cartelas_vazias ? r.cartelas_vazias.split(",").filter(Boolean).length : 0;
+          const barbantes = r.barbantes ? r.barbantes.split(",").filter(Boolean).length : 0;
+          return s + cartelas + barbantes;
+        }, 0);
+        setInsumosMensal(total);
+      }
+    };
+    fetchMonthlyData();
+  }, [mesInicio, mesFim]);
+
+  const vendasMensal = useMemo(() => {
+    return records.filter(r => r.data >= mesInicio && r.data <= mesFim)
+      .reduce((s, r) => s + r.quantidade, 0);
+  }, [records, mesInicio, mesFim]);
+
   const filtered = records.filter(r => {
     if (filterProduto !== "all" && r.produto !== filterProduto) return false;
     if (filterPdv !== "all" && r.ponto_venda !== filterPdv) return false;
