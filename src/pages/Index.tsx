@@ -115,7 +115,6 @@ const Index = () => {
                 <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 text-primary">
                   <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <VariationBadge value={stat.invertColor ? -stat.variation : stat.variation} />
               </div>
               <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{stat.value}</p>
               <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1 md:mt-1.5">{stat.label}</p>
