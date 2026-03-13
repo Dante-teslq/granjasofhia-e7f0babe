@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  ShoppingCart, Plus, Lock, Trash2, DollarSign, TrendingUp, Package, Calendar,
+  ShoppingCart, Plus, Lock, Trash2, TrendingUp, Package, Calendar,
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
