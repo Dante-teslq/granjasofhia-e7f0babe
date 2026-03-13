@@ -281,7 +281,7 @@ const UsuariosPage = () => {
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground">Cargo *</label>
-                <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v })}>
+                <Select value={formUser.cargo} onValueChange={(v) => setFormUser({ ...formUser, cargo: v, pdv_id: "" })}>
                   <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
@@ -294,20 +294,45 @@ const UsuariosPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="text-sm font-medium text-foreground">Ponto de Venda</label>
-                <Select value={formUser.pdv_id || "none"} onValueChange={(v) => setFormUser({ ...formUser, pdv_id: v === "none" ? "" : v })}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Selecione o PDV" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Nenhum (acesso a todos)</SelectItem>
-                    {pdvList.map((pdv) => (
-                      <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {(formUser.cargo === "Operador de Venda" || formUser.cargo === "Operador de Depósito") && (
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    {formUser.cargo === "Operador de Depósito" ? "Depósito" : "Ponto de Venda"}
+                  </label>
+                  <Select value={formUser.pdv_id || "none"} onValueChange={(v) => setFormUser({ ...formUser, pdv_id: v === "none" ? "" : v })}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder={formUser.cargo === "Operador de Depósito" ? "Selecione o depósito" : "Selecione o PDV"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum (acesso a todos)</SelectItem>
+                      {pdvList
+                        .filter((pdv) => {
+                          const isDeposito = pdv.nome.toLowerCase().includes("deposito") || pdv.nome.toLowerCase().includes("depósito");
+                          return formUser.cargo === "Operador de Depósito" ? isDeposito : !isDeposito;
+                        })
+                        .map((pdv) => (
+                          <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              {formUser.cargo !== "Operador de Venda" && formUser.cargo !== "Operador de Depósito" && (
+                <div>
+                  <label className="text-sm font-medium text-foreground">Ponto de Venda</label>
+                  <Select value={formUser.pdv_id || "none"} onValueChange={(v) => setFormUser({ ...formUser, pdv_id: v === "none" ? "" : v })}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Selecione o PDV" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum (acesso a todos)</SelectItem>
+                      {pdvList.map((pdv) => (
+                        <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
