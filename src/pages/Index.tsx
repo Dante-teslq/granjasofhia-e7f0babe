@@ -1,6 +1,6 @@
 import {
   Package, AlertTriangle, ShieldAlert, ShoppingCart, DollarSign,
-  TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Trophy, AlertCircle, Heart,
+  TrendingUp, Trophy, AlertCircle, Heart,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -38,22 +38,12 @@ const Index = () => {
     ...activeAlerts,
   ];
 
-  const VariationBadge = ({ value }: { value: number }) => {
-    if (value === 0) return null;
-    const isUp = value > 0;
-    return (
-      <span className={`inline-flex items-center gap-0.5 text-[10px] md:text-xs font-bold ${isUp ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
-        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-        {Math.abs(value).toFixed(1)}%
-      </span>
-    );
-  };
 
   const stats = [
-    { label: "Vendas Hoje", value: `R$ ${vendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias", variation: comparison.vendasHojeVar },
-    { label: "Vendas no Período", value: `R$ ${vendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias", variation: comparison.vendasPeriodoVar },
-    { label: "Faltas Totais", value: estoque.hasData ? estoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque", variation: comparison.faltasVar, invertColor: true },
-    { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas", variation: 0 },
+    { label: "Vendas Hoje", value: `R$ ${vendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
+    { label: "Vendas no Período", value: `R$ ${vendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
+    { label: "Faltas Totais", value: estoque.hasData ? estoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
+    { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
 
   // Chart data
@@ -125,7 +115,6 @@ const Index = () => {
                 <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 text-primary">
                   <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <VariationBadge value={stat.invertColor ? -stat.variation : stat.variation} />
               </div>
               <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{stat.value}</p>
               <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1 md:mt-1.5">{stat.label}</p>
