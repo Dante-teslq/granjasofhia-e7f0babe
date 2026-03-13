@@ -38,16 +38,6 @@ const Index = () => {
     ...activeAlerts,
   ];
 
-  const VariationBadge = ({ value }: { value: number }) => {
-    if (value === 0) return null;
-    const isUp = value > 0;
-    return (
-      <span className={`inline-flex items-center gap-0.5 text-[10px] md:text-xs font-bold ${isUp ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400"}`}>
-        {isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-        {Math.abs(value).toFixed(1)}%
-      </span>
-    );
-  };
 
   const stats = [
     { label: "Vendas Hoje", value: `R$ ${vendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias", variation: comparison.vendasHojeVar },
