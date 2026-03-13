@@ -192,7 +192,7 @@ const VendasDiariasPage = () => {
                   <span className="text-lg font-extrabold text-primary w-8 text-center">{i + 1}º</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{p.produto}</p>
-                    <p className="text-xs text-muted-foreground">{p.quantidade} un — R$ {p.total.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{p.quantidade} cartelas</p>
                   </div>
                 </div>
               ))}
