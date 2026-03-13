@@ -143,10 +143,10 @@ const VendasDiariasPage = () => {
   };
 
   const stats = [
-    { label: "Cartelas Hoje", value: `${qtdHoje} cartelas`, icon: ShoppingCart },
-    { label: "Cartelas no Período", value: `${qtdPeriodo} cartelas`, icon: Package },
-    { label: "Produtos Hoje", value: `${new Set(records.filter(r => r.data === format(new Date(), "yyyy-MM-dd")).map(r => r.produto)).size} tipos`, icon: TrendingUp },
-    { label: "Registros no Período", value: records.length.toString(), icon: Calendar },
+    { label: "Vendas Diárias (Cartelas)", value: `${qtdHoje}`, icon: ShoppingCart },
+    { label: "Vendas Mensal (Cartelas)", value: `${vendasMensal}`, icon: Calendar },
+    { label: "Quebras Mensal", value: `${quebrasMensal}`, icon: AlertTriangle },
+    { label: "Insumos Mensal", value: `${insumosMensal}`, icon: Package },
   ];
 
   return (
