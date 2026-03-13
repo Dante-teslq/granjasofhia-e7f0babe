@@ -308,7 +308,10 @@ const UsuariosPage = () => {
                       {pdvList
                         .filter((pdv) => {
                           const isDeposito = pdv.nome.toLowerCase().includes("deposito") || pdv.nome.toLowerCase().includes("depósito");
-                          return formUser.cargo === "Operador de Depósito" ? isDeposito : !isDeposito;
+                          const isDepositoSofhia = pdv.nome.toLowerCase().includes("sofhia");
+                          if (formUser.cargo === "Operador de Depósito") return isDeposito;
+                          // Operador de Venda: todos exceto depósitos, mas inclui Depósito Sofhia
+                          return !isDeposito || isDepositoSofhia;
                         })
                         .map((pdv) => (
                           <SelectItem key={pdv.id} value={pdv.id}>{pdv.nome}</SelectItem>
