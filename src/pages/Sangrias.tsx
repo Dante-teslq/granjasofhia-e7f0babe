@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { Save, Trash2, CalendarIcon } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import DashboardLayout from "@/components/DashboardLayout";
 import SangriasTable from "@/components/SangriasTable";
+import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useApp } from "@/contexts/AppContext";
 import { useAudit } from "@/contexts/AuditContext";
 import { useSangriasDB } from "@/hooks/useSangriasDB";
