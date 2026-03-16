@@ -45,7 +45,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   // Desktop: sidebar fixed, content scrolls independently
   return (
     <div className="flex min-h-screen">
-      <div className="fixed top-0 left-0 h-screen w-64 z-30">
+      <div className="fixed top-0 left-0 h-screen w-64 z-30 overflow-y-auto">
         <AppSidebar />
       </div>
       <main className="flex-1 ml-64 overflow-auto min-h-screen">
