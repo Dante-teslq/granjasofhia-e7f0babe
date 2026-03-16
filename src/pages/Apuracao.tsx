@@ -187,21 +187,21 @@ const ApuracaoPage = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total {activeYear}</p>
-            <p className="text-2xl font-bold text-foreground">{totalCurrent.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">caixas</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Total {activeYear}</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{totalCurrent.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">caixas</p>
           </div>
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total {Number(activeYear) - 1}</p>
-            <p className="text-2xl font-bold text-foreground">{totalPrev.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">caixas</p>
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Total {Number(activeYear) - 1}</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{totalPrev.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">caixas</p>
           </div>
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Variação</p>
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Variação</p>
             <div className="flex items-center gap-2">
-              <p className={`text-2xl font-bold ${Number(variation) >= 0 ? "text-success" : "text-destructive"}`}>
+              <p className={`text-xl md:text-3xl font-extrabold tracking-tight ${Number(variation) >= 0 ? "text-success" : "text-destructive"}`}>
                 {variation}%
               </p>
               {Number(variation) >= 0 ? (
@@ -214,7 +214,7 @@ const ApuracaoPage = () => {
         </div>
 
         {/* Chart */}
-        <div className="glass-card rounded-lg p-5">
+        <div className="glass-card p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore}</h3>
@@ -243,7 +243,7 @@ const ApuracaoPage = () => {
 
         {/* Ranking */}
         {ranking.length > 0 && (
-          <div className="glass-card rounded-lg p-5">
+          <div className="glass-card p-4 md:p-6">
             <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-primary" />
@@ -288,7 +288,7 @@ const ApuracaoPage = () => {
         )}
 
         {/* Table */}
-        <div className="glass-card rounded-lg overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

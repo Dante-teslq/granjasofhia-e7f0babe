@@ -87,22 +87,22 @@ const AntifravdePage = () => {
         </div>
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {kpis.map((kpi) => (
-            <div key={kpi.label} className="glass-card rounded-lg p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
-                <span className="text-xs text-muted-foreground">{kpi.label}</span>
+            <div key={kpi.label} className="glass-card p-4 md:p-6">
+              <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 mb-3">
+                <kpi.icon className={`w-4 h-4 md:w-5 md:h-5 ${kpi.color}`} />
               </div>
-              <p className="text-3xl font-bold text-foreground">{kpi.value}</p>
+              <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{kpi.value}</p>
+              <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">{kpi.label}</p>
             </div>
           ))}
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
           {/* Risk Score Bar */}
-          <div className="lg:col-span-2 glass-card rounded-lg p-5">
+          <div className="lg:col-span-2 glass-card p-4 md:p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Score de Risco por Usuário</h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={riskChartData} layout="vertical" barGap={4}>
@@ -116,7 +116,7 @@ const AntifravdePage = () => {
           </div>
 
           {/* Alert Type Pie */}
-          <div className="glass-card rounded-lg p-5">
+          <div className="glass-card p-4 md:p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Alertas por Tipo</h3>
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -143,8 +143,8 @@ const AntifravdePage = () => {
         </div>
 
         {/* Severity + Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="glass-card rounded-lg p-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
+          <div className="glass-card p-4 md:p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Distribuição por Severidade</h3>
             <div className="space-y-3">
               {severityCounts.map((s) => (
@@ -161,7 +161,7 @@ const AntifravdePage = () => {
           </div>
 
           {/* Fraud Settings */}
-          <div className="glass-card rounded-lg p-5 space-y-4">
+          <div className="glass-card p-4 md:p-6 space-y-4">
             <div className="flex items-center gap-2">
               <Percent className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Limites de Segurança</h3>
@@ -220,8 +220,8 @@ const AntifravdePage = () => {
         </div>
 
         {/* Detailed Risk Table */}
-        <div className="glass-card rounded-lg overflow-hidden">
-          <div className="p-5 border-b border-border">
+        <div className="glass-card overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Detalhamento por Usuário</h3>
           </div>
           <div className="overflow-x-auto">

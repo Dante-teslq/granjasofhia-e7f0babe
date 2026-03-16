@@ -186,7 +186,7 @@ const TransferenciasPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -207,27 +207,27 @@ const TransferenciasPage = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Total no Período</p>
-            <p className="text-2xl font-bold text-foreground mt-1">{records.length}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Total no Período</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{records.length}</p>
           </div>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Cartelas Transferidas</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Cartelas Transferidas</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">
               {records.reduce((sum, r) => sum + r.quantidade, 0)}
             </p>
           </div>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Produtos Distintos</p>
-            <p className="text-2xl font-bold text-foreground mt-1">
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Produtos Distintos</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">
               {new Set(records.map((r) => r.produto_codigo)).size}
             </p>
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>

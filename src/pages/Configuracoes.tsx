@@ -59,7 +59,7 @@ const ConfiguracoesPage = () => {
         </div>
 
         {/* Theme */}
-        <div className="glass-card rounded-lg p-5 space-y-4">
+        <div className="glass-card p-4 md:p-6 space-y-4">
           <h3 className="text-sm font-semibold text-foreground">Aparência</h3>
           <p className="text-xs text-muted-foreground">Escolha o tema da interface</p>
           <div className="grid grid-cols-3 gap-3 max-w-sm">
@@ -84,7 +84,7 @@ const ConfiguracoesPage = () => {
 
 
         {/* Operation Hours */}
-        <div className="glass-card rounded-lg p-5 space-y-4">
+        <div className="glass-card p-4 md:p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">Horário Padrão de Operação</h3>

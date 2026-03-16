@@ -146,9 +146,9 @@ const UsuariosPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           {roles.map((role) => (
-            <div key={role.name} className="glass-card rounded-lg p-3 md:p-4">
+            <div key={role.name} className="glass-card p-4 md:p-6">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-primary" />
                 <span className="text-xs md:text-sm font-semibold text-foreground">{role.name}</span>
