@@ -438,6 +438,33 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_pdv: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_pdv?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_pdv?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       system_logs: {
         Row: {
           created_at: string
@@ -596,7 +623,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_pdv_id: { Args: { _user_id: string }; Returns: string }
+      get_user_pdv_name: { Args: { _user_id: string }; Returns: string }
       get_user_role: { Args: { _user_id: string }; Returns: string }
+      is_admin_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
