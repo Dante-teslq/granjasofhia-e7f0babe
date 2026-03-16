@@ -143,8 +143,8 @@ const AntifravdePage = () => {
         </div>
 
         {/* Severity + Settings */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="glass-card rounded-lg p-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
+          <div className="glass-card p-4 md:p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Distribuição por Severidade</h3>
             <div className="space-y-3">
               {severityCounts.map((s) => (
