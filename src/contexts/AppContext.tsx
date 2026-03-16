@@ -122,6 +122,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      // Audit login/logout events
+      if (_event === "SIGNED_IN" && newSession?.user) {
+        supabase.from("audit_logs").insert({
+          action: "login",
+          module: "Auth",
+          usuario: newSession.user.email || "unknown",
+          item_description: "Login realizado",
+          device: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+          user_id: newSession.user.id,
+          user_agent: navigator.userAgent.slice(0, 255),
+        }).then(() => {});
+      }
+
+      if (_event === "SIGNED_OUT") {
+        supabase.from("audit_logs").insert({
+          action: "logout",
+          module: "Auth",
+          usuario: session?.user?.email || "unknown",
+          item_description: "Logout realizado",
+          device: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
+        }).then(() => {});
+      }
+
       setSession(newSession);
       if (newSession?.user?.id) {
         // Defer to avoid Supabase deadlock

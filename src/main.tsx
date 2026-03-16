@@ -35,6 +35,9 @@ async function resetPreviewServiceWorkerCache() {
 }
 
 resetPreviewServiceWorkerCache().then(() => {
+  // Start offline sync engine
+  startSyncListener();
+
   ReactDOM.createRoot(container).render(
     <React.StrictMode>
       <App />
