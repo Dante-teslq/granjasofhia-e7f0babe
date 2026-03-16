@@ -224,5 +224,5 @@ input, select, textarea {
 
 /* Standalone mode */
 @media (display-mode: standalone) {
-  body { background: #F0F0F0; }
+  body { background: hsl(var(--background)); }
 }
