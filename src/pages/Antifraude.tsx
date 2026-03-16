@@ -220,8 +220,8 @@ const AntifravdePage = () => {
         </div>
 
         {/* Detailed Risk Table */}
-        <div className="glass-card rounded-lg overflow-hidden">
-          <div className="p-5 border-b border-border">
+        <div className="glass-card overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Detalhamento por Usuário</h3>
           </div>
           <div className="overflow-x-auto">

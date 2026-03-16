@@ -288,7 +288,7 @@ const ApuracaoPage = () => {
         )}
 
         {/* Table */}
-        <div className="glass-card rounded-lg overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

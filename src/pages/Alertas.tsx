@@ -252,7 +252,7 @@ const AlertasPage = () => {
         </div>
 
         {/* Alerts List */}
-        <div className="glass-card rounded-lg p-5">
+        <div className="glass-card p-4 md:p-6">
           <h3 className="text-sm font-semibold text-foreground mb-4">
             Alertas ({filtered.length})
           </h3>
