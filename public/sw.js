@@ -1,4 +1,4 @@
-const CACHE_NAME = 'granja-sofhia-v4';
+const CACHE_NAME = 'granja-sofhia-v5';
 const STATIC_ASSETS = [
   '/',
   '/logo.jpg',
@@ -46,6 +46,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
+  // Auto-activate immediately without waiting
   self.skipWaiting();
 });
 
@@ -56,6 +57,7 @@ self.addEventListener('activate', (event) => {
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
+  // Take control of all clients immediately
   self.clients.claim();
 });
 
@@ -64,7 +66,6 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET, OAuth, and Vite dev assets
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/~oauth')) return;
   if (isViteDevAsset(url)) {
@@ -86,6 +87,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network First → navigation (always get latest HTML)
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request).then((c) => c || caches.match('/offline.html')))
+    );
+    return;
+  }
+
   // Cache First → images, fonts, CSS
   if (isStaticAsset(request)) {
     event.respondWith(
@@ -101,7 +116,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache First → JS/scripts (built assets, NOT Vite dev)
+  // Cache First → JS/scripts
   if (isScript(request)) {
     event.respondWith(
       caches.match(request).then((cached) =>
@@ -112,23 +127,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
       ).catch(() => caches.match('/offline.html'))
-    );
-    return;
-  }
-
-  // Stale While Revalidate → navigation / routes
-  if (request.mode === 'navigate' || request.destination === 'document') {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const fetchPromise = fetch(request)
-          .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            return response;
-          })
-          .catch(() => cached || caches.match('/offline.html'));
-        return cached || fetchPromise;
-      })
     );
     return;
   }
@@ -145,7 +143,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ── Background Sync (queue offline actions) ──────────────────
+// ── Background Sync ──────────────────────────────────────────
 self.addEventListener('sync', (event) => {
   if (event.tag === 'offline-actions') {
     event.waitUntil(processOfflineQueue());
@@ -157,7 +155,6 @@ async function processOfflineQueue() {
     const cache = await caches.open(CACHE_NAME);
     const queue = await cache.match('/__offline_queue__');
     if (!queue) return;
-
     const actions = await queue.json();
     for (const action of actions) {
       try {
@@ -166,17 +163,13 @@ async function processOfflineQueue() {
           headers: action.headers || { 'Content-Type': 'application/json' },
           body: action.body,
         });
-      } catch (e) {
-        // silently retry next sync
-      }
+      } catch (e) { /* retry next sync */ }
     }
     await cache.delete('/__offline_queue__');
-  } catch (e) {
-    // silent
-  }
+  } catch (e) { /* silent */ }
 }
 
-// ── Skip waiting on user request ─────────────────────────────
+// ── Auto-skip waiting on message ─────────────────────────────
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
