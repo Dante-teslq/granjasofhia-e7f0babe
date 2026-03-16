@@ -168,7 +168,7 @@ const AlertasPage = () => {
         </div>
 
         {/* Risk Ranking */}
-        <div className="glass-card rounded-lg p-5">
+        <div className="glass-card p-4 md:p-6">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-primary" />
             Ranking de Risco por Usuário
