@@ -38,7 +38,7 @@ export async function saveRecordVersion(params: {
 
 export async function getRecordVersions(entity: string, recordId: string) {
   const { data, error } = await supabase
-    .from("record_history")
+    .from("record_history" as any)
     .select("*")
     .eq("entity", entity)
     .eq("record_id", recordId)

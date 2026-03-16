@@ -34,19 +34,19 @@ export async function processQueue(): Promise<{ synced: number; failed: number }
         let error: any = null;
 
         if (item.action === "insert") {
-          const res = await supabase.from(item.table).insert(item.payload);
+          const res = await supabase.from(item.table as any).insert(item.payload);
           error = res.error;
         } else if (item.action === "upsert") {
           const res = await supabase
-            .from(item.table)
+            .from(item.table as any)
             .upsert(item.payload, item.conflictColumns ? { onConflict: item.conflictColumns } : undefined);
           error = res.error;
         } else if (item.action === "update") {
           const { id: recordId, ...rest } = item.payload;
-          const res = await supabase.from(item.table).update(rest).eq("id", recordId);
+          const res = await supabase.from(item.table as any).update(rest).eq("id", recordId);
           error = res.error;
         } else if (item.action === "delete") {
-          const res = await supabase.from(item.table).delete().eq("id", item.payload.id);
+          const res = await supabase.from(item.table as any).delete().eq("id", item.payload.id);
           error = res.error;
         }
 
