@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Save, CheckCircle, Store, Camera, CalendarIcon, Trash2 } from "lucide-react";
+import { Save, CheckCircle, Store, Camera, Trash2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import StockTable from "@/components/StockTable";
+import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   AlertDialog,
   AlertDialogAction,
