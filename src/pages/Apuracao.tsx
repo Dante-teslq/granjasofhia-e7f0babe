@@ -214,7 +214,7 @@ const ApuracaoPage = () => {
         </div>
 
         {/* Chart */}
-        <div className="glass-card rounded-lg p-5">
+        <div className="glass-card p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore}</h3>
