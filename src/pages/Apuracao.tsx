@@ -243,7 +243,7 @@ const ApuracaoPage = () => {
 
         {/* Ranking */}
         {ranking.length > 0 && (
-          <div className="glass-card rounded-lg p-5">
+          <div className="glass-card p-4 md:p-6">
             <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-primary" />
