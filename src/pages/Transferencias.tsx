@@ -227,7 +227,7 @@ const TransferenciasPage = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
