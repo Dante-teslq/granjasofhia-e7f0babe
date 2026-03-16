@@ -12,7 +12,7 @@ export async function logSystemError(
 ): Promise<void> {
   try {
     const session = (await supabase.auth.getSession()).data.session;
-    await supabase.from("system_logs").insert({
+    await supabase.from("system_logs" as any).insert({
       level: "error",
       module,
       message,
