@@ -100,9 +100,9 @@ const AntifravdePage = () => {
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
           {/* Risk Score Bar */}
-          <div className="lg:col-span-2 glass-card rounded-lg p-5">
+          <div className="lg:col-span-2 glass-card p-4 md:p-6">
             <h3 className="text-sm font-semibold text-foreground mb-4">Score de Risco por Usuário</h3>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={riskChartData} layout="vertical" barGap={4}>
