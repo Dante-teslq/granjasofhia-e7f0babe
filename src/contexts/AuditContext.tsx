@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { addToSyncQueue } from "@/lib/offlineSync";
+import { logSystemError } from "@/lib/systemLogger";
 
-export type AuditAction = "create" | "update" | "delete" | "adjustment";
+export type AuditAction = "create" | "update" | "delete" | "adjustment" | "login" | "logout";
 
 export interface AuditEntry {
   id: string;
@@ -14,6 +16,10 @@ export interface AuditEntry {
   after_data: any;
   ip: string;
   device: string;
+  user_id?: string;
+  entity?: string;
+  record_id?: string;
+  user_agent?: string;
 }
 
 interface AuditContextData {
@@ -26,6 +32,9 @@ interface AuditContextData {
     item_description: string;
     before_data?: any;
     after_data?: any;
+    entity?: string;
+    record_id?: string;
+    user_id?: string;
   }) => Promise<void>;
   fetchLogs: (from?: Date, to?: Date) => Promise<void>;
 }
@@ -84,21 +93,36 @@ export const AuditProvider = ({ children }: { children: ReactNode }) => {
     item_description: string;
     before_data?: any;
     after_data?: any;
+    entity?: string;
+    record_id?: string;
+    user_id?: string;
   }) => {
+    const row = {
+      action: entry.action,
+      module: entry.module,
+      usuario: entry.usuario,
+      item_description: entry.item_description,
+      before_data: entry.before_data || null,
+      after_data: entry.after_data || null,
+      ip: "0.0.0.0",
+      device: detectDevice(),
+      user_id: entry.user_id || null,
+      entity: entry.entity || "",
+      record_id: entry.record_id || null,
+      user_agent: navigator.userAgent.slice(0, 255),
+    };
+
     try {
-      const { error } = await supabase.from("audit_logs").insert({
-        action: entry.action,
-        module: entry.module,
-        usuario: entry.usuario,
-        item_description: entry.item_description,
-        before_data: entry.before_data || null,
-        after_data: entry.after_data || null,
-        ip: "192.168.1.1",
-        device: detectDevice(),
-      });
+      const { error } = await supabase.from("audit_logs").insert(row);
       if (error) throw error;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Erro ao registrar log de auditoria:", err);
+      // Fallback: queue for offline sync
+      try {
+        await addToSyncQueue({ table: "audit_logs", action: "insert", payload: row });
+      } catch (queueErr) {
+        await logSystemError("AuditContext", "Falha ao enfileirar log offline", { row, error: err?.message });
+      }
     }
   }, []);
 

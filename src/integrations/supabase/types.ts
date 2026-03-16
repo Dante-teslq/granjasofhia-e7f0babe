@@ -21,10 +21,14 @@ export type Database = {
           before_data: Json | null
           created_at: string
           device: string | null
+          entity: string | null
           id: string
           ip: string | null
           item_description: string
           module: string
+          record_id: string | null
+          user_agent: string | null
+          user_id: string | null
           usuario: string
         }
         Insert: {
@@ -33,10 +37,14 @@ export type Database = {
           before_data?: Json | null
           created_at?: string
           device?: string | null
+          entity?: string | null
           id?: string
           ip?: string | null
           item_description?: string
           module: string
+          record_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
           usuario: string
         }
         Update: {
@@ -45,10 +53,14 @@ export type Database = {
           before_data?: Json | null
           created_at?: string
           device?: string | null
+          entity?: string | null
           id?: string
           ip?: string | null
           item_description?: string
           module?: string
+          record_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
           usuario?: string
         }
         Relationships: []
@@ -354,6 +366,39 @@ export type Database = {
           },
         ]
       }
+      record_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          changed_by_name: string | null
+          data_snapshot: Json
+          entity: string
+          id: string
+          record_id: string
+          version_number: number
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          data_snapshot: Json
+          entity: string
+          id?: string
+          record_id: string
+          version_number?: number
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          data_snapshot?: Json
+          entity?: string
+          id?: string
+          record_id?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       sangrias: {
         Row: {
           barbantes: string
@@ -390,6 +435,36 @@ export type Database = {
           sangria?: string
           updated_at?: string
           usuario?: string | null
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: string
+          level: string
+          message: string
+          module: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          level?: string
+          message: string
+          module?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          level?: string
+          message?: string
+          module?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

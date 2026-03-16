@@ -1,8 +1,9 @@
-/* cache-bust v5 */
+/* cache-bust v6 */
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { startSyncListener } from "./lib/syncEngine";
 
 const container = document.getElementById("root");
 if (!container) throw new Error("Root element not found");
@@ -34,6 +35,9 @@ async function resetPreviewServiceWorkerCache() {
 }
 
 resetPreviewServiceWorkerCache().then(() => {
+  // Start offline sync engine
+  startSyncListener();
+
   ReactDOM.createRoot(container).render(
     <React.StrictMode>
       <App />
