@@ -14,16 +14,16 @@ export async function saveRecordVersion(params: {
 
     // Get current max version
     const { data: existing } = await supabase
-      .from("record_history")
+      .from("record_history" as any)
       .select("version_number")
       .eq("entity", params.entity)
       .eq("record_id", params.recordId)
       .order("version_number", { ascending: false })
       .limit(1);
 
-    const nextVersion = (existing?.[0]?.version_number || 0) + 1;
+    const nextVersion = ((existing as any)?.[0]?.version_number || 0) + 1;
 
-    await supabase.from("record_history").insert({
+    await supabase.from("record_history" as any).insert({
       entity: params.entity,
       record_id: params.recordId,
       version_number: nextVersion,
