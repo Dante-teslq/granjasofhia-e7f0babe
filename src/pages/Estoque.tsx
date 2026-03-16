@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Save, CheckCircle, Store, Camera, CalendarIcon, Trash2 } from "lucide-react";
+import { Save, CheckCircle, Store, Camera, Trash2 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import StockTable from "@/components/StockTable";
+import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -241,24 +240,12 @@ const EstoquePage = () => {
             <p className="text-muted-foreground text-xs md:text-sm mt-1">Controle diário por PDV — Estoque Sistema × Estoque Loja</p>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-wrap">
-            {/* Date Picker */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full sm:w-[200px] justify-start text-left font-normal h-10 md:h-9")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(selectedDate, "dd/MM/yyyy")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(d) => d && setSelectedDate(d)}
-                  locale={ptBR}
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <DateRangePicker
+              from={selectedDate}
+              to={selectedDate}
+              onChange={({ from }) => setSelectedDate(from)}
+              align="start"
+            />
 
             {/* Store Selector */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
