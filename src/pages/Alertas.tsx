@@ -148,12 +148,12 @@ const AlertasPage = () => {
         </div>
 
         {/* Rule Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {ruleSummary.map((rule, i) => (
             <div
               key={i}
               onClick={() => navigate(rule.link)}
-              className="glass-card rounded-lg p-3 cursor-pointer transition-all hover:border-primary/40 hover:shadow-sm"
+              className="glass-card p-3 md:p-4 cursor-pointer transition-all hover:border-primary/40 hover:shadow-sm"
             >
               <div className="flex items-center gap-2 mb-2">
                 <rule.icon className="w-3.5 h-3.5 text-primary" />
