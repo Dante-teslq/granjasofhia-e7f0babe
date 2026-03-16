@@ -161,7 +161,7 @@ const AntifravdePage = () => {
           </div>
 
           {/* Fraud Settings */}
-          <div className="glass-card rounded-lg p-5 space-y-4">
+          <div className="glass-card p-4 md:p-6 space-y-4">
             <div className="flex items-center gap-2">
               <Percent className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Limites de Segurança</h3>
