@@ -187,21 +187,21 @@ const ApuracaoPage = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total {activeYear}</p>
-            <p className="text-2xl font-bold text-foreground">{totalCurrent.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">caixas</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Total {activeYear}</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{totalCurrent.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">caixas</p>
           </div>
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Total {Number(activeYear) - 1}</p>
-            <p className="text-2xl font-bold text-foreground">{totalPrev.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
-            <p className="text-xs text-muted-foreground mt-1">caixas</p>
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Total {Number(activeYear) - 1}</p>
+            <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{totalPrev.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">caixas</p>
           </div>
-          <div className="glass-card rounded-lg p-5">
-            <p className="text-xs text-muted-foreground mb-1">Variação</p>
+          <div className="glass-card p-4 md:p-6">
+            <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Variação</p>
             <div className="flex items-center gap-2">
-              <p className={`text-2xl font-bold ${Number(variation) >= 0 ? "text-success" : "text-destructive"}`}>
+              <p className={`text-xl md:text-3xl font-extrabold tracking-tight ${Number(variation) >= 0 ? "text-success" : "text-destructive"}`}>
                 {variation}%
               </p>
               {Number(variation) >= 0 ? (
