@@ -342,7 +342,7 @@ const VendasDiariasPage = () => {
                 <Input type="number" min="1" value={formQtd} onChange={e => setFormQtd(e.target.value)} placeholder="0" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Valor Unitário *</label>
+                <label className="text-sm font-medium text-foreground">Valor *</label>
                 <Input type="number" min="0" step="0.01" value={formValor} onChange={e => setFormValor(e.target.value)} placeholder="0.00" />
               </div>
             </div>
