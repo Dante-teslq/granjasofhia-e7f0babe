@@ -49,7 +49,7 @@ const EvidenciasPage = () => {
   // Gallery state
   const [records, setRecords] = useState<EvidenciaRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filterPdv, setFilterPdv] = useState<string>("all");
+  const [filterPdv, setFilterPdv] = useState<string>(isOperator && userPdvName ? userPdvName : "all");
   const [filterUser, setFilterUser] = useState<string>("all");
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
