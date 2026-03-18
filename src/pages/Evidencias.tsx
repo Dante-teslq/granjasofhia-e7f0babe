@@ -410,18 +410,24 @@ const EvidenciasPage = () => {
                     )}
                   </>
                 )}
-                <Select value={filterPdv} onValueChange={setFilterPdv}>
-                  <SelectTrigger className="w-[160px] h-9 text-sm">
-                    <Filter className="w-3.5 h-3.5 mr-1" />
-                    <SelectValue placeholder="PDV" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os PDVs</SelectItem>
-                    {STORES.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isOperator && userPdvName ? (
+                  <div className="w-[160px] h-9 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                    {userPdvName}
+                  </div>
+                ) : (
+                  <Select value={filterPdv} onValueChange={setFilterPdv}>
+                    <SelectTrigger className="w-[160px] h-9 text-sm">
+                      <Filter className="w-3.5 h-3.5 mr-1" />
+                      <SelectValue placeholder="PDV" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os PDVs</SelectItem>
+                      {STORES.map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 {isAdmin && (
                   <Select value={filterUser} onValueChange={setFilterUser}>
                     <SelectTrigger className="w-[160px] h-9 text-sm">
