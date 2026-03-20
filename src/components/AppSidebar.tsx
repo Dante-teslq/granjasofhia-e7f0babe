@@ -1,4 +1,4 @@
-import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft } from "lucide-react";
+import { Package, LayoutDashboard, ClipboardList, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft, PackageCheck } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
