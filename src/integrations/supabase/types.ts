@@ -237,59 +237,38 @@ export type Database = {
       }
       movimentacoes_estoque: {
         Row: {
-          confirmado_em: string | null
-          confirmado_por: string | null
           created_at: string
-          divergencia: number | null
-          foto_recebimento: string | null
           id: string
           observacao: string | null
-          observacao_recebimento: string | null
           pdv_destino_id: string | null
           pdv_origem_id: string | null
           produto_codigo: string
           produto_descricao: string
           quantidade: number
-          quantidade_recebida: number | null
-          status: string
           tipo: string
           usuario: string | null
         }
         Insert: {
-          confirmado_em?: string | null
-          confirmado_por?: string | null
           created_at?: string
-          divergencia?: number | null
-          foto_recebimento?: string | null
           id?: string
           observacao?: string | null
-          observacao_recebimento?: string | null
           pdv_destino_id?: string | null
           pdv_origem_id?: string | null
           produto_codigo: string
           produto_descricao?: string
           quantidade: number
-          quantidade_recebida?: number | null
-          status?: string
           tipo: string
           usuario?: string | null
         }
         Update: {
-          confirmado_em?: string | null
-          confirmado_por?: string | null
           created_at?: string
-          divergencia?: number | null
-          foto_recebimento?: string | null
           id?: string
           observacao?: string | null
-          observacao_recebimento?: string | null
           pdv_destino_id?: string | null
           pdv_origem_id?: string | null
           produto_codigo?: string
           produto_descricao?: string
           quantidade?: number
-          quantidade_recebida?: number | null
-          status?: string
           tipo?: string
           usuario?: string | null
         }
