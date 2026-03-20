@@ -644,10 +644,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_transfer: {
+        Args: {
+          _confirmado_por: string
+          _foto_recebimento?: string
+          _observacao_recebimento?: string
+          _quantidade_recebida: number
+          _transfer_id: string
+        }
+        Returns: undefined
+      }
       get_user_pdv_id: { Args: { _user_id: string }; Returns: string }
       get_user_pdv_name: { Args: { _user_id: string }; Returns: string }
       get_user_role: { Args: { _user_id: string }; Returns: string }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
+      validate_transfer_stock: {
+        Args: { _pdv_id: string; _produto_codigo: string; _quantidade: number }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
