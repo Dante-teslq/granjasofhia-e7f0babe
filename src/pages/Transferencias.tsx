@@ -151,6 +151,7 @@ const TransferenciasPage = () => {
       quantidade: qty,
       observacao: observacao || null,
       usuario: profile?.nome || profile?.email || null,
+      status: "pendente",
     });
 
     setSaving(false);
