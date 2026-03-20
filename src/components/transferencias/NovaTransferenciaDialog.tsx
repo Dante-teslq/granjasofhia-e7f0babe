@@ -68,19 +68,6 @@ const NovaTransferenciaDialog = ({ open, onOpenChange, pdvList, isOperator, user
 
     setSaving(true);
 
-    // Validate stock at origin
-    const { data: hasStock } = await supabase.rpc("validate_transfer_stock", {
-      _pdv_id: origemId,
-      _produto_codigo: produtoCodigo,
-      _quantidade: qty,
-    });
-
-    if (hasStock === false) {
-      toast.error("Estoque insuficiente no local de origem para esta quantidade");
-      setSaving(false);
-      return;
-    }
-
     const { error } = await supabase.from("movimentacoes_estoque").insert({
       tipo: "transferencia",
       status: "pendente",
