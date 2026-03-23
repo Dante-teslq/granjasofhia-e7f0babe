@@ -59,7 +59,7 @@ const TransferenciasPage = () => {
           </div>
         </div>
 
-        <TransferenciaStats records={records} />
+        <TransferenciaStats records={records} insumosCount={insumosCount} />
 
         {/* Tabs */}
         <Tabs defaultValue="envios" className="w-full">
