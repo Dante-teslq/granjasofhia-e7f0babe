@@ -9,7 +9,7 @@ import { FraudProvider } from "@/contexts/FraudContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
-import Sangrias from "./pages/Sangrias";
+
 import Apuracao from "./pages/Apuracao";
 import Auditoria from "./pages/Auditoria";
 import Alertas from "./pages/Alertas";
