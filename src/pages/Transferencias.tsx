@@ -53,6 +53,9 @@ const TransferenciasPage = () => {
             <TabsTrigger value="recebimentos" className="gap-1.5">
               <PackageCheck className="w-3.5 h-3.5" /> Recebimentos
             </TabsTrigger>
+            <TabsTrigger value="insumos" className="gap-1.5">
+              <ClipboardList className="w-3.5 h-3.5" /> Insumos
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="envios" className="mt-4">
