@@ -52,8 +52,8 @@ export const useApp = () => {
   return ctx;
 };
 
-const vendaAllowed = new Set(["/estoque", "/sangrias", "/evidencias", "/vendas-diarias"]);
-const depositoAllowed = new Set(["/estoque", "/sangrias", "/evidencias", "/transferencias"]);
+const vendaAllowed = new Set(["/estoque", "/evidencias", "/vendas-diarias", "/transferencias"]);
+const depositoAllowed = new Set(["/estoque", "/evidencias", "/transferencias"]);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);

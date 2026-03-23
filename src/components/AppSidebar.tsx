@@ -8,7 +8,7 @@ const allLinks = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", section: "Operacional" },
   { to: "/estoque", icon: Package, label: "Estoque Diário", section: "Operacional" },
   { to: "/apuracao", icon: FileText, label: "Apuração de Vendas", section: "Operacional" },
-  { to: "/sangrias", icon: ClipboardList, label: "Insumos", section: "Operacional" },
+  
   { to: "/vendas-diarias", icon: ShoppingCart, label: "Vendas Diárias", section: "Operacional" },
   { to: "/evidencias", icon: Camera, label: "Evidências de Perdas", section: "Operacional" },
   { to: "/transferencias", icon: ArrowRightLeft, label: "Transferências", section: "Operacional" },

@@ -70,6 +70,10 @@ const TransferenciasPage = () => {
               onConfirmed={loadRecords}
             />
           </TabsContent>
+
+          <TabsContent value="insumos" className="mt-4">
+            <InsumosTab />
+          </TabsContent>
         </Tabs>
 
         <NovaTransferenciaDialog
