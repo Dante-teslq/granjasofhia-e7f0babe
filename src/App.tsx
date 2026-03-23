@@ -9,7 +9,7 @@ import { FraudProvider } from "@/contexts/FraudContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
-import Sangrias from "./pages/Sangrias";
+
 import Apuracao from "./pages/Apuracao";
 import Auditoria from "./pages/Auditoria";
 import Alertas from "./pages/Alertas";
@@ -86,7 +86,7 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute></AuthGuard>} />
       <Route path="/estoque" element={<AuthGuard><ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute></AuthGuard>} />
-      <Route path="/sangrias" element={<AuthGuard><Sangrias /></AuthGuard>} />
+      <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
       <Route path="/apuracao" element={<AuthGuard><ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute></AuthGuard>} />
       <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
       <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
