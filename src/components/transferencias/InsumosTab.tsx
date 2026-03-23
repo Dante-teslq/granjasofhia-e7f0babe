@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, ClipboardList } from "lucide-react";
 import { format } from "date-fns";
 import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
@@ -99,59 +99,7 @@ const InsumosTab = () => {
   }, {});
 
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <DateRangePicker
-          from={selectedDate}
-          to={selectedDate}
-          onChange={({ from }) => setSelectedDate(from)}
-          align="start"
-        />
-
-        {isOperator && userPdvName ? (
-          <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
-            {userPdvName}
-          </div>
-        ) : (
-          <Select value={selectedPDV} onValueChange={setSelectedPDV}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Ponto de Venda" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os PDVs</SelectItem>
-              {STORES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
-        {isAdmin && records.length > 0 && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" className="gap-1.5">
-                <Trash2 className="w-4 h-4" />
-                Excluir Registros
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Excluir todos os registros de insumos de {format(selectedDate, "dd/MM/yyyy")}
-                  {selectedPDV !== "all" ? ` — ${selectedPDV}` : " — todos os PDVs"}? Esta ação não pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </div>
-
+    <div className="space-y-6">
       {/* New entry form */}
       <div>
         <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -184,26 +132,83 @@ const InsumosTab = () => {
         </div>
       </div>
 
-      {/* Saved records history */}
-      {loading ? (
-        <p className="text-muted-foreground text-sm">Carregando...</p>
-      ) : records.length > 0 ? (
-        <div>
-          <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">Histórico de Registros ({records.length})</h3>
-          <div className="space-y-4">
-            {Object.entries(groupedByPDV).map(([pdv, items]) => (
-              <div key={pdv}>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{pdv}</p>
-                <div className="glass-card overflow-hidden">
-                  <SangriasTable items={items} onChange={() => {}} readOnly />
-                </div>
+      {/* Saved records section */}
+      <div>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+          <ClipboardList className="w-4 h-4" /> Registros Salvos
+        </h3>
+        <div className="glass-card p-4 space-y-4">
+          {/* Filters inside saved records */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <DateRangePicker
+              from={selectedDate}
+              to={selectedDate}
+              onChange={({ from }) => setSelectedDate(from)}
+              align="start"
+            />
+
+            {isOperator && userPdvName ? (
+              <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+                {userPdvName}
               </div>
-            ))}
+            ) : (
+              <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="Ponto de Venda" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os PDVs</SelectItem>
+                  {STORES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {isAdmin && records.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-1.5">
+                    <Trash2 className="w-4 h-4" />
+                    Excluir Registros
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Excluir todos os registros de insumos de {format(selectedDate, "dd/MM/yyyy")}
+                      {selectedPDV !== "all" ? ` — ${selectedPDV}` : " — todos os PDVs"}? Esta ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
+
+          {/* Records list */}
+          {loading ? (
+            <p className="text-muted-foreground text-sm py-4 text-center">Carregando...</p>
+          ) : records.length > 0 ? (
+            <div className="space-y-4">
+              {Object.entries(groupedByPDV).map(([pdv, items]) => (
+                <div key={pdv}>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{pdv}</p>
+                  <div className="rounded-md border border-border overflow-hidden">
+                    <SangriasTable items={items} onChange={() => {}} readOnly />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm py-4 text-center">Nenhum registro para esta data.</p>
+          )}
         </div>
-      ) : (
-        <p className="text-muted-foreground text-sm">Nenhum registro para esta data.</p>
-      )}
+      </div>
     </div>
   );
 };
