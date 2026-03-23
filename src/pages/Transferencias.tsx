@@ -12,13 +12,30 @@ import RecebimentosTab from "@/components/transferencias/RecebimentosTab";
 import NovaTransferenciaDialog from "@/components/transferencias/NovaTransferenciaDialog";
 import InsumosTab from "@/components/transferencias/InsumosTab";
 
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+
 const TransferenciasPage = () => {
   const { profile, dateRange, isOperator, currentRole, session } = useApp();
   const isAdmin = currentRole === "Admin" || currentRole === "Administrador" || currentRole === "Supervisor";
   const { records, pdvList, loading, loadRecords, deleteRecord } = useTransferencias(dateRange);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [insumosCount, setInsumosCount] = useState(0);
 
   const userName = profile?.nome || profile?.email || "";
+
+  // Fetch today's insumos count
+  useEffect(() => {
+    const fetchInsumosCount = async () => {
+      const today = format(new Date(), "yyyy-MM-dd");
+      const { count } = await supabase
+        .from("sangrias")
+        .select("*", { count: "exact", head: true })
+        .eq("data", today);
+      setInsumosCount(count || 0);
+    };
+    fetchInsumosCount();
+  }, []);
 
   return (
     <DashboardLayout>
