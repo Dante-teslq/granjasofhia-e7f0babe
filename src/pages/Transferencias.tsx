@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRightLeft, Plus, Send, PackageCheck } from "lucide-react";
+import { ArrowRightLeft, Plus, Send, PackageCheck, ClipboardList } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +10,7 @@ import TransferenciaStats from "@/components/transferencias/TransferenciaStats";
 import TransferenciasTable from "@/components/transferencias/TransferenciasTable";
 import RecebimentosTab from "@/components/transferencias/RecebimentosTab";
 import NovaTransferenciaDialog from "@/components/transferencias/NovaTransferenciaDialog";
+import InsumosTab from "@/components/transferencias/InsumosTab";
 
 const TransferenciasPage = () => {
   const { profile, dateRange, isOperator, currentRole, session } = useApp();
