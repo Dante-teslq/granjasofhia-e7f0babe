@@ -189,7 +189,7 @@ const InsumosTab = () => {
         <p className="text-muted-foreground text-sm">Carregando...</p>
       ) : records.length > 0 ? (
         <div>
-          <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-3">Histórico de Registros ({records.length})</h3>
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">Histórico de Registros ({records.length})</h3>
           <div className="space-y-4">
             {Object.entries(groupedByPDV).map(([pdv, items]) => (
               <div key={pdv}>
