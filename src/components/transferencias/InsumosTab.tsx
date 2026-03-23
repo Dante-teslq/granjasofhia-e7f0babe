@@ -152,49 +152,58 @@ const InsumosTab = () => {
         )}
       </div>
 
-      {/* Saved records */}
+      {/* New entry form */}
+      <div>
+        <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Save className="w-4 h-4" /> Novo Registro
+        </h3>
+        <div className="glass-card p-4 space-y-3">
+          {isOperator && userPdvName ? (
+            <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
+              {userPdvName}
+            </div>
+          ) : (
+            <Select value={editPDV} onValueChange={setEditPDV}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Selecione o PDV" />
+              </SelectTrigger>
+              <SelectContent>
+                {STORES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <SangriasTable items={editItems} onChange={setEditItems} />
+          <div className="flex justify-end">
+            <Button onClick={handleSave} className="gap-2 w-full sm:w-auto h-12 md:h-10">
+              <Save className="w-4 h-4" />
+              Salvar Registro
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Saved records history */}
       {loading ? (
         <p className="text-muted-foreground text-sm">Carregando...</p>
       ) : records.length > 0 ? (
-        <div className="space-y-4">
-          {Object.entries(groupedByPDV).map(([pdv, items]) => (
-            <div key={pdv} className="space-y-2">
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">{pdv}</h3>
-              <SangriasTable items={items} onChange={() => {}} readOnly />
-            </div>
-          ))}
+        <div>
+          <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">Histórico de Registros ({records.length})</h3>
+          <div className="space-y-4">
+            {Object.entries(groupedByPDV).map(([pdv, items]) => (
+              <div key={pdv}>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{pdv}</p>
+                <div className="glass-card overflow-hidden">
+                  <SangriasTable items={items} onChange={() => {}} readOnly />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <p className="text-muted-foreground text-sm">Nenhum registro para esta data.</p>
       )}
-
-      {/* New entry form */}
-      <div className="border-t border-border pt-4 space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">Novo Registro</h2>
-        {isOperator && userPdvName ? (
-          <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
-            {userPdvName}
-          </div>
-        ) : (
-          <Select value={editPDV} onValueChange={setEditPDV}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Selecione o PDV" />
-            </SelectTrigger>
-            <SelectContent>
-              {STORES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-        <SangriasTable items={editItems} onChange={setEditItems} />
-        <div className="flex justify-end">
-          <Button onClick={handleSave} className="gap-2 w-full sm:w-auto h-12 md:h-10">
-            <Save className="w-4 h-4" />
-            Salvar Registro
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };
