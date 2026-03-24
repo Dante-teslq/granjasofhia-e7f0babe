@@ -302,9 +302,7 @@ const ApuracaoPage = () => {
                     <th key={y} className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">{y}</th>
                   ))}
                   
-                  {isAdmin && (
-                    <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
-                  )}
+                  <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody>
