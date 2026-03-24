@@ -236,7 +236,7 @@ const ApuracaoPage = () => {
         <div className="glass-card p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore}</h3>
+            <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore === "__all__" ? "Todos os PDVs" : activeStore}</h3>
           </div>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={chartData} barGap={2}>
