@@ -213,6 +213,7 @@ const Index = () => {
             </Select>
             <GlobalDateFilter />
           </div>
+        </div>
 
         {loading && (
           <div className="flex items-center justify-center py-8">
