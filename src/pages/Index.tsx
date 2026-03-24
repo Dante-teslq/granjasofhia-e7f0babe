@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Package, AlertTriangle, ShieldAlert, ShoppingCart, DollarSign,
   TrendingUp, Trophy, AlertCircle, Heart, MapPin,
