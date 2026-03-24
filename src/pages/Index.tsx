@@ -308,7 +308,7 @@ const Index = () => {
               <Heart className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Saúde do Estoque</h3>
             </div>
-            {stockHealth.total > 0 ? (
+            {filteredStockHealth.total > 0 ? (
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-[160px] h-[160px]">
                   <ResponsiveContainer width="100%" height="100%">
