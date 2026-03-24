@@ -425,10 +425,10 @@ const Index = () => {
               <AlertCircle className="w-4 h-4 text-destructive" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Maiores Perdas</h3>
             </div>
-            {rankings.topPerdas.length > 0 ? (
+            {filteredRankings.topPerdas.length > 0 ? (
               <div className="space-y-2">
-                {rankings.topPerdas.map((p, i) => {
-                  const maxQuebrado = rankings.topPerdas[0]?.quebrado || 1;
+                {filteredRankings.topPerdas.map((p: any, i: number) => {
+                  const maxQuebrado = filteredRankings.topPerdas[0]?.quebrado || 1;
                   const pct = (p.quebrado / maxQuebrado) * 100;
                   return (
                     <div key={p.descricao} className="flex items-center gap-3">
