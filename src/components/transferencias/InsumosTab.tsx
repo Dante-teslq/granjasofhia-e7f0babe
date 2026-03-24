@@ -8,6 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useAudit } from "@/contexts/AuditContext";
 import { useSangriasDB } from "@/hooks/useSangriasDB";
 import { SangriaItem, STORES } from "@/types/inventory";
+// DateRangePicker removed — uses global date filter from page header
 import { toast } from "@/components/ui/sonner";
 import {
   AlertDialog,

@@ -3,13 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { SangriaItem, STORES } from "@/types/inventory";
 import { format } from "date-fns";
 
-export function useSangriasDB() {
+export function useSangriasDB(externalDate?: Date) {
   const [records, setRecords] = useState<SangriaItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedPDV, setSelectedPDV] = useState<string>("all");
 
-  const dateStr = format(selectedDate, "yyyy-MM-dd");
+  const activeDate = externalDate || selectedDate;
+  const dateStr = format(activeDate, "yyyy-MM-dd");
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
