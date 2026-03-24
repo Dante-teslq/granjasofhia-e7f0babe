@@ -318,30 +318,28 @@ const ApuracaoPage = () => {
                           {storeData[y]?.[i]?.toLocaleString("pt-BR", { minimumFractionDigits: 1 }) || "—"}
                         </td>
                       ))}
-                      {isAdmin && (
-                        <td className="px-4 py-2.5 text-center">
-                          <div className="flex items-center justify-center gap-1">
+                      <td className="px-4 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => openEdit(activeStore === "__all__" ? (pontosVenda[0] || "") : activeStore, activeYear, i + 1, curr)}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          {curr > 0 && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-7 w-7"
-                              onClick={() => openEdit(activeStore, activeYear, i + 1, curr)}
+                              className="h-7 w-7 text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteMonth(activeStore === "__all__" ? (pontosVenda[0] || "") : activeStore, activeYear, i + 1)}
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
-                            {curr > 0 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteMonth(activeStore, activeYear, i + 1)}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      )}
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
