@@ -160,7 +160,7 @@ const Index = () => {
   }));
 
   // Estoque daily chart
-  const dailyChartData = estoque.porDia.slice(0, 14).map(d => ({
+  const dailyChartData = filteredEstoque.porDia.slice(0, 14).map((d: any) => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
     estoque: d.vendas,
     entradas: d.entradas,
@@ -168,9 +168,9 @@ const Index = () => {
 
   // Stock health pie data
   const healthPieData = [
-    { name: "Saudável", value: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
-    { name: "Atenção", value: stockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
-    { name: "Crítico", value: stockHealth.critico, color: HEALTH_COLORS["Crítico"] },
+    { name: "Saudável", value: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
+    { name: "Atenção", value: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
+    { name: "Crítico", value: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"] },
   ].filter(d => d.value > 0);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
