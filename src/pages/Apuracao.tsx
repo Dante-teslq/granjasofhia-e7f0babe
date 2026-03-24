@@ -177,6 +177,7 @@ const ApuracaoPage = () => {
               <SelectValue placeholder="Ponto de venda" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__all__">Todos os PDVs</SelectItem>
               {pontosVenda.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
