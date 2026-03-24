@@ -122,8 +122,7 @@ export function useDashboardData({ from, to }: UseDashboardDataOptions) {
 
   // Rankings
   const rankings = useMemo(() => {
-    // Top 5 most sold products
-    const topVendidos = [...vendas.porProduto].slice(0, 5);
+    const topVendidos = [...vendas.porProduto].sort((a, b) => b.quantidade - a.quantidade).slice(0, 5);
 
     // Top 5 products with most loss (quebrado)
     const porProdutoPerda = [...estoque.porProduto]

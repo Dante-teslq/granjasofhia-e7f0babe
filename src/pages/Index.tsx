@@ -59,7 +59,7 @@ const Index = () => {
         acc[r.produto].total += r.total;
         return acc;
       }, {} as Record<string, { produto: string; quantidade: number; total: number }>)
-    ).sort((a, b) => b.total - a.total);
+    ).sort((a, b) => b.quantidade - a.quantidade);
     const porDia = Object.values(
       filtered.reduce((acc, r) => {
         if (!acc[r.data]) acc[r.data] = { data: r.data, total: 0, quantidade: 0 };
