@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import {
   AlertTriangle, ShieldAlert, Clock, TrendingUp, ExternalLink,
-  CheckCircle, Eye, MessageSquare, Activity, Repeat, UserX,
+  CheckCircle, Eye, MessageSquare, Activity, Repeat, UserX, Package,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { useFraud, type FraudAlertType, type FraudSeverity, type FraudStatus } from "@/contexts/FraudContext";
 import { useApp } from "@/contexts/AppContext";
+import { useEstoqueData } from "@/hooks/useEstoqueData";
 import { toast } from "@/components/ui/sonner";
 
 const typeLabels: Record<FraudAlertType, { label: string; icon: typeof AlertTriangle }> = {
