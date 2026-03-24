@@ -1,10 +1,12 @@
+import { useState, useMemo } from "react";
 import {
   Package, AlertTriangle, ShieldAlert, ShoppingCart, DollarSign,
-  TrendingUp, Trophy, AlertCircle, Heart,
+  TrendingUp, Trophy, AlertCircle, Heart, MapPin,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
 import { useFraud } from "@/contexts/FraudContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
