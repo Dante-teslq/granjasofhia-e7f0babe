@@ -73,7 +73,7 @@ const InsumosTab = () => {
     }
 
     toast.success("Insumos salvos com sucesso!", {
-      description: `${editPDV} — ${format(selectedDate, "dd/MM/yyyy")}`,
+      description: `${editPDV} — ${format(dateRange.from, "dd/MM/yyyy")}`,
     });
     setEditItems([emptyRow()]);
   };
