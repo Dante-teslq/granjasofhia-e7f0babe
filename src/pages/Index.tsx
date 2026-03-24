@@ -390,8 +390,8 @@ const Index = () => {
             {filteredRankings.topVendidos.length > 0 ? (
               <div className="space-y-2">
                 {filteredRankings.topVendidos.map((p, i) => {
-                  const maxTotal = filteredRankings.topVendidos[0]?.total || 1;
-                  const pct = (p.total / maxTotal) * 100;
+                  const maxQtd = filteredRankings.topVendidos[0]?.quantidade || 1;
+                  const pct = (p.quantidade / maxQtd) * 100;
                   return (
                     <div key={p.produto} className="flex items-center gap-3">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
@@ -402,7 +402,7 @@ const Index = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-foreground truncate">{p.produto}</span>
-                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">R$ {p.total.toLocaleString('pt-BR')}</span>
+                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">{p.quantidade.toLocaleString('pt-BR')} cartelas</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
