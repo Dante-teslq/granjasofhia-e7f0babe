@@ -138,12 +138,6 @@ const InsumosTab = () => {
         <div className="glass-card p-4 space-y-4">
           {/* Filters inside saved records */}
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <DateRangePicker
-              from={selectedDate}
-              to={selectedDate}
-              onChange={({ from }) => setSelectedDate(from)}
-              align="start"
-            />
 
             {isOperator && userPdvName ? (
               <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
