@@ -32,18 +32,16 @@ const emptyRow = (): SangriaItem => ({
 });
 
 const InsumosTab = () => {
-  const { currentRole, profile, isOperator, userPdvName } = useApp();
+  const { currentRole, profile, isOperator, userPdvName, dateRange } = useApp();
   const { addLog } = useAudit();
   const {
     records,
     loading,
-    selectedDate,
-    setSelectedDate,
     selectedPDV,
     setSelectedPDV,
     saveItems,
     deleteByDate,
-  } = useSangriasDB();
+  } = useSangriasDB(dateRange.from);
 
   const [editItems, setEditItems] = useState<SangriaItem[]>([emptyRow()]);
   const [editPDV, setEditPDV] = useState<string>(isOperator && userPdvName ? userPdvName : STORES[0]);
