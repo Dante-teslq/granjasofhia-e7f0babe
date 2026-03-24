@@ -281,7 +281,7 @@ const Index = () => {
           {/* Movimentação de Estoque */}
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Movimentação de Estoque</h3>
-            {dailyChartData.length > 0 && estoque.hasData ? (
+            {dailyChartData.length > 0 && filteredEstoque.hasData ? (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={dailyChartData} barGap={6}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
