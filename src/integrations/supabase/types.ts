@@ -65,6 +65,103 @@ export type Database = {
         }
         Relationships: []
       }
+      estoque_diario: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          created_by_name: string
+          data_conferencia: string
+          id: string
+          pdv_id: string
+          status: string
+          updated_at: string
+          updated_by: string | null
+          updated_by_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          data_conferencia: string
+          id?: string
+          pdv_id: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          updated_by_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string
+          data_conferencia?: string
+          id?: string
+          pdv_id?: string
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          updated_by_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_diario_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estoque_diario_itens: {
+        Row: {
+          created_at: string
+          estoque_diario_id: string
+          estoque_loja: number
+          estoque_sistema: number
+          id: string
+          observacao: string
+          produto_codigo: string
+          produto_descricao: string
+          quebrado: number
+          trincado: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estoque_diario_id: string
+          estoque_loja?: number
+          estoque_sistema?: number
+          id?: string
+          observacao?: string
+          produto_codigo?: string
+          produto_descricao?: string
+          quebrado?: number
+          trincado?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estoque_diario_id?: string
+          estoque_loja?: number
+          estoque_sistema?: number
+          id?: string
+          observacao?: string
+          produto_codigo?: string
+          produto_descricao?: string
+          quebrado?: number
+          trincado?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estoque_diario_itens_estoque_diario_id_fkey"
+            columns: ["estoque_diario_id"]
+            isOneToOne: false
+            referencedRelation: "estoque_diario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estoque_pdv: {
         Row: {
           created_at: string
@@ -654,10 +751,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_diario_pdv_id: { Args: { _diario_id: string }; Returns: string }
       get_user_pdv_id: { Args: { _user_id: string }; Returns: string }
       get_user_pdv_name: { Args: { _user_id: string }; Returns: string }
       get_user_role: { Args: { _user_id: string }; Returns: string }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
+      is_diario_open: { Args: { _diario_id: string }; Returns: boolean }
       validate_transfer_stock: {
         Args: { _pdv_id: string; _produto_codigo: string; _quantidade: number }
         Returns: boolean
