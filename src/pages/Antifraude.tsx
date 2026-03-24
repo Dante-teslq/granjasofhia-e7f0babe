@@ -167,53 +167,51 @@ const AntifravdePage = () => {
               <h3 className="text-sm font-semibold text-foreground">Limites de Segurança</h3>
             </div>
             <p className="text-xs text-muted-foreground">Defina os limites que disparam alertas automáticos</p>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground">Ajuste acima de (%)</label>
-                  <Input
-                    type="number" min={1} max={100}
-                    defaultValue={fraudSettings.adjustmentThresholdPercent}
-                    onBlur={(e) => {
-                      const n = parseFloat(e.target.value);
-                      if (!isNaN(n) && n > 0 && n <= 100) {
-                        updateFraudSettings({ adjustmentThresholdPercent: n });
-                        toast.success(`Limite de ajuste atualizado para ${n}%`);
-                      }
-                    }}
-                    className="w-20"
-                  />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground">Máx. ajustes/hora</label>
-                  <Input
-                    type="number" min={1} max={50}
-                    defaultValue={fraudSettings.maxAdjustmentsPerHour}
-                    onBlur={(e) => {
-                      const n = parseInt(e.target.value);
-                      if (!isNaN(n) && n > 0) {
-                        updateFraudSettings({ maxAdjustmentsPerHour: n });
-                        toast.success(`Máx. ajustes/hora atualizado para ${n}`);
-                      }
-                    }}
-                    className="w-20"
-                  />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs text-muted-foreground">Máx. edições/registro</label>
-                  <Input
-                    type="number" min={1} max={20}
-                    defaultValue={fraudSettings.maxEditsPerRecord}
-                    onBlur={(e) => {
-                      const n = parseInt(e.target.value);
-                      if (!isNaN(n) && n > 0) {
-                        updateFraudSettings({ maxEditsPerRecord: n });
-                        toast.success(`Máx. edições/registro atualizado para ${n}`);
-                      }
-                    }}
-                    className="w-20"
-                  />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Ajuste acima de (%)</label>
+                <Input
+                  type="number" min={1} max={100}
+                  defaultValue={fraudSettings.adjustmentThresholdPercent}
+                  onBlur={(e) => {
+                    const n = parseFloat(e.target.value);
+                    if (!isNaN(n) && n > 0 && n <= 100) {
+                      updateFraudSettings({ adjustmentThresholdPercent: n });
+                      toast.success(`Limite de ajuste atualizado para ${n}%`);
+                    }
+                  }}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Máx. ajustes/hora</label>
+                <Input
+                  type="number" min={1} max={50}
+                  defaultValue={fraudSettings.maxAdjustmentsPerHour}
+                  onBlur={(e) => {
+                    const n = parseInt(e.target.value);
+                    if (!isNaN(n) && n > 0) {
+                      updateFraudSettings({ maxAdjustmentsPerHour: n });
+                      toast.success(`Máx. ajustes/hora atualizado para ${n}`);
+                    }
+                  }}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Máx. edições/registro</label>
+                <Input
+                  type="number" min={1} max={20}
+                  defaultValue={fraudSettings.maxEditsPerRecord}
+                  onBlur={(e) => {
+                    const n = parseInt(e.target.value);
+                    if (!isNaN(n) && n > 0) {
+                      updateFraudSettings({ maxEditsPerRecord: n });
+                      toast.success(`Máx. edições/registro atualizado para ${n}`);
+                    }
+                  }}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
