@@ -154,8 +154,8 @@ const Index = () => {
   const vendasChartData = trendLine.map(d => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
     total: d.quantidade || 0,
-    anterior: d.anterior_qtd || d.anterior || 0,
-    tendencia: d.tendencia_qtd || d.tendencia || 0,
+    anterior: 0,
+    tendencia: d.tendencia || 0,
     isBest: d.isBest,
   }));
 
