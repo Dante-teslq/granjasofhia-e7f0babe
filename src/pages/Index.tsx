@@ -332,9 +332,9 @@ const Index = () => {
                 </div>
                 <div className="flex-1 space-y-2 w-full">
                   {[
-                    { label: "Saudável", count: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"], icon: "✓" },
-                    { label: "Atenção", count: stockHealth.atencao, color: HEALTH_COLORS["Atenção"], icon: "!" },
-                    { label: "Crítico", count: stockHealth.critico, color: HEALTH_COLORS["Crítico"], icon: "✕" },
+                    { label: "Saudável", count: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"], icon: "✓" },
+                    { label: "Atenção", count: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"], icon: "!" },
+                    { label: "Crítico", count: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"], icon: "✕" },
                   ].map(item => (
                     <div key={item.label} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
                       <div className="flex items-center gap-2">
