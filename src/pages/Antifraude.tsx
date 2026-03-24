@@ -222,7 +222,9 @@ const AntifravdePage = () => {
           <div className="p-4 md:p-6 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Detalhamento por Usuário</h3>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/50 text-foreground">
@@ -261,6 +263,53 @@ const AntifravdePage = () => {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden p-4 space-y-3">
+            {[...userRiskProfiles].sort((a, b) => b.riskScore - a.riskScore).map((p, i) => {
+              const riskColors: Record<string, string> = {
+                baixo: "bg-success/10 text-success",
+                médio: "bg-primary/10 text-primary",
+                alto: "bg-orange-500/10 text-orange-600",
+                crítico: "bg-destructive/10 text-destructive",
+              };
+              return (
+                <div key={p.user} className="p-3 rounded-md bg-muted/30 border border-border space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                        {i + 1}
+                      </div>
+                      <span className="text-sm font-medium text-foreground truncate">{p.user}</span>
+                    </div>
+                    <Badge className={`text-[10px] ${riskColors[p.riskLevel]}`}>{p.riskLevel}</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Ajustes:</span>
+                      <span className="font-medium text-foreground">{p.totalAdjustments}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Elevados:</span>
+                      <span className="font-medium text-foreground">{p.highAdjustments}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Fora horário:</span>
+                      <span className="font-medium text-foreground">{p.afterHoursOps}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Multi-edits:</span>
+                      <span className="font-medium text-foreground">{p.multiEditCount}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-1 text-xs">
+                    <span className="text-muted-foreground">Score:</span>
+                    <span className="text-sm font-bold text-foreground">{p.riskScore}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
