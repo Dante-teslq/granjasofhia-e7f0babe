@@ -217,8 +217,6 @@ const ApuracaoPage = () => {
             <p className="text-xl md:text-3xl font-extrabold tracking-tight text-foreground">{totalPrev.toLocaleString("pt-BR", { minimumFractionDigits: 1 })}</p>
             <p className="text-[10px] md:text-[11px] font-bold text-muted-foreground uppercase tracking-wider mt-1">caixas</p>
           </div>
-            </div>
-          </div>
         </div>
 
         {/* Chart */}
