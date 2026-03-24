@@ -169,7 +169,7 @@ const InsumosTab = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Excluir todos os registros de insumos de {format(selectedDate, "dd/MM/yyyy")}
+                      Excluir todos os registros de insumos de {format(dateRange.from, "dd/MM/yyyy")}
                       {selectedPDV !== "all" ? ` — ${selectedPDV}` : " — todos os PDVs"}? Esta ação não pode ser desfeita.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
