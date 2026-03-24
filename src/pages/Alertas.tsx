@@ -81,6 +81,9 @@ const AlertasPage = () => {
       timestamp: "",
       link: a.link || "/estoque",
       isStockAlert: true,
+      analyst: undefined as string | undefined,
+      observation: undefined as string | undefined,
+      details: undefined as Record<string, any> | undefined,
     }));
 
     return [...fraudFiltered, ...stockAlerts];
