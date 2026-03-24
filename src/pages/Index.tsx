@@ -1,10 +1,12 @@
+import { useState, useMemo } from "react";
 import {
   Package, AlertTriangle, ShieldAlert, ShoppingCart, DollarSign,
-  TrendingUp, Trophy, AlertCircle, Heart,
+  TrendingUp, Trophy, AlertCircle, Heart, MapPin,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
 import { useFraud } from "@/contexts/FraudContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -25,24 +27,126 @@ const Index = () => {
   const navigate = useNavigate();
   const { dateRange } = useApp();
   const { getAlertsInRange } = useFraud();
+  const [selectedPDV, setSelectedPDV] = useState<string>("all");
 
   const {
     loading, vendas, estoque, comparison, trendLine,
     stockHealth, rankings,
   } = useDashboardData({ from: dateRange.from, to: dateRange.to });
 
+  // Get unique PDV names from both data sources
+  const pdvOptions = useMemo(() => {
+    const pdvSet = new Set<string>();
+    vendas.records.forEach(r => pdvSet.add(r.ponto_venda));
+    estoque.records.forEach(r => pdvSet.add(r.loja));
+    return [...pdvSet].sort();
+  }, [vendas.records, estoque.records]);
+
+  // Filter records by selected PDV
+  const filteredVendas = useMemo(() => {
+    if (selectedPDV === "all") return vendas;
+    const filtered = vendas.records.filter(r => r.ponto_venda === selectedPDV);
+    const today = format(new Date(), "yyyy-MM-dd");
+    const vendasHoje = filtered.filter(r => r.data === today);
+    const totalHoje = vendasHoje.reduce((s, r) => s + r.total, 0);
+    const totalPeriodo = filtered.reduce((s, r) => s + r.total, 0);
+    const qtdHoje = vendasHoje.reduce((s, r) => s + r.quantidade, 0);
+    const qtdPeriodo = filtered.reduce((s, r) => s + r.quantidade, 0);
+    const porProduto = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.produto]) acc[r.produto] = { produto: r.produto, quantidade: 0, total: 0 };
+        acc[r.produto].quantidade += r.quantidade;
+        acc[r.produto].total += r.total;
+        return acc;
+      }, {} as Record<string, { produto: string; quantidade: number; total: number }>)
+    ).sort((a, b) => b.total - a.total);
+    const porDia = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.data]) acc[r.data] = { data: r.data, total: 0, quantidade: 0 };
+        acc[r.data].total += r.total;
+        acc[r.data].quantidade += r.quantidade;
+        return acc;
+      }, {} as Record<string, { data: string; total: number; quantidade: number }>)
+    ).sort((a, b) => a.data.localeCompare(b.data));
+    return { ...vendas, records: filtered, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo, porProduto, porDia, vendasHoje };
+  }, [vendas, selectedPDV]);
+
+  const filteredEstoque = useMemo(() => {
+    if (selectedPDV === "all") return estoque;
+    const filtered = estoque.records.filter(r => r.loja === selectedPDV);
+    const totalFaltas = filtered.reduce((s, r) => s + Math.abs(r.estoque_loja - r.estoque_sistema), 0);
+    const totalQuebrado = filtered.reduce((s, r) => s + r.quebrado, 0);
+    const totalVendido = filtered.reduce((s, r) => s + r.estoque_loja, 0);
+    const totalEstoqueSistema = filtered.reduce((s, r) => s + r.estoque_sistema, 0);
+    const hasData = filtered.length > 0;
+    const divergencePercent = hasData && totalVendido > 0 ? (totalFaltas / totalVendido) * 100 : 0;
+    const porProduto = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.descricao]) acc[r.descricao] = { descricao: r.descricao, estoque_sistema: 0, estoque_loja: 0, trincado: 0, quebrado: 0, faltas: 0 };
+        acc[r.descricao].estoque_sistema += r.estoque_sistema;
+        acc[r.descricao].estoque_loja += r.estoque_loja;
+        acc[r.descricao].trincado += r.trincado;
+        acc[r.descricao].quebrado += r.quebrado;
+        acc[r.descricao].faltas += Math.abs(r.estoque_loja - r.estoque_sistema);
+        return acc;
+      }, {} as Record<string, any>)
+    );
+    const porDia = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.data]) acc[r.data] = { data: r.data, vendas: 0, perdas: 0, entradas: 0 };
+        acc[r.data].vendas += r.estoque_loja;
+        acc[r.data].perdas += r.quebrado;
+        acc[r.data].entradas += r.estoque_sistema;
+        return acc;
+      }, {} as Record<string, any>)
+    ).sort((a: any, b: any) => a.data.localeCompare(b.data));
+    const alertas = estoque.alertas.filter((a: any) => {
+      const matchingRecord = filtered.some(r => a.message.includes(r.descricao));
+      return matchingRecord;
+    });
+    return { ...estoque, records: filtered, totalFaltas, totalQuebrado, totalVendido, totalEstoqueSistema, hasData, divergencePercent, porProduto, porDia, alertas };
+  }, [estoque, selectedPDV]);
+
+  // Recalculate rankings for filtered data
+  const filteredRankings = useMemo(() => {
+    const topVendidos = [...filteredVendas.porProduto].slice(0, 5);
+    const topPerdas = [...filteredEstoque.porProduto]
+      .sort((a: any, b: any) => b.quebrado - a.quebrado)
+      .slice(0, 5)
+      .filter((p: any) => p.quebrado > 0);
+    return { topVendidos, topPerdas };
+  }, [filteredVendas.porProduto, filteredEstoque.porProduto]);
+
+  // Recalculate stock health for filtered data
+  const filteredStockHealth = useMemo(() => {
+    const MIN_THRESHOLD = 5;
+    const WARN_THRESHOLD = 10;
+    const latestByProduct = new Map<string, any>();
+    filteredEstoque.records.forEach((r: any) => {
+      const existing = latestByProduct.get(r.descricao);
+      if (!existing || r.data > existing.data) latestByProduct.set(r.descricao, r);
+    });
+    let saudavel = 0, atencao = 0, critico = 0;
+    latestByProduct.forEach(p => {
+      if (p.estoque_loja <= MIN_THRESHOLD) critico++;
+      else if (p.estoque_loja <= WARN_THRESHOLD) atencao++;
+      else saudavel++;
+    });
+    return { saudavel, atencao, critico, total: saudavel + atencao + critico };
+  }, [filteredEstoque.records]);
+
   const alertsInRange = getAlertsInRange(dateRange.from, dateRange.to);
   const activeAlerts = alertsInRange.filter(a => a.status === "ativo");
   const allAlerts = [
-    ...estoque.alertas.map(a => ({ ...a, timestamp: "", status: "ativo" as const })),
+    ...filteredEstoque.alertas.map((a: any) => ({ ...a, timestamp: "", status: "ativo" as const })),
     ...activeAlerts,
   ];
 
 
   const stats = [
-    { label: "Vendas Hoje", value: `R$ ${vendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
-    { label: "Vendas no Período", value: `R$ ${vendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
-    { label: "Faltas Totais", value: estoque.hasData ? estoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
+    { label: "Vendas Hoje", value: `R$ ${filteredVendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
+    { label: "Vendas no Período", value: `R$ ${filteredVendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
+    { label: "Faltas Totais", value: filteredEstoque.hasData ? filteredEstoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
     { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
 
@@ -56,7 +160,7 @@ const Index = () => {
   }));
 
   // Estoque daily chart
-  const dailyChartData = estoque.porDia.slice(0, 14).map(d => ({
+  const dailyChartData = filteredEstoque.porDia.slice(0, 14).map((d: any) => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
     estoque: d.vendas,
     entradas: d.entradas,
@@ -64,9 +168,9 @@ const Index = () => {
 
   // Stock health pie data
   const healthPieData = [
-    { name: "Saudável", value: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
-    { name: "Atenção", value: stockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
-    { name: "Crítico", value: stockHealth.critico, color: HEALTH_COLORS["Crítico"] },
+    { name: "Saudável", value: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
+    { name: "Atenção", value: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
+    { name: "Crítico", value: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"] },
   ].filter(d => d.value > 0);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -94,7 +198,21 @@ const Index = () => {
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Dashboard Executivo</h1>
             <p className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1 md:mt-2">Visão estratégica — Granja Sofhia</p>
           </div>
-          <GlobalDateFilter />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+              <SelectTrigger className="w-[180px] h-9 text-sm">
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Todos os PDVs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os PDVs</SelectItem>
+                {pdvOptions.map(pdv => (
+                  <SelectItem key={pdv} value={pdv}>{pdv}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <GlobalDateFilter />
+          </div>
         </div>
 
         {loading && (
@@ -164,7 +282,7 @@ const Index = () => {
           {/* Movimentação de Estoque */}
           <div className="glass-card p-4 md:p-6 lg:p-8">
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Movimentação de Estoque</h3>
-            {dailyChartData.length > 0 && estoque.hasData ? (
+            {dailyChartData.length > 0 && filteredEstoque.hasData ? (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={dailyChartData} barGap={6}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
@@ -191,7 +309,7 @@ const Index = () => {
               <Heart className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Saúde do Estoque</h3>
             </div>
-            {stockHealth.total > 0 ? (
+            {filteredStockHealth.total > 0 ? (
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-[160px] h-[160px]">
                   <ResponsiveContainer width="100%" height="100%">
@@ -215,9 +333,9 @@ const Index = () => {
                 </div>
                 <div className="flex-1 space-y-2 w-full">
                   {[
-                    { label: "Saudável", count: stockHealth.saudavel, color: HEALTH_COLORS["Saudável"], icon: "✓" },
-                    { label: "Atenção", count: stockHealth.atencao, color: HEALTH_COLORS["Atenção"], icon: "!" },
-                    { label: "Crítico", count: stockHealth.critico, color: HEALTH_COLORS["Crítico"], icon: "✕" },
+                    { label: "Saudável", count: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"], icon: "✓" },
+                    { label: "Atenção", count: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"], icon: "!" },
+                    { label: "Crítico", count: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"], icon: "✕" },
                   ].map(item => (
                     <div key={item.label} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
                       <div className="flex items-center gap-2">
@@ -241,16 +359,16 @@ const Index = () => {
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
             <div className="flex items-end gap-4">
               <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">
-                {estoque.divergencePercent.toFixed(1)}%
+                {filteredEstoque.divergencePercent.toFixed(1)}%
               </span>
               <span className="text-xs font-medium text-muted-foreground pb-1 md:pb-2">
-                {estoque.divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
+                {filteredEstoque.divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
               </span>
             </div>
             <div className="mt-4 md:mt-6 h-3 rounded-full bg-muted overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${estoque.divergencePercent > 5 ? "bg-gradient-to-r from-destructive to-destructive/70" : "bg-gradient-to-r from-primary to-primary/70"}`}
-                style={{ width: `${Math.min(estoque.divergencePercent * 10, 100)}%` }}
+                className={`h-full rounded-full transition-all ${filteredEstoque.divergencePercent > 5 ? "bg-gradient-to-r from-destructive to-destructive/70" : "bg-gradient-to-r from-primary to-primary/70"}`}
+                style={{ width: `${Math.min(filteredEstoque.divergencePercent * 10, 100)}%` }}
               />
             </div>
             <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -269,10 +387,10 @@ const Index = () => {
               <Trophy className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Mais Vendidos</h3>
             </div>
-            {rankings.topVendidos.length > 0 ? (
+            {filteredRankings.topVendidos.length > 0 ? (
               <div className="space-y-2">
-                {rankings.topVendidos.map((p, i) => {
-                  const maxTotal = rankings.topVendidos[0]?.total || 1;
+                {filteredRankings.topVendidos.map((p, i) => {
+                  const maxTotal = filteredRankings.topVendidos[0]?.total || 1;
                   const pct = (p.total / maxTotal) * 100;
                   return (
                     <div key={p.produto} className="flex items-center gap-3">
@@ -307,10 +425,10 @@ const Index = () => {
               <AlertCircle className="w-4 h-4 text-destructive" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Maiores Perdas</h3>
             </div>
-            {rankings.topPerdas.length > 0 ? (
+            {filteredRankings.topPerdas.length > 0 ? (
               <div className="space-y-2">
-                {rankings.topPerdas.map((p, i) => {
-                  const maxQuebrado = rankings.topPerdas[0]?.quebrado || 1;
+                {filteredRankings.topPerdas.map((p: any, i: number) => {
+                  const maxQuebrado = filteredRankings.topPerdas[0]?.quebrado || 1;
                   const pct = (p.quebrado / maxQuebrado) * 100;
                   return (
                     <div key={p.descricao} className="flex items-center gap-3">
@@ -388,10 +506,10 @@ const Index = () => {
           <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Itens de estoque", value: estoque.records.length.toString() },
-              { label: "Produtos únicos", value: estoque.uniqueProducts.toString() },
-              { label: "Vendas hoje (un.)", value: vendas.qtdHoje.toString() },
-              { label: "Vendas período (un.)", value: vendas.qtdPeriodo.toString() },
+              { label: "Itens de estoque", value: filteredEstoque.records.length.toString() },
+              { label: "Produtos únicos", value: new Set(filteredEstoque.records.map((r: any) => r.codigo)).size.toString() },
+              { label: "Vendas hoje (un.)", value: filteredVendas.qtdHoje.toString() },
+              { label: "Vendas período (un.)", value: filteredVendas.qtdPeriodo.toString() },
             ].map(item => (
               <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
                 <span className="text-xs text-muted-foreground">{item.label}</span>
