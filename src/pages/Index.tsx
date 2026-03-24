@@ -150,12 +150,12 @@ const Index = () => {
     { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
 
-  // Chart data
+  // Chart data - using quantidade (cartelas) instead of total (R$)
   const vendasChartData = trendLine.map(d => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
-    total: d.total,
-    anterior: d.anterior,
-    tendencia: d.tendencia,
+    total: d.quantidade || 0,
+    anterior: d.anterior_qtd || d.anterior || 0,
+    tendencia: d.tendencia_qtd || d.tendencia || 0,
     isBest: d.isBest,
   }));
 
