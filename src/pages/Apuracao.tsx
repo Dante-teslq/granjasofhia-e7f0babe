@@ -303,7 +303,7 @@ const ApuracaoPage = () => {
                   {storeYears.map((y) => (
                     <th key={y} className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">{y}</th>
                   ))}
-                  <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Var. %</th>
+                  
                   {isAdmin && (
                     <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
                   )}
@@ -322,18 +322,6 @@ const ApuracaoPage = () => {
                           {storeData[y]?.[i]?.toLocaleString("pt-BR", { minimumFractionDigits: 1 }) || "—"}
                         </td>
                       ))}
-                      <td className="px-4 py-2.5 text-center">
-                        {pct !== "—" ? (
-                          <Badge
-                            variant="outline"
-                            className={Number(pct) >= 0 ? "text-success border-success/30" : "text-destructive border-destructive/30"}
-                          >
-                            {Number(pct) >= 0 ? "+" : ""}{pct}%
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
                       {isAdmin && (
                         <td className="px-4 py-2.5 text-center">
                           <div className="flex items-center justify-center gap-1">
