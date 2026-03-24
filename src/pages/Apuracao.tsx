@@ -39,8 +39,9 @@ const ApuracaoPage = () => {
   const isAdmin = currentRole === "Administrador";
   const { pontosVenda, anos, getStoreData, getRanking, getRankingByMonth, upsertRegistro, deleteRegistro, loading, registros } = useVendasRegistros();
 
-  const [selectedStore, setSelectedStore] = useState("");
-  const [selectedYear, setSelectedYear] = useState("");
+  const currentYearStr = String(new Date().getFullYear());
+  const [selectedStore, setSelectedStore] = useState("__all__");
+  const [selectedYear, setSelectedYear] = useState(currentYearStr);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -48,13 +49,30 @@ const ApuracaoPage = () => {
   const [editYear, setEditYear] = useState("");
   const [editMonth, setEditMonth] = useState(1);
   const [editValue, setEditValue] = useState("");
-  const [rankingMonth, setRankingMonth] = useState(0); // 0 = all months
+  const [rankingMonth, setRankingMonth] = useState(new Date().getMonth() + 1);
 
-  // Auto-select first store/year when data loads
-  const activeStore = selectedStore || pontosVenda[0] || "";
-  const activeYear = selectedYear || anos[anos.length - 1] || "";
+  const activeStore = selectedStore || "__all__";
+  const activeYear = selectedYear || currentYearStr;
 
-  const storeData = activeStore ? getStoreData(activeStore) : {};
+  // Aggregate all stores data when "__all__" is selected
+  const storeData = (() => {
+    if (activeStore !== "__all__") return activeStore ? getStoreData(activeStore) : {};
+    // Aggregate across all stores
+    const allYearsSet = new Set<string>();
+    pontosVenda.forEach((s) => {
+      Object.keys(getStoreData(s)).forEach((y) => allYearsSet.add(y));
+    });
+    const result: Record<string, number[]> = {};
+    [...allYearsSet].sort().forEach((y) => {
+      const monthTotals = new Array(12).fill(0);
+      pontosVenda.forEach((s) => {
+        const sd = getStoreData(s);
+        if (sd[y]) sd[y].forEach((v, i) => { monthTotals[i] += v; });
+      });
+      result[y] = monthTotals;
+    });
+    return result;
+  })();
   const storeYears = Object.keys(storeData).sort();
 
   const chartData = months.map((m, i) => ({
@@ -159,6 +177,7 @@ const ApuracaoPage = () => {
               <SelectValue placeholder="Ponto de venda" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__all__">Todos os PDVs</SelectItem>
               {pontosVenda.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
@@ -217,7 +236,7 @@ const ApuracaoPage = () => {
         <div className="glass-card p-4 md:p-6">
           <div className="flex items-center gap-2 mb-4">
             <BarChart3 className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore}</h3>
+            <h3 className="text-sm font-semibold text-foreground">Vendas Mensais — {activeStore === "__all__" ? "Todos os PDVs" : activeStore}</h3>
           </div>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={chartData} barGap={2}>
