@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Save, Trash2, ClipboardList } from "lucide-react";
+import { Save, Trash2, ClipboardList, Calendar, MapPin, User } from "lucide-react";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import SangriasTable from "@/components/SangriasTable";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
