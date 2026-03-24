@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import {
   AlertTriangle, ShieldAlert, Clock, TrendingUp, ExternalLink,
-  CheckCircle, Eye, MessageSquare, Activity, Repeat, UserX,
+  CheckCircle, Eye, MessageSquare, Activity, Repeat, UserX, Package,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { useFraud, type FraudAlertType, type FraudSeverity, type FraudStatus } from "@/contexts/FraudContext";
 import { useApp } from "@/contexts/AppContext";
+import { useEstoqueData } from "@/hooks/useEstoqueData";
 import { toast } from "@/components/ui/sonner";
 
 const typeLabels: Record<FraudAlertType, { label: string; icon: typeof AlertTriangle }> = {
@@ -45,31 +46,57 @@ const AlertasPage = () => {
   const navigate = useNavigate();
   const { dateRange } = useApp();
   const { alerts, updateAlertStatus, userRiskProfiles, fraudSettings } = useFraud();
+  const estoque = useEstoqueData({ from: dateRange.from, to: dateRange.to });
   const [filterSeverity, setFilterSeverity] = useState<string>("todos");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [filterType, setFilterType] = useState<string>("todos");
   const [resolveDialog, setResolveDialog] = useState<string | null>(null);
   const [resolveObs, setResolveObs] = useState("");
 
-  const filtered = useMemo(() => {
+  // Combine fraud alerts (from DB) with stock alerts (computed from estoque data)
+  const allAlerts = useMemo(() => {
     const rangeFrom = new Date(dateRange.from);
     rangeFrom.setHours(0, 0, 0, 0);
     const rangeTo = new Date(dateRange.to);
     rangeTo.setHours(23, 59, 59, 999);
 
-    return alerts.filter((a) => {
-      // Date filter
+    // Fraud alerts filtered by date
+    const fraudFiltered = alerts.filter((a) => {
       const parts = a.timestamp.split(" ")[0].split("/");
       if (parts.length === 3) {
         const alertDate = new Date(+parts[2], +parts[1] - 1, +parts[0]);
         if (alertDate < rangeFrom || alertDate > rangeTo) return false;
       }
+      return true;
+    });
+
+    // Stock alerts (always in range since useEstoqueData already filters by date)
+    const stockAlerts = (estoque.alertas || []).map((a: any) => ({
+      id: a.id,
+      type: "ajuste_elevado" as FraudAlertType,
+      severity: a.severity as FraudSeverity,
+      status: "ativo" as FraudStatus,
+      message: a.message,
+      operator: "Sistema",
+      timestamp: "",
+      link: a.link || "/estoque",
+      isStockAlert: true,
+      analyst: undefined as string | undefined,
+      observation: undefined as string | undefined,
+      details: undefined as Record<string, any> | undefined,
+    }));
+
+    return [...fraudFiltered, ...stockAlerts];
+  }, [alerts, estoque.alertas, dateRange]);
+
+  const filtered = useMemo(() => {
+    return allAlerts.filter((a) => {
       if (filterSeverity !== "todos" && a.severity !== filterSeverity) return false;
       if (filterStatus !== "todos" && a.status !== filterStatus) return false;
       if (filterType !== "todos" && a.type !== filterType) return false;
       return true;
     });
-  }, [alerts, filterSeverity, filterStatus, filterType, dateRange]);
+  }, [allAlerts, filterSeverity, filterStatus, filterType]);
 
   const handleStatusChange = (alertId: string, newStatus: FraudStatus) => {
     if (newStatus === "resolvido") {
