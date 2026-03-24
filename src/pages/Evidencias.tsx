@@ -526,7 +526,7 @@ const EvidenciasPage = () => {
 
       {/* Image detail dialog */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto [&>button]:border [&>button]:border-border [&>button]:rounded-md [&>button]:p-1">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-primary" />
