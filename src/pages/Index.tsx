@@ -27,16 +27,118 @@ const Index = () => {
   const navigate = useNavigate();
   const { dateRange } = useApp();
   const { getAlertsInRange } = useFraud();
+  const [selectedPDV, setSelectedPDV] = useState<string>("all");
 
   const {
     loading, vendas, estoque, comparison, trendLine,
     stockHealth, rankings,
   } = useDashboardData({ from: dateRange.from, to: dateRange.to });
 
+  // Get unique PDV names from both data sources
+  const pdvOptions = useMemo(() => {
+    const pdvSet = new Set<string>();
+    vendas.records.forEach(r => pdvSet.add(r.ponto_venda));
+    estoque.records.forEach(r => pdvSet.add(r.loja));
+    return [...pdvSet].sort();
+  }, [vendas.records, estoque.records]);
+
+  // Filter records by selected PDV
+  const filteredVendas = useMemo(() => {
+    if (selectedPDV === "all") return vendas;
+    const filtered = vendas.records.filter(r => r.ponto_venda === selectedPDV);
+    const today = format(new Date(), "yyyy-MM-dd");
+    const vendasHoje = filtered.filter(r => r.data === today);
+    const totalHoje = vendasHoje.reduce((s, r) => s + r.total, 0);
+    const totalPeriodo = filtered.reduce((s, r) => s + r.total, 0);
+    const qtdHoje = vendasHoje.reduce((s, r) => s + r.quantidade, 0);
+    const qtdPeriodo = filtered.reduce((s, r) => s + r.quantidade, 0);
+    const porProduto = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.produto]) acc[r.produto] = { produto: r.produto, quantidade: 0, total: 0 };
+        acc[r.produto].quantidade += r.quantidade;
+        acc[r.produto].total += r.total;
+        return acc;
+      }, {} as Record<string, { produto: string; quantidade: number; total: number }>)
+    ).sort((a, b) => b.total - a.total);
+    const porDia = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.data]) acc[r.data] = { data: r.data, total: 0, quantidade: 0 };
+        acc[r.data].total += r.total;
+        acc[r.data].quantidade += r.quantidade;
+        return acc;
+      }, {} as Record<string, { data: string; total: number; quantidade: number }>)
+    ).sort((a, b) => a.data.localeCompare(b.data));
+    return { ...vendas, records: filtered, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo, porProduto, porDia, vendasHoje };
+  }, [vendas, selectedPDV]);
+
+  const filteredEstoque = useMemo(() => {
+    if (selectedPDV === "all") return estoque;
+    const filtered = estoque.records.filter(r => r.loja === selectedPDV);
+    const totalFaltas = filtered.reduce((s, r) => s + Math.abs(r.estoque_loja - r.estoque_sistema), 0);
+    const totalQuebrado = filtered.reduce((s, r) => s + r.quebrado, 0);
+    const totalVendido = filtered.reduce((s, r) => s + r.estoque_loja, 0);
+    const totalEstoqueSistema = filtered.reduce((s, r) => s + r.estoque_sistema, 0);
+    const hasData = filtered.length > 0;
+    const divergencePercent = hasData && totalVendido > 0 ? (totalFaltas / totalVendido) * 100 : 0;
+    const porProduto = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.descricao]) acc[r.descricao] = { descricao: r.descricao, estoque_sistema: 0, estoque_loja: 0, trincado: 0, quebrado: 0, faltas: 0 };
+        acc[r.descricao].estoque_sistema += r.estoque_sistema;
+        acc[r.descricao].estoque_loja += r.estoque_loja;
+        acc[r.descricao].trincado += r.trincado;
+        acc[r.descricao].quebrado += r.quebrado;
+        acc[r.descricao].faltas += Math.abs(r.estoque_loja - r.estoque_sistema);
+        return acc;
+      }, {} as Record<string, any>)
+    );
+    const porDia = Object.values(
+      filtered.reduce((acc, r) => {
+        if (!acc[r.data]) acc[r.data] = { data: r.data, vendas: 0, perdas: 0, entradas: 0 };
+        acc[r.data].vendas += r.estoque_loja;
+        acc[r.data].perdas += r.quebrado;
+        acc[r.data].entradas += r.estoque_sistema;
+        return acc;
+      }, {} as Record<string, any>)
+    ).sort((a: any, b: any) => a.data.localeCompare(b.data));
+    const alertas = estoque.alertas.filter((a: any) => {
+      const matchingRecord = filtered.some(r => a.message.includes(r.descricao));
+      return matchingRecord;
+    });
+    return { ...estoque, records: filtered, totalFaltas, totalQuebrado, totalVendido, totalEstoqueSistema, hasData, divergencePercent, porProduto, porDia, alertas };
+  }, [estoque, selectedPDV]);
+
+  // Recalculate rankings for filtered data
+  const filteredRankings = useMemo(() => {
+    const topVendidos = [...filteredVendas.porProduto].slice(0, 5);
+    const topPerdas = [...filteredEstoque.porProduto]
+      .sort((a: any, b: any) => b.quebrado - a.quebrado)
+      .slice(0, 5)
+      .filter((p: any) => p.quebrado > 0);
+    return { topVendidos, topPerdas };
+  }, [filteredVendas.porProduto, filteredEstoque.porProduto]);
+
+  // Recalculate stock health for filtered data
+  const filteredStockHealth = useMemo(() => {
+    const MIN_THRESHOLD = 5;
+    const WARN_THRESHOLD = 10;
+    const latestByProduct = new Map<string, any>();
+    filteredEstoque.records.forEach((r: any) => {
+      const existing = latestByProduct.get(r.descricao);
+      if (!existing || r.data > existing.data) latestByProduct.set(r.descricao, r);
+    });
+    let saudavel = 0, atencao = 0, critico = 0;
+    latestByProduct.forEach(p => {
+      if (p.estoque_loja <= MIN_THRESHOLD) critico++;
+      else if (p.estoque_loja <= WARN_THRESHOLD) atencao++;
+      else saudavel++;
+    });
+    return { saudavel, atencao, critico, total: saudavel + atencao + critico };
+  }, [filteredEstoque.records]);
+
   const alertsInRange = getAlertsInRange(dateRange.from, dateRange.to);
   const activeAlerts = alertsInRange.filter(a => a.status === "ativo");
   const allAlerts = [
-    ...estoque.alertas.map(a => ({ ...a, timestamp: "", status: "ativo" as const })),
+    ...filteredEstoque.alertas.map((a: any) => ({ ...a, timestamp: "", status: "ativo" as const })),
     ...activeAlerts,
   ];
 
