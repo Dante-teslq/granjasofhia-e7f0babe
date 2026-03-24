@@ -125,7 +125,10 @@ const DateRangePicker = ({ from, to, onChange, align = "end", className }: DateR
               IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
             }}
           />
-          <div className="flex justify-end border-t border-border pt-3 mt-2">
+          <div className="flex justify-end gap-2 border-t border-border pt-3 mt-2">
+            <Button size="sm" variant="outline" onClick={() => { setTempRange({ from, to }); setClickCount(0); setOpen(false); }}>
+              Cancelar
+            </Button>
             <Button size="sm" onClick={handleApply}>
               Aplicar
             </Button>
