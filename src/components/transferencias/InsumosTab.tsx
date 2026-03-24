@@ -188,14 +188,28 @@ const InsumosTab = () => {
             <p className="text-muted-foreground text-sm py-4 text-center">Carregando...</p>
           ) : records.length > 0 ? (
             <div className="space-y-4">
-              {Object.entries(groupedByPDV).map(([pdv, items]) => (
-                <div key={pdv}>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{pdv}</p>
-                  <div className="rounded-md border border-border overflow-hidden">
+              {Object.entries(groupedByPDV).map(([pdv, items]) => {
+                const firstItem = items[0];
+                const dataRegistro = firstItem?.data ? format(new Date(firstItem.data + "T12:00:00"), "dd/MM/yyyy (EEEE)", { locale: ptBR }) : "—";
+                const usuario = firstItem?.usuario || "—";
+                const horaRegistro = firstItem?.createdAt ? format(new Date(firstItem.createdAt), "HH:mm") : "";
+                return (
+                  <div key={pdv} className="rounded-lg border border-border overflow-hidden">
+                    <div className="bg-muted/40 px-4 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-primary" /> {pdv}
+                      </span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3" /> {dataRegistro} {horaRegistro && `às ${horaRegistro}`}
+                      </span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <User className="w-3 h-3" /> {usuario}
+                      </span>
+                    </div>
                     <SangriasTable items={items} onChange={() => {}} readOnly />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-sm py-4 text-center">Nenhum registro para esta data.</p>
