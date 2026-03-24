@@ -144,8 +144,8 @@ const Index = () => {
 
 
   const stats = [
-    { label: "Vendas Hoje", value: `R$ ${filteredVendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
-    { label: "Vendas no Período", value: `R$ ${filteredVendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
+    { label: "Vendas Hoje", value: `${filteredVendas.qtdHoje.toLocaleString('pt-BR')} cartelas`, icon: ShoppingCart, link: "/vendas-diarias" },
+    { label: "Vendas no Período", value: `${filteredVendas.qtdPeriodo.toLocaleString('pt-BR')} cartelas`, icon: DollarSign, link: "/vendas-diarias" },
     { label: "Faltas Totais", value: filteredEstoque.hasData ? filteredEstoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
     { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
