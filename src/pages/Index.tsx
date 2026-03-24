@@ -35,13 +35,19 @@ const Index = () => {
     stockHealth, rankings,
   } = useDashboardData({ from: dateRange.from, to: dateRange.to });
 
-  // Get unique PDV names from both data sources
-  const pdvOptions = useMemo(() => {
-    const pdvSet = new Set<string>();
-    vendas.records.forEach(r => pdvSet.add(r.ponto_venda));
-    estoque.records.forEach(r => pdvSet.add(r.loja));
-    return [...pdvSet].sort();
-  }, [vendas.records, estoque.records]);
+  // Fetch all PDVs that allow sales from pontos_de_venda table
+  const [pdvOptions, setPdvOptions] = useState<string[]>([]);
+  useEffect(() => {
+    const fetchPDVs = async () => {
+      const { data } = await supabase
+        .from("pontos_de_venda")
+        .select("nome")
+        .eq("status", "ativo")
+        .order("nome");
+      if (data) setPdvOptions(data.map(d => d.nome));
+    };
+    fetchPDVs();
+  }, []);
 
   // Filter records by selected PDV
   const filteredVendas = useMemo(() => {
