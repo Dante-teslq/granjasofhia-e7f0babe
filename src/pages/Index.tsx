@@ -59,7 +59,7 @@ const Index = () => {
         acc[r.produto].total += r.total;
         return acc;
       }, {} as Record<string, { produto: string; quantidade: number; total: number }>)
-    ).sort((a, b) => b.total - a.total);
+    ).sort((a, b) => b.quantidade - a.quantidade);
     const porDia = Object.values(
       filtered.reduce((acc, r) => {
         if (!acc[r.data]) acc[r.data] = { data: r.data, total: 0, quantidade: 0 };
@@ -144,18 +144,18 @@ const Index = () => {
 
 
   const stats = [
-    { label: "Vendas Hoje", value: `R$ ${filteredVendas.totalHoje.toFixed(2)}`, icon: ShoppingCart, link: "/vendas-diarias" },
-    { label: "Vendas no Período", value: `R$ ${filteredVendas.totalPeriodo.toFixed(2)}`, icon: DollarSign, link: "/vendas-diarias" },
+    { label: "Vendas Hoje", value: `${filteredVendas.qtdHoje.toLocaleString('pt-BR')} cartelas`, icon: ShoppingCart, link: "/vendas-diarias" },
+    { label: "Vendas no Período", value: `${filteredVendas.qtdPeriodo.toLocaleString('pt-BR')} cartelas`, icon: DollarSign, link: "/vendas-diarias" },
     { label: "Faltas Totais", value: filteredEstoque.hasData ? filteredEstoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
     { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
 
-  // Chart data
+  // Chart data - using quantidade (cartelas) instead of total (R$)
   const vendasChartData = trendLine.map(d => ({
     dia: format(new Date(d.data + "T12:00:00"), "dd/MM", { locale: ptBR }),
-    total: d.total,
-    anterior: d.anterior,
-    tendencia: d.tendencia,
+    total: d.quantidade || 0,
+    anterior: 0,
+    tendencia: d.tendencia || 0,
     isBest: d.isBest,
   }));
 
@@ -261,8 +261,8 @@ const Index = () => {
                     <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-                    <Bar dataKey="total" name="Atual (R$)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
-                    <Bar dataKey="anterior" name="Anterior (R$)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
+                    <Bar dataKey="total" name="Atual (cartelas)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
+                    <Bar dataKey="anterior" name="Anterior (cartelas)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
                     <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} animationDuration={1000} />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -390,8 +390,8 @@ const Index = () => {
             {filteredRankings.topVendidos.length > 0 ? (
               <div className="space-y-2">
                 {filteredRankings.topVendidos.map((p, i) => {
-                  const maxTotal = filteredRankings.topVendidos[0]?.total || 1;
-                  const pct = (p.total / maxTotal) * 100;
+                  const maxQtd = filteredRankings.topVendidos[0]?.quantidade || 1;
+                  const pct = (p.quantidade / maxQtd) * 100;
                   return (
                     <div key={p.produto} className="flex items-center gap-3">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
@@ -402,7 +402,7 @@ const Index = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-foreground truncate">{p.produto}</span>
-                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">R$ {p.total.toLocaleString('pt-BR')}</span>
+                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">{p.quantidade.toLocaleString('pt-BR')} cartelas</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
@@ -508,8 +508,8 @@ const Index = () => {
             {[
               { label: "Itens de estoque", value: filteredEstoque.records.length.toString() },
               { label: "Produtos únicos", value: new Set(filteredEstoque.records.map((r: any) => r.codigo)).size.toString() },
-              { label: "Vendas hoje (un.)", value: filteredVendas.qtdHoje.toString() },
-              { label: "Vendas período (un.)", value: filteredVendas.qtdPeriodo.toString() },
+              { label: "Vendas hoje (cartelas)", value: filteredVendas.qtdHoje.toLocaleString('pt-BR') },
+              { label: "Vendas período (cartelas)", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR') },
             ].map(item => (
               <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
                 <span className="text-xs text-muted-foreground">{item.label}</span>

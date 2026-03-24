@@ -70,14 +70,14 @@ export function useDashboardData({ from, to }: UseDashboardDataOptions) {
     }));
   }, [vendas.porDia, vendasPrev.porDia]);
 
-  // Trend line (simple linear regression)
+  // Trend line (simple linear regression) based on quantidade (cartelas)
   const trendLine = useMemo(() => {
     const data = vendasChartEnhanced;
     if (data.length < 2) return [];
     const n = data.length;
     const sumX = data.reduce((s, _, i) => s + i, 0);
-    const sumY = data.reduce((s, d) => s + d.total, 0);
-    const sumXY = data.reduce((s, d, i) => s + i * d.total, 0);
+    const sumY = data.reduce((s, d) => s + (d.quantidade || 0), 0);
+    const sumXY = data.reduce((s, d, i) => s + i * (d.quantidade || 0), 0);
     const sumX2 = data.reduce((s, _, i) => s + i * i, 0);
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
@@ -122,8 +122,7 @@ export function useDashboardData({ from, to }: UseDashboardDataOptions) {
 
   // Rankings
   const rankings = useMemo(() => {
-    // Top 5 most sold products
-    const topVendidos = [...vendas.porProduto].slice(0, 5);
+    const topVendidos = [...vendas.porProduto].sort((a, b) => b.quantidade - a.quantidade).slice(0, 5);
 
     // Top 5 products with most loss (quebrado)
     const porProdutoPerda = [...estoque.porProduto]
