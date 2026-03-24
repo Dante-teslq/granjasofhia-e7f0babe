@@ -506,10 +506,10 @@ const Index = () => {
           <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Itens de estoque", value: estoque.records.length.toString() },
-              { label: "Produtos únicos", value: estoque.uniqueProducts.toString() },
-              { label: "Vendas hoje (un.)", value: vendas.qtdHoje.toString() },
-              { label: "Vendas período (un.)", value: vendas.qtdPeriodo.toString() },
+              { label: "Itens de estoque", value: filteredEstoque.records.length.toString() },
+              { label: "Produtos únicos", value: new Set(filteredEstoque.records.map((r: any) => r.codigo)).size.toString() },
+              { label: "Vendas hoje (un.)", value: filteredVendas.qtdHoje.toString() },
+              { label: "Vendas período (un.)", value: filteredVendas.qtdPeriodo.toString() },
             ].map(item => (
               <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
                 <span className="text-xs text-muted-foreground">{item.label}</span>
