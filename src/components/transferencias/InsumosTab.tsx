@@ -8,6 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useAudit } from "@/contexts/AuditContext";
 import { useSangriasDB } from "@/hooks/useSangriasDB";
 import { SangriaItem, STORES } from "@/types/inventory";
+// DateRangePicker removed — uses global date filter from page header
 import { toast } from "@/components/ui/sonner";
 import {
   AlertDialog,
@@ -20,7 +21,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import DateRangePicker from "@/components/DateRangePicker";
 
 const emptyRow = (): SangriaItem => ({
   id: crypto.randomUUID(),
@@ -32,18 +32,16 @@ const emptyRow = (): SangriaItem => ({
 });
 
 const InsumosTab = () => {
-  const { currentRole, profile, isOperator, userPdvName } = useApp();
+  const { currentRole, profile, isOperator, userPdvName, dateRange } = useApp();
   const { addLog } = useAudit();
   const {
     records,
     loading,
-    selectedDate,
-    setSelectedDate,
     selectedPDV,
     setSelectedPDV,
     saveItems,
     deleteByDate,
-  } = useSangriasDB();
+  } = useSangriasDB(dateRange.from);
 
   const [editItems, setEditItems] = useState<SangriaItem[]>([emptyRow()]);
   const [editPDV, setEditPDV] = useState<string>(isOperator && userPdvName ? userPdvName : STORES[0]);
@@ -75,18 +73,18 @@ const InsumosTab = () => {
     }
 
     toast.success("Insumos salvos com sucesso!", {
-      description: `${editPDV} — ${format(selectedDate, "dd/MM/yyyy")}`,
+      description: `${editPDV} — ${format(dateRange.from, "dd/MM/yyyy")}`,
     });
     setEditItems([emptyRow()]);
   };
 
   const handleDelete = async () => {
-    await deleteByDate(format(selectedDate, "yyyy-MM-dd"), selectedPDV);
+    await deleteByDate(format(dateRange.from, "yyyy-MM-dd"), selectedPDV);
     addLog({
       action: "delete",
       module: "Insumos",
       usuario: profile?.nome || currentRole,
-      item_description: `Insumos ${format(selectedDate, "dd/MM/yyyy")} ${selectedPDV !== "all" ? selectedPDV : "todos PDVs"}`,
+      item_description: `Insumos ${format(dateRange.from, "dd/MM/yyyy")} ${selectedPDV !== "all" ? selectedPDV : "todos PDVs"}`,
     });
     toast.success("Registros excluídos com sucesso!");
   };
@@ -140,12 +138,6 @@ const InsumosTab = () => {
         <div className="glass-card p-4 space-y-4">
           {/* Filters inside saved records */}
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <DateRangePicker
-              from={selectedDate}
-              to={selectedDate}
-              onChange={({ from }) => setSelectedDate(from)}
-              align="start"
-            />
 
             {isOperator && userPdvName ? (
               <div className="w-full sm:w-[200px] h-10 text-sm flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground">
@@ -177,7 +169,7 @@ const InsumosTab = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Excluir todos os registros de insumos de {format(selectedDate, "dd/MM/yyyy")}
+                      Excluir todos os registros de insumos de {format(dateRange.from, "dd/MM/yyyy")}
                       {selectedPDV !== "all" ? ` — ${selectedPDV}` : " — todos os PDVs"}? Esta ação não pode ser desfeita.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
