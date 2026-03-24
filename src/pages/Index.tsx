@@ -387,10 +387,10 @@ const Index = () => {
               <Trophy className="w-4 h-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Mais Vendidos</h3>
             </div>
-            {rankings.topVendidos.length > 0 ? (
+            {filteredRankings.topVendidos.length > 0 ? (
               <div className="space-y-2">
-                {rankings.topVendidos.map((p, i) => {
-                  const maxTotal = rankings.topVendidos[0]?.total || 1;
+                {filteredRankings.topVendidos.map((p, i) => {
+                  const maxTotal = filteredRankings.topVendidos[0]?.total || 1;
                   const pct = (p.total / maxTotal) * 100;
                   return (
                     <div key={p.produto} className="flex items-center gap-3">
