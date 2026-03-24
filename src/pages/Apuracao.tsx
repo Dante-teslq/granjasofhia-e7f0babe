@@ -193,16 +193,14 @@ const ApuracaoPage = () => {
               ))}
             </SelectContent>
           </Select>
-          {isAdmin && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 gap-1.5"
-              onClick={() => openEdit(activeStore, activeYear, 1, 0)}
-            >
-              <Plus className="w-3.5 h-3.5" /> Novo Registro
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 gap-1.5"
+            onClick={() => openEdit(activeStore === "__all__" ? (pontosVenda[0] || "") : activeStore, activeYear, 1, 0)}
+          >
+            <Plus className="w-3.5 h-3.5" /> Novo Registro
+          </Button>
         </div>
 
         {/* KPI Cards */}
