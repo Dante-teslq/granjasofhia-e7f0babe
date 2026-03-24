@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useApp } from "@/contexts/AppContext";
 import { useFraud } from "@/contexts/FraudContext";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Area, ComposedChart,
