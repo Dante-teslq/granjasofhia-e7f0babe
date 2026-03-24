@@ -83,14 +83,8 @@ export function useVendasRegistros() {
     return { error };
   };
 
-  // Known PDVs that should always appear
-  const KNOWN_PDVS = [
-    "CEASA", "Depósito Sofhia", "Depósito Timon", "Formosa",
-    "Frente de Loja", "Parque Alvorada", "Rota Externo", "Rota Timon", "São Benedito",
-  ];
-
   // Derived data
-  const pontosVenda = [...new Set([...KNOWN_PDVS, ...registros.map((r) => r.ponto_venda)])].sort();
+  const pontosVenda = [...new Set(registros.map((r) => r.ponto_venda))].sort();
   const currentYear = new Date().getFullYear();
   const baseYears = Array.from({ length: currentYear - 2022 + 1 }, (_, i) => 2022 + i);
   const dataYears = [...new Set(registros.map((r) => r.ano))];

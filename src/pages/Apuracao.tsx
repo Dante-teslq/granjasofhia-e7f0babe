@@ -382,14 +382,14 @@ const ApuracaoPage = () => {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Ano</label>
-                <Select value={editYear} onValueChange={setEditYear}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {anos.map((y) => (
-                      <SelectItem key={y} value={y}>{y}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  type="number"
+                  className="mt-1"
+                  value={editYear}
+                  onChange={(e) => setEditYear(e.target.value)}
+                  min={2020}
+                  max={2030}
+                />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Mês</label>
