@@ -17,6 +17,9 @@ export interface SangriaItem {
   barbantes: string;
   notacoes: string;
   pontoVenda: string;
+  data?: string;
+  usuario?: string;
+  createdAt?: string;
 }
 
 // Faltas: apenas diferença entre loja e sistema (quebras e trincados não entram)

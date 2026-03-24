@@ -34,6 +34,9 @@ export function useSangriasDB(externalDate?: Date) {
           barbantes: r.barbantes,
           notacoes: r.notacoes,
           pontoVenda: r.ponto_venda,
+          data: r.data,
+          usuario: r.usuario,
+          createdAt: r.created_at,
         }))
       );
     }
