@@ -107,8 +107,8 @@ const AntifravdePage = () => {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={riskChartData} layout="vertical" barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(0,0%,88%)" />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: "hsl(0,0%,45%)" }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(0,0%,45%)" }} width={100} />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10, fill: "hsl(0,0%,45%)" }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "hsl(0,0%,45%)" }} width={80} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="score" fill="hsl(0, 65%, 51%)" radius={[0, 4, 4, 0]} animationDuration={800} />
               </BarChart>
