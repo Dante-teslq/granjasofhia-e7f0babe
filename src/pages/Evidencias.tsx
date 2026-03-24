@@ -538,7 +538,7 @@ const EvidenciasPage = () => {
               <img
                 src={selectedImage.foto_url}
                 alt="Evidência ampliada"
-                className="w-full rounded-xl border border-border max-h-[400px] object-contain bg-muted"
+                className="w-full rounded-xl border border-border max-h-[300px] object-contain bg-muted"
               />
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
