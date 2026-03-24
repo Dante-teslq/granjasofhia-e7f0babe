@@ -79,7 +79,7 @@ const InsumosTab = () => {
   };
 
   const handleDelete = async () => {
-    await deleteByDate(format(selectedDate, "yyyy-MM-dd"), selectedPDV);
+    await deleteByDate(format(dateRange.from, "yyyy-MM-dd"), selectedPDV);
     addLog({
       action: "delete",
       module: "Insumos",
