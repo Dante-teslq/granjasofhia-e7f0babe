@@ -303,7 +303,7 @@ const ApuracaoPage = () => {
                   {storeYears.map((y) => (
                     <th key={y} className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">{y}</th>
                   ))}
-                  <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Var. %</th>
+                  
                   {isAdmin && (
                     <th className="px-4 py-3 text-center font-semibold text-xs uppercase tracking-wider">Ações</th>
                   )}
