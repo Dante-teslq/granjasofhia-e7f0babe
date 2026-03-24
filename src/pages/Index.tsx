@@ -508,8 +508,8 @@ const Index = () => {
             {[
               { label: "Itens de estoque", value: filteredEstoque.records.length.toString() },
               { label: "Produtos únicos", value: new Set(filteredEstoque.records.map((r: any) => r.codigo)).size.toString() },
-              { label: "Vendas hoje (un.)", value: filteredVendas.qtdHoje.toString() },
-              { label: "Vendas período (un.)", value: filteredVendas.qtdPeriodo.toString() },
+              { label: "Vendas hoje (cartelas)", value: filteredVendas.qtdHoje.toLocaleString('pt-BR') },
+              { label: "Vendas período (cartelas)", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR') },
             ].map(item => (
               <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
                 <span className="text-xs text-muted-foreground">{item.label}</span>
