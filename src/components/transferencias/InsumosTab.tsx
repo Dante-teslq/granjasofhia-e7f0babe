@@ -84,7 +84,7 @@ const InsumosTab = () => {
       action: "delete",
       module: "Insumos",
       usuario: profile?.nome || currentRole,
-      item_description: `Insumos ${format(selectedDate, "dd/MM/yyyy")} ${selectedPDV !== "all" ? selectedPDV : "todos PDVs"}`,
+      item_description: `Insumos ${format(dateRange.from, "dd/MM/yyyy")} ${selectedPDV !== "all" ? selectedPDV : "todos PDVs"}`,
     });
     toast.success("Registros excluídos com sucesso!");
   };
