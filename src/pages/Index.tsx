@@ -358,16 +358,16 @@ const Index = () => {
             <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Índice de Divergência</h3>
             <div className="flex items-end gap-4">
               <span className="text-3xl md:text-5xl font-extrabold tracking-tight text-primary">
-                {estoque.divergencePercent.toFixed(1)}%
+                {filteredEstoque.divergencePercent.toFixed(1)}%
               </span>
               <span className="text-xs font-medium text-muted-foreground pb-1 md:pb-2">
-                {estoque.divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
+                {filteredEstoque.divergencePercent <= 5 ? "dentro do limite aceitável" : "acima do limite!"}
               </span>
             </div>
             <div className="mt-4 md:mt-6 h-3 rounded-full bg-muted overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${estoque.divergencePercent > 5 ? "bg-gradient-to-r from-destructive to-destructive/70" : "bg-gradient-to-r from-primary to-primary/70"}`}
-                style={{ width: `${Math.min(estoque.divergencePercent * 10, 100)}%` }}
+                className={`h-full rounded-full transition-all ${filteredEstoque.divergencePercent > 5 ? "bg-gradient-to-r from-destructive to-destructive/70" : "bg-gradient-to-r from-primary to-primary/70"}`}
+                style={{ width: `${Math.min(filteredEstoque.divergencePercent * 10, 100)}%` }}
               />
             </div>
             <div className="flex justify-between mt-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
