@@ -198,8 +198,21 @@ const Index = () => {
             <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Dashboard Executivo</h1>
             <p className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1 md:mt-2">Visão estratégica — Granja Sofhia</p>
           </div>
-          <GlobalDateFilter />
-        </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+              <SelectTrigger className="w-[180px] h-9 text-sm">
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Todos os PDVs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os PDVs</SelectItem>
+                {pdvOptions.map(pdv => (
+                  <SelectItem key={pdv} value={pdv}>{pdv}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <GlobalDateFilter />
+          </div>
 
         {loading && (
           <div className="flex items-center justify-center py-8">
