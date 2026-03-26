@@ -341,15 +341,6 @@ const VendasDiariasPage = () => {
               <Input type="number" min="1" value={formQtd} onChange={e => setFormQtd(e.target.value)} placeholder="0" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Forma de Pagamento</label>
-              <Select value={formPagamento} onValueChange={setFormPagamento}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {FORMAS_PAGAMENTO.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Observação</label>
               <Textarea value={formObs} onChange={e => setFormObs(e.target.value)} placeholder="Opcional..." rows={2} />
             </div>
