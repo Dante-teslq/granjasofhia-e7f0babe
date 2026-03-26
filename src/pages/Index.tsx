@@ -268,8 +268,8 @@ const Index = () => {
                     <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-                    <Bar dataKey="total" name="Atual (cartelas)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
-                    <Bar dataKey="anterior" name="Anterior (cartelas)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
+                    <Bar dataKey="total" name="Atual (Cartelas)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
+                    <Bar dataKey="anterior" name="Anterior (Cartelas)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
                     <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} animationDuration={1000} />
                   </ComposedChart>
                 </ResponsiveContainer>
