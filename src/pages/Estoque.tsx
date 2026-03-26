@@ -237,67 +237,85 @@ const EstoquePage = () => {
           </div>
         )}
 
-        {/* Loading state */}
-        {loading ? (
-          <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">Carregando...</div>
-        ) : (
-          <>
-            {/* Stock table */}
-            {isMobile ? (
-              <MobileStockCards
-                items={itens}
-                readOnly={readOnly}
-                visibleFields={visibleFields}
-                onUpdate={updateItem}
-                onRemove={removeRow}
-                onSelectProduct={selectProduct}
-                onAdd={addRow}
-              />
-            ) : (
-              <DesktopStockTable
-                items={itens}
-                readOnly={readOnly}
-                visibleFields={visibleFields}
-                onUpdate={updateItem}
-                onRemove={removeRow}
-                onSelectProduct={selectProduct}
-                onAdd={addRow}
-              />
-            )}
+        {/* Tabs: Conferência and Fechamento Diário */}
+        <Tabs defaultValue="conferencia" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-md">
+            <TabsTrigger value="conferencia">Conferência</TabsTrigger>
+            <TabsTrigger value="fechamento">Fechamento Diário</TabsTrigger>
+          </TabsList>
 
-            {/* Footer actions */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                {diario && (
-                  <p className="text-xs text-muted-foreground">
-                    Criado por: {diario.created_by_name} em {format(new Date(diario.created_at), "dd/MM/yyyy HH:mm")}
-                    {diario.updated_by_name && ` • Editado por: ${diario.updated_by_name}`}
-                  </p>
+          <TabsContent value="conferencia" className="space-y-4 mt-4">
+            {/* Loading state */}
+            {loading ? (
+              <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">Carregando...</div>
+            ) : (
+              <>
+                {/* Stock table */}
+                {isMobile ? (
+                  <MobileStockCards
+                    items={itens}
+                    readOnly={readOnly}
+                    visibleFields={visibleFields}
+                    onUpdate={updateItem}
+                    onRemove={removeRow}
+                    onSelectProduct={selectProduct}
+                    onAdd={addRow}
+                  />
+                ) : (
+                  <DesktopStockTable
+                    items={itens}
+                    readOnly={readOnly}
+                    visibleFields={visibleFields}
+                    onUpdate={updateItem}
+                    onRemove={removeRow}
+                    onSelectProduct={selectProduct}
+                    onAdd={addRow}
+                  />
                 )}
-              </div>
-              {!readOnly && (
-                <div className="flex gap-2 w-full sm:w-auto">
-                  {isEditing && isAdmin ? (
-                    <>
-                      <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1 sm:flex-none">
-                        Cancelar
-                      </Button>
-                      <Button onClick={handleAdminSave} disabled={saving} className="gap-2 flex-1 sm:flex-none h-12 md:h-10">
-                        <Save className="w-4 h-4" />
-                        {saving ? "Salvando..." : "Salvar Alterações"}
-                      </Button>
-                    </>
-                  ) : !isClosed ? (
-                    <Button onClick={handleSave} disabled={saving} className="gap-2 w-full sm:w-auto h-12 md:h-10">
-                      <Save className="w-4 h-4" />
-                      {saving ? "Salvando..." : "Salvar e Fechar"}
-                    </Button>
-                  ) : null}
+
+                {/* Footer actions */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    {diario && (
+                      <p className="text-xs text-muted-foreground">
+                        Criado por: {diario.created_by_name} em {format(new Date(diario.created_at), "dd/MM/yyyy HH:mm")}
+                        {diario.updated_by_name && ` • Editado por: ${diario.updated_by_name}`}
+                      </p>
+                    )}
+                  </div>
+                  {!readOnly && (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      {isEditing && isAdmin ? (
+                        <>
+                          <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1 sm:flex-none">
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleAdminSave} disabled={saving} className="gap-2 flex-1 sm:flex-none h-12 md:h-10">
+                            <Save className="w-4 h-4" />
+                            {saving ? "Salvando..." : "Salvar Alterações"}
+                          </Button>
+                        </>
+                      ) : !isClosed ? (
+                        <Button onClick={handleSave} disabled={saving} className="gap-2 w-full sm:w-auto h-12 md:h-10">
+                          <Save className="w-4 h-4" />
+                          {saving ? "Salvando..." : "Salvar e Fechar"}
+                        </Button>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </>
-        )}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="fechamento" className="mt-4">
+            <FechamentoDiarioEstoque
+              pdvId={selectedPdvId}
+              pdvName={selectedPdvName}
+              date={selectedDate}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
