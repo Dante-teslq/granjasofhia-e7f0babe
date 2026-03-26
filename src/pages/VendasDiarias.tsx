@@ -263,7 +263,7 @@ const VendasDiariasPage = () => {
                     <TableHead className="text-right">Qtd</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Pagamento</TableHead>
+                    
                     <TableHead>Status</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
