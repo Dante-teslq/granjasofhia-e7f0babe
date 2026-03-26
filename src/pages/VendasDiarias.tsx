@@ -278,9 +278,6 @@ const VendasDiariasPage = () => {
                       <TableCell className="text-right text-sm">R$ {r.valor_unitario.toFixed(2)}</TableCell>
                       <TableCell className="text-right font-bold text-sm">R$ {r.total.toFixed(2)}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px]">{r.forma_pagamento}</Badge>
-                      </TableCell>
-                      <TableCell>
                         <Badge variant={r.status === "fechado" ? "secondary" : "default"} className="text-[10px]">
                           {r.status === "fechado" ? "Fechado" : "Aberto"}
                         </Badge>
