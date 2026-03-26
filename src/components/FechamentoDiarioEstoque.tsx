@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Lock, Unlock, Save, CheckCircle, Clock, ArrowRight } from "lucide-react";
+import { Lock, Unlock, Save, CheckCircle, Clock, ArrowRight, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ export default function FechamentoDiarioEstoque({ pdvId, pdvName, date }: Props)
   const totalInicial = items.reduce((s, i) => s + i.estoque_inicial, 0);
   const totalEntradas = items.reduce((s, i) => s + i.total_entradas, 0);
   const totalSaidas = items.reduce((s, i) => s + i.total_saidas, 0);
+  const totalPerdas = items.reduce((s, i) => s + i.total_perdas, 0);
   const totalAjustes = items.reduce((s, i) => s + i.total_ajustes, 0);
   const totalFinal = items.reduce((s, i) => s + i.estoque_final, 0);
 
@@ -76,13 +77,19 @@ export default function FechamentoDiarioEstoque({ pdvId, pdvName, date }: Props)
         </CardHeader>
         <CardContent className="pt-0">
           {/* Summary cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
             <SummaryCard label="Est. Inicial" value={totalInicial} />
-            <SummaryCard label="Entradas" value={totalEntradas} color="text-primary" />
-            <SummaryCard label="Saídas" value={totalSaidas} color="text-destructive" />
+            <SummaryCard label="Recebimentos" value={totalEntradas} icon={<TrendingUp className="w-3 h-3" />} color="text-primary" />
+            <SummaryCard label="Envios" value={totalSaidas} icon={<TrendingDown className="w-3 h-3" />} color="text-destructive" />
+            <SummaryCard label="Perdas" value={totalPerdas} icon={<AlertTriangle className="w-3 h-3" />} color="text-destructive" />
             <SummaryCard label="Ajustes" value={totalAjustes} color="text-warning" />
             <SummaryCard label="Est. Final" value={totalFinal} highlight />
           </div>
+
+          {/* Integration info */}
+          <p className="text-[10px] text-muted-foreground mt-3 italic">
+            Recebimentos e envios são calculados automaticamente a partir das transferências confirmadas. Perdas e ajustes podem ser inseridos manualmente.
+          </p>
         </CardContent>
       </Card>
 
@@ -96,9 +103,9 @@ export default function FechamentoDiarioEstoque({ pdvId, pdvName, date }: Props)
 
       {/* Items table */}
       {isMobile ? (
-        <MobileCards items={items} readOnly={readOnly} onUpdate={updateItem} />
+        <MobileCards items={items} readOnly={readOnly} isClosed={isClosed} onUpdate={updateItem} />
       ) : (
-        <DesktopTable items={items} readOnly={readOnly} onUpdate={updateItem} />
+        <DesktopTable items={items} readOnly={readOnly} isClosed={isClosed} onUpdate={updateItem} />
       )}
 
       {/* Actions */}
@@ -159,16 +166,18 @@ export default function FechamentoDiarioEstoque({ pdvId, pdvName, date }: Props)
   );
 }
 
-function SummaryCard({ label, value, color, highlight }: { label: string; value: number; color?: string; highlight?: boolean }) {
+function SummaryCard({ label, value, color, highlight, icon }: { label: string; value: number; color?: string; highlight?: boolean; icon?: React.ReactNode }) {
   return (
     <div className={`rounded-lg border p-2.5 text-center ${highlight ? "bg-primary/10 border-primary/30" : "bg-muted/30 border-border"}`}>
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-center gap-1">
+        {icon}{label}
+      </p>
       <p className={`text-lg font-bold ${highlight ? "text-primary" : color || "text-foreground"}`}>{value.toFixed(1)}</p>
     </div>
   );
 }
 
-function DesktopTable({ items, readOnly, onUpdate }: { items: FechamentoDiarioItem[]; readOnly: boolean; onUpdate: (idx: number, field: keyof FechamentoDiarioItem, value: number) => void }) {
+function DesktopTable({ items, readOnly, isClosed, onUpdate }: { items: FechamentoDiarioItem[]; readOnly: boolean; isClosed: boolean; onUpdate: (idx: number, field: keyof FechamentoDiarioItem, value: number) => void }) {
   return (
     <div className="glass-card rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
@@ -178,8 +187,9 @@ function DesktopTable({ items, readOnly, onUpdate }: { items: FechamentoDiarioIt
               <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground min-w-[180px]">Produto</th>
               <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Cód</th>
               <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Est. Inicial</th>
-              <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Entradas</th>
-              <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Saídas</th>
+              <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-primary">Recebim.</th>
+              <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-destructive">Envios</th>
+              <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-destructive">Perdas</th>
               <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Ajustes</th>
               <th className="px-3 py-3 text-center font-bold text-[11px] uppercase tracking-[0.1em] text-primary">Est. Final</th>
             </tr>
@@ -194,22 +204,51 @@ function DesktopTable({ items, readOnly, onUpdate }: { items: FechamentoDiarioIt
                 <td className="px-2 py-1.5 text-center">
                   <span className="inline-flex items-center justify-center w-20 h-8 rounded bg-muted/50 text-sm">{item.estoque_inicial.toFixed(1)}</span>
                 </td>
-                {(["total_entradas", "total_saidas", "total_ajustes"] as const).map((field) => (
-                  <td key={field} className="px-2 py-1.5">
-                    {readOnly ? (
-                      <span className="inline-flex items-center justify-center w-20 h-8 text-sm text-center mx-auto">{Number(item[field]).toFixed(1)}</span>
-                    ) : (
-                      <Input
-                        type="number"
-                        step="0.5"
-                        value={item[field] || ""}
-                        onChange={(e) => onUpdate(idx, field, parseFloat(e.target.value) || 0)}
-                        placeholder="0"
-                        className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
-                      />
-                    )}
-                  </td>
-                ))}
+                {/* Recebimentos - auto-calculated, read-only */}
+                <td className="px-2 py-1.5 text-center">
+                  <span className={`inline-flex items-center justify-center w-20 h-8 rounded text-sm ${item.total_entradas > 0 ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground"}`}>
+                    {item.total_entradas > 0 ? `+${item.total_entradas.toFixed(1)}` : "0"}
+                  </span>
+                </td>
+                {/* Envios - auto-calculated, read-only */}
+                <td className="px-2 py-1.5 text-center">
+                  <span className={`inline-flex items-center justify-center w-20 h-8 rounded text-sm ${item.total_saidas > 0 ? "bg-destructive/10 text-destructive font-medium" : "text-muted-foreground"}`}>
+                    {item.total_saidas > 0 ? `-${item.total_saidas.toFixed(1)}` : "0"}
+                  </span>
+                </td>
+                {/* Perdas - editable */}
+                <td className="px-2 py-1.5">
+                  {readOnly || isClosed ? (
+                    <span className={`inline-flex items-center justify-center w-20 h-8 rounded text-sm mx-auto ${item.total_perdas > 0 ? "bg-destructive/10 text-destructive font-medium" : "text-muted-foreground"}`}>
+                      {item.total_perdas > 0 ? `-${item.total_perdas.toFixed(1)}` : "0"}
+                    </span>
+                  ) : (
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={item.total_perdas || ""}
+                      onChange={(e) => onUpdate(idx, "total_perdas", parseFloat(e.target.value) || 0)}
+                      placeholder="0"
+                      className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
+                    />
+                  )}
+                </td>
+                {/* Ajustes - editable */}
+                <td className="px-2 py-1.5">
+                  {readOnly || isClosed ? (
+                    <span className="inline-flex items-center justify-center w-20 h-8 text-sm text-center mx-auto">{Number(item.total_ajustes).toFixed(1)}</span>
+                  ) : (
+                    <Input
+                      type="number"
+                      step="0.5"
+                      value={item.total_ajustes || ""}
+                      onChange={(e) => onUpdate(idx, "total_ajustes", parseFloat(e.target.value) || 0)}
+                      placeholder="0"
+                      className="border border-input bg-background h-8 text-sm text-center w-20 mx-auto rounded-md"
+                    />
+                  )}
+                </td>
                 <td className="px-3 py-1.5 text-center">
                   <span className="inline-flex items-center justify-center w-20 h-8 rounded-full font-bold text-xs bg-primary/15 text-primary">
                     {item.estoque_final.toFixed(1)}
@@ -224,7 +263,7 @@ function DesktopTable({ items, readOnly, onUpdate }: { items: FechamentoDiarioIt
   );
 }
 
-function MobileCards({ items, readOnly, onUpdate }: { items: FechamentoDiarioItem[]; readOnly: boolean; onUpdate: (idx: number, field: keyof FechamentoDiarioItem, value: number) => void }) {
+function MobileCards({ items, readOnly, isClosed, onUpdate }: { items: FechamentoDiarioItem[]; readOnly: boolean; isClosed: boolean; onUpdate: (idx: number, field: keyof FechamentoDiarioItem, value: number) => void }) {
   return (
     <div className="space-y-3">
       {items.map((item, idx) => (
@@ -237,31 +276,47 @@ function MobileCards({ items, readOnly, onUpdate }: { items: FechamentoDiarioIte
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Est. Inicial</span>
             <span className="text-sm font-medium">{item.estoque_inicial.toFixed(1)}</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {(["total_entradas", "total_saidas", "total_ajustes"] as const).map((field) => {
-              const labels: Record<string, string> = {
-                total_entradas: "Entradas",
-                total_saidas: "Saídas",
-                total_ajustes: "Ajustes",
-              };
-              return (
-                <div key={field} className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{labels[field]}</label>
-                  {readOnly ? (
-                    <p className="h-10 flex items-center justify-center px-2 text-sm bg-muted/50 rounded-md">{Number(item[field]).toFixed(1)}</p>
-                  ) : (
-                    <Input
-                      type="number"
-                      step="0.5"
-                      value={item[field] || ""}
-                      onChange={(e) => onUpdate(idx, field, parseFloat(e.target.value) || 0)}
-                      placeholder="0"
-                      className="h-10 text-sm text-center"
-                    />
-                  )}
-                </div>
-              );
-            })}
+          {/* Auto-calculated: Recebimentos and Envios */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg px-3 py-2 bg-primary/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Recebim.</span>
+              <p className="text-sm font-medium text-primary">{item.total_entradas > 0 ? `+${item.total_entradas.toFixed(1)}` : "0"}</p>
+            </div>
+            <div className="rounded-lg px-3 py-2 bg-destructive/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">Envios</span>
+              <p className="text-sm font-medium text-destructive">{item.total_saidas > 0 ? `-${item.total_saidas.toFixed(1)}` : "0"}</p>
+            </div>
+          </div>
+          {/* Editable: Perdas and Ajustes */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-destructive">Perdas</label>
+              {readOnly || isClosed ? (
+                <p className="h-10 flex items-center justify-center px-2 text-sm bg-muted/50 rounded-md">{Number(item.total_perdas).toFixed(1)}</p>
+              ) : (
+                <Input
+                  type="number" step="0.5" min="0"
+                  value={item.total_perdas || ""}
+                  onChange={(e) => onUpdate(idx, "total_perdas", parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                  className="h-10 text-sm text-center"
+                />
+              )}
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Ajustes</label>
+              {readOnly || isClosed ? (
+                <p className="h-10 flex items-center justify-center px-2 text-sm bg-muted/50 rounded-md">{Number(item.total_ajustes).toFixed(1)}</p>
+              ) : (
+                <Input
+                  type="number" step="0.5"
+                  value={item.total_ajustes || ""}
+                  onChange={(e) => onUpdate(idx, "total_ajustes", parseFloat(e.target.value) || 0)}
+                  placeholder="0"
+                  className="h-10 text-sm text-center"
+                />
+              )}
+            </div>
           </div>
           <div className="flex items-center justify-between bg-primary/10 rounded-lg px-3 py-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Est. Final</span>
