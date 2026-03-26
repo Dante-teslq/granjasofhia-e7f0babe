@@ -263,7 +263,7 @@ const VendasDiariasPage = () => {
                     <TableHead className="text-right">Qtd</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Pagamento</TableHead>
+                    
                     <TableHead>Status</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
@@ -277,9 +277,6 @@ const VendasDiariasPage = () => {
                       <TableCell className="text-right text-sm">{r.quantidade}</TableCell>
                       <TableCell className="text-right text-sm">R$ {r.valor_unitario.toFixed(2)}</TableCell>
                       <TableCell className="text-right font-bold text-sm">R$ {r.total.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-[10px]">{r.forma_pagamento}</Badge>
-                      </TableCell>
                       <TableCell>
                         <Badge variant={r.status === "fechado" ? "secondary" : "default"} className="text-[10px]">
                           {r.status === "fechado" ? "Fechado" : "Aberto"}
@@ -339,15 +336,6 @@ const VendasDiariasPage = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Quantidade *</label>
               <Input type="number" min="1" value={formQtd} onChange={e => setFormQtd(e.target.value)} placeholder="0" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Forma de Pagamento</label>
-              <Select value={formPagamento} onValueChange={setFormPagamento}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {FORMAS_PAGAMENTO.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Observação</label>
