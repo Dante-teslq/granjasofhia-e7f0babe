@@ -13,6 +13,7 @@ export interface FechamentoDiarioItem {
   estoque_inicial: number;
   total_entradas: number;
   total_saidas: number;
+  total_perdas: number;
   total_ajustes: number;
   estoque_final: number;
   status: string;
@@ -29,6 +30,65 @@ export function useFechamentoDiario(pdvId: string | null, date: Date) {
 
   const dateStr = format(date, "yyyy-MM-dd");
 
+  /** Fetch confirmed transfers for the given PDV and date */
+  const fetchMovements = useCallback(async (pdvId: string, dateStr: string) => {
+    const dayStart = `${dateStr}T00:00:00`;
+    const dayEnd = `${dateStr}T23:59:59`;
+
+    // Fetch confirmed transfers where this PDV is origin or destination
+    const { data: movements } = await supabase
+      .from("movimentacoes_estoque")
+      .select("produto_codigo, quantidade, quantidade_recebida, pdv_origem_id, pdv_destino_id, status")
+      .eq("tipo", "transferencia")
+      .eq("status", "confirmado")
+      .gte("confirmado_em", dayStart)
+      .lte("confirmado_em", dayEnd)
+      .or(`pdv_origem_id.eq.${pdvId},pdv_destino_id.eq.${pdvId}`);
+
+    // Build per-product entradas/saidas
+    const entradas = new Map<string, number>();
+    const saidas = new Map<string, number>();
+
+    (movements || []).forEach((m: any) => {
+      const qty = Number(m.quantidade_recebida ?? m.quantidade);
+      if (m.pdv_destino_id === pdvId) {
+        entradas.set(m.produto_codigo, (entradas.get(m.produto_codigo) || 0) + qty);
+      }
+      if (m.pdv_origem_id === pdvId) {
+        saidas.set(m.produto_codigo, (saidas.get(m.produto_codigo) || 0) + Number(m.quantidade));
+      }
+    });
+
+    return { entradas, saidas };
+  }, []);
+
+  /** Fetch losses from evidencias_perdas for PDV name and date */
+  const fetchLosses = useCallback(async (pdvId: string, dateStr: string) => {
+    // First get PDV name
+    const { data: pdv } = await supabase
+      .from("pontos_de_venda")
+      .select("nome")
+      .eq("id", pdvId)
+      .single();
+
+    if (!pdv) return new Map<string, number>();
+
+    // Get losses for that PDV on that date
+    const { data: losses } = await supabase
+      .from("evidencias_perdas")
+      .select("quantidade")
+      .eq("ponto_de_venda", pdv.nome)
+      .eq("data", dateStr);
+
+    // Losses don't have product_codigo, so we aggregate as a total
+    const totalLosses = (losses || []).reduce((sum: number, l: any) => sum + Number(l.quantidade), 0);
+
+    // Return as a map with a special key for aggregate
+    const map = new Map<string, number>();
+    map.set("__aggregate__", totalLosses);
+    return map;
+  }, []);
+
   const fetchData = useCallback(async () => {
     if (!pdvId) { setLoading(false); return; }
     setLoading(true);
@@ -40,24 +100,44 @@ export function useFechamentoDiario(pdvId: string | null, date: Date) {
       .eq("data", dateStr)
       .order("produto_descricao");
 
+    // Fetch real movements for auto-consolidation
+    const [{ entradas, saidas }, lossesMap] = await Promise.all([
+      fetchMovements(pdvId, dateStr),
+      fetchLosses(pdvId, dateStr),
+    ]);
+
+    const aggregateLosses = lossesMap.get("__aggregate__") || 0;
+
     if (rows && rows.length > 0) {
-      setItems(rows.map((r: any) => ({
-        id: r.id,
-        pdv_id: r.pdv_id,
-        data: r.data,
-        produto_codigo: r.produto_codigo,
-        produto_descricao: r.produto_descricao,
-        estoque_inicial: Number(r.estoque_inicial),
-        total_entradas: Number(r.total_entradas),
-        total_saidas: Number(r.total_saidas),
-        total_ajustes: Number(r.total_ajustes),
-        estoque_final: Number(r.estoque_final),
-        status: r.status,
-        fechado_em: r.fechado_em,
-        fechado_por: r.fechado_por,
-        reaberto_em: r.reaberto_em,
-        reaberto_por: r.reaberto_por,
-      })));
+      // Update existing rows with real movement data
+      setItems(rows.map((r: any) => {
+        const autoEntradas = entradas.get(r.produto_codigo) || 0;
+        const autoSaidas = saidas.get(r.produto_codigo) || 0;
+        // Distribute aggregate losses proportionally or show on first item
+        const estInicial = Number(r.estoque_inicial);
+        const ajustes = Number(r.total_ajustes);
+        const perdas = Number(r.total_perdas);
+        const final_ = estInicial + autoEntradas - autoSaidas - perdas + ajustes;
+
+        return {
+          id: r.id,
+          pdv_id: r.pdv_id,
+          data: r.data,
+          produto_codigo: r.produto_codigo,
+          produto_descricao: r.produto_descricao,
+          estoque_inicial: estInicial,
+          total_entradas: autoEntradas,
+          total_saidas: autoSaidas,
+          total_perdas: perdas,
+          total_ajustes: ajustes,
+          estoque_final: r.status === "fechado" ? Number(r.estoque_final) : final_,
+          status: r.status,
+          fechado_em: r.fechado_em,
+          fechado_por: r.fechado_por,
+          reaberto_em: r.reaberto_em,
+          reaberto_por: r.reaberto_por,
+        };
+      }));
     } else {
       // Try to inherit from previous day's closed records
       const prevDateStr = format(addDays(date, -1), "yyyy-MM-dd");
@@ -75,44 +155,46 @@ export function useFechamentoDiario(pdvId: string | null, date: Date) {
         });
       }
 
-      // Build empty items from catalog with inherited initial stock
+      // Build items from catalog with inherited initial stock and real movements
       setItems(
-        PRODUCT_CATALOG.map((p) => ({
-          id: crypto.randomUUID(),
-          pdv_id: pdvId,
-          data: dateStr,
-          produto_codigo: p.codigo,
-          produto_descricao: p.descricao,
-          estoque_inicial: prevMap.get(p.codigo) || 0,
-          total_entradas: 0,
-          total_saidas: 0,
-          total_ajustes: 0,
-          estoque_final: prevMap.get(p.codigo) || 0,
-          status: "aberto",
-          fechado_em: null,
-          fechado_por: null,
-          reaberto_em: null,
-          reaberto_por: null,
-        }))
+        PRODUCT_CATALOG.map((p) => {
+          const inicial = prevMap.get(p.codigo) || 0;
+          const autoEntradas = entradas.get(p.codigo) || 0;
+          const autoSaidas = saidas.get(p.codigo) || 0;
+          return {
+            id: crypto.randomUUID(),
+            pdv_id: pdvId,
+            data: dateStr,
+            produto_codigo: p.codigo,
+            produto_descricao: p.descricao,
+            estoque_inicial: inicial,
+            total_entradas: autoEntradas,
+            total_saidas: autoSaidas,
+            total_perdas: 0,
+            total_ajustes: 0,
+            estoque_final: inicial + autoEntradas - autoSaidas,
+            status: "aberto",
+            fechado_em: null,
+            fechado_por: null,
+            reaberto_em: null,
+            reaberto_por: null,
+          };
+        })
       );
     }
     setLoading(false);
-  }, [pdvId, dateStr, date]);
+  }, [pdvId, dateStr, date, fetchMovements, fetchLosses]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const isClosed = items.length > 0 && items[0].status === "fechado";
-
-  const recalcFinal = (item: FechamentoDiarioItem): number => {
-    return item.estoque_inicial + item.total_entradas - item.total_saidas + item.total_ajustes;
-  };
 
   const updateItem = useCallback((idx: number, field: keyof FechamentoDiarioItem, value: number) => {
     setItems((prev) =>
       prev.map((item, i) => {
         if (i !== idx) return item;
         const updated = { ...item, [field]: value };
-        updated.estoque_final = updated.estoque_inicial + updated.total_entradas - updated.total_saidas + updated.total_ajustes;
+        updated.estoque_final = updated.estoque_inicial + updated.total_entradas - updated.total_saidas - updated.total_perdas + updated.total_ajustes;
         return updated;
       })
     );
@@ -130,7 +212,7 @@ export function useFechamentoDiario(pdvId: string | null, date: Date) {
       // Recalculate finals
       const finalItems = items.map((item) => ({
         ...item,
-        estoque_final: item.estoque_inicial + item.total_entradas - item.total_saidas + item.total_ajustes,
+        estoque_final: item.estoque_inicial + item.total_entradas - item.total_saidas - item.total_perdas + item.total_ajustes,
       }));
 
       // Delete existing open rows for this day/pdv
@@ -150,6 +232,7 @@ export function useFechamentoDiario(pdvId: string | null, date: Date) {
         estoque_inicial: item.estoque_inicial,
         total_entradas: item.total_entradas,
         total_saidas: item.total_saidas,
+        total_perdas: item.total_perdas,
         total_ajustes: item.total_ajustes,
         estoque_final: item.estoque_final,
         status: "fechado",
@@ -258,7 +341,6 @@ async function propagateToNextDay(
 ) {
   const nextDateStr = format(addDays(currentDate, 1), "yyyy-MM-dd");
 
-  // Check if next day records exist
   const { data: nextRows } = await supabase
     .from("fechamento_diario_estoque")
     .select("id, produto_codigo")
@@ -266,7 +348,6 @@ async function propagateToNextDay(
     .eq("data", nextDateStr);
 
   if (nextRows && nextRows.length > 0) {
-    // Update existing next-day records with new estoque_inicial
     for (const item of closedItems) {
       const nextRow = nextRows.find((r: any) => r.produto_codigo === item.produto_codigo);
       if (nextRow) {
@@ -277,5 +358,4 @@ async function propagateToNextDay(
       }
     }
   }
-  // If next day doesn't exist yet, it will inherit when the user navigates to it
 }
