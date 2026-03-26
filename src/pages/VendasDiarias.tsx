@@ -100,8 +100,8 @@ const VendasDiariasPage = () => {
   };
 
   const handleAdd = async () => {
-    if (!formProduto || !formQtd || !formValor) {
-      toast.error("Preencha produto, quantidade e valor.");
+    if (!formProduto || !formQtd) {
+      toast.error("Preencha produto e quantidade.");
       return;
     }
     try {
