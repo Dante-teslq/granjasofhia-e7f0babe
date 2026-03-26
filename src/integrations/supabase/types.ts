@@ -308,6 +308,7 @@ export type Database = {
           status: string
           total_ajustes: number
           total_entradas: number
+          total_perdas: number
           total_saidas: number
           updated_at: string
         }
@@ -328,6 +329,7 @@ export type Database = {
           status?: string
           total_ajustes?: number
           total_entradas?: number
+          total_perdas?: number
           total_saidas?: number
           updated_at?: string
         }
@@ -348,6 +350,7 @@ export type Database = {
           status?: string
           total_ajustes?: number
           total_entradas?: number
+          total_perdas?: number
           total_saidas?: number
           updated_at?: string
         }
