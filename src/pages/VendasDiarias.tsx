@@ -353,12 +353,6 @@ const VendasDiariasPage = () => {
               <label className="text-sm font-medium text-foreground">Observação</label>
               <Textarea value={formObs} onChange={e => setFormObs(e.target.value)} placeholder="Opcional..." rows={2} />
             </div>
-            {formQtd && formValor && (
-              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                <p className="text-xs text-muted-foreground">Total da venda</p>
-                <p className="text-2xl font-extrabold text-primary">R$ {(Number(formQtd) * Number(formValor)).toFixed(2)}</p>
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancelar</Button>
