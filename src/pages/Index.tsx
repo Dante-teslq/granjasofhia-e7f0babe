@@ -151,8 +151,8 @@ const Index = () => {
 
 
   const stats = [
-    { label: "Vendas Hoje", value: `${filteredVendas.qtdHoje.toLocaleString('pt-BR')} cartelas`, icon: ShoppingCart, link: "/vendas-diarias" },
-    { label: "Vendas no Período", value: `${filteredVendas.qtdPeriodo.toLocaleString('pt-BR')} cartelas`, icon: DollarSign, link: "/vendas-diarias" },
+    { label: "Vendas Hoje", value: `${filteredVendas.qtdHoje.toLocaleString('pt-BR')} Cartelas`, icon: ShoppingCart, link: "/vendas-diarias" },
+    { label: "Vendas no Período", value: `${filteredVendas.qtdPeriodo.toLocaleString('pt-BR')} Cartelas`, icon: DollarSign, link: "/vendas-diarias" },
     { label: "Faltas Totais", value: filteredEstoque.hasData ? filteredEstoque.totalFaltas.toFixed(1) : "0", icon: Package, link: "/estoque" },
     { label: "Alertas Ativos", value: allAlerts.length.toString(), icon: ShieldAlert, link: "/alertas" },
   ];
@@ -268,8 +268,8 @@ const Index = () => {
                     <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-                    <Bar dataKey="total" name="Atual (cartelas)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
-                    <Bar dataKey="anterior" name="Anterior (cartelas)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
+                    <Bar dataKey="total" name="Atual (Cartelas)" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
+                    <Bar dataKey="anterior" name="Anterior (Cartelas)" fill="hsl(var(--muted-foreground))" opacity={0.3} radius={[6, 6, 6, 6]} animationDuration={800} animationBegin={200} />
                     <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} animationDuration={1000} />
                   </ComposedChart>
                 </ResponsiveContainer>
@@ -409,7 +409,7 @@ const Index = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-foreground truncate">{p.produto}</span>
-                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">{p.quantidade.toLocaleString('pt-BR')} cartelas</span>
+                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">{p.quantidade.toLocaleString('pt-BR')} Cartelas</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                           <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
@@ -515,8 +515,8 @@ const Index = () => {
             {[
               { label: "Itens de estoque", value: filteredEstoque.records.length.toString() },
               { label: "Produtos únicos", value: new Set(filteredEstoque.records.map((r: any) => r.codigo)).size.toString() },
-              { label: "Vendas hoje (cartelas)", value: filteredVendas.qtdHoje.toLocaleString('pt-BR') },
-              { label: "Vendas período (cartelas)", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR') },
+              { label: "Vendas hoje (Cartelas)", value: filteredVendas.qtdHoje.toLocaleString('pt-BR') },
+              { label: "Vendas período (Cartelas)", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR') },
             ].map(item => (
               <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
                 <span className="text-xs text-muted-foreground">{item.label}</span>

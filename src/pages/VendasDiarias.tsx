@@ -100,8 +100,8 @@ const VendasDiariasPage = () => {
   };
 
   const handleAdd = async () => {
-    if (!formProduto || !formQtd || !formValor) {
-      toast.error("Preencha produto, quantidade e valor.");
+    if (!formProduto || !formQtd) {
+      toast.error("Preencha produto e quantidade.");
       return;
     }
     try {
@@ -111,7 +111,7 @@ const VendasDiariasPage = () => {
         codigo_produto: formCodigo,
         ponto_venda: formPdv,
         quantidade: Number(formQtd),
-        valor_unitario: Number(formValor),
+        valor_unitario: Number(formValor) || 0,
         forma_pagamento: formPagamento,
         usuario: profile?.nome || profile?.email || "Sistema",
         observacao: formObs,
@@ -336,15 +336,9 @@ const VendasDiariasPage = () => {
                 </Select>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Quantidade *</label>
-                <Input type="number" min="1" value={formQtd} onChange={e => setFormQtd(e.target.value)} placeholder="0" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Valor *</label>
-                <Input type="number" min="0" step="0.01" value={formValor} onChange={e => setFormValor(e.target.value)} placeholder="0.00" />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Quantidade *</label>
+              <Input type="number" min="1" value={formQtd} onChange={e => setFormQtd(e.target.value)} placeholder="0" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Forma de Pagamento</label>
@@ -359,12 +353,6 @@ const VendasDiariasPage = () => {
               <label className="text-sm font-medium text-foreground">Observação</label>
               <Textarea value={formObs} onChange={e => setFormObs(e.target.value)} placeholder="Opcional..." rows={2} />
             </div>
-            {formQtd && formValor && (
-              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
-                <p className="text-xs text-muted-foreground">Total da venda</p>
-                <p className="text-2xl font-extrabold text-primary">R$ {(Number(formQtd) * Number(formValor)).toFixed(2)}</p>
-              </div>
-            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdd(false)}>Cancelar</Button>
