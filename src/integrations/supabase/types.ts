@@ -290,6 +290,77 @@ export type Database = {
         }
         Relationships: []
       }
+      fechamento_diario_estoque: {
+        Row: {
+          created_at: string
+          data: string
+          estoque_final: number
+          estoque_inicial: number
+          fechado_em: string | null
+          fechado_por: string | null
+          fechado_por_id: string | null
+          id: string
+          pdv_id: string
+          produto_codigo: string
+          produto_descricao: string
+          reaberto_em: string | null
+          reaberto_por: string | null
+          status: string
+          total_ajustes: number
+          total_entradas: number
+          total_saidas: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          estoque_final?: number
+          estoque_inicial?: number
+          fechado_em?: string | null
+          fechado_por?: string | null
+          fechado_por_id?: string | null
+          id?: string
+          pdv_id: string
+          produto_codigo?: string
+          produto_descricao?: string
+          reaberto_em?: string | null
+          reaberto_por?: string | null
+          status?: string
+          total_ajustes?: number
+          total_entradas?: number
+          total_saidas?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          estoque_final?: number
+          estoque_inicial?: number
+          fechado_em?: string | null
+          fechado_por?: string | null
+          fechado_por_id?: string | null
+          id?: string
+          pdv_id?: string
+          produto_codigo?: string
+          produto_descricao?: string
+          reaberto_em?: string | null
+          reaberto_por?: string | null
+          status?: string
+          total_ajustes?: number
+          total_entradas?: number
+          total_saidas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fechamento_diario_estoque_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fraud_alerts: {
         Row: {
           analyst: string | null
