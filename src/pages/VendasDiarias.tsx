@@ -111,7 +111,7 @@ const VendasDiariasPage = () => {
         codigo_produto: formCodigo,
         ponto_venda: formPdv,
         quantidade: Number(formQtd),
-        valor_unitario: Number(formValor),
+        valor_unitario: Number(formValor) || 0,
         forma_pagamento: formPagamento,
         usuario: profile?.nome || profile?.email || "Sistema",
         observacao: formObs,
