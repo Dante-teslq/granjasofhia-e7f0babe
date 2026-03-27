@@ -98,7 +98,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     if (saved && saved.length > 0) {
       setSangriaItems(saved.map((s) => ({ ...s })));
     } else {
-      setSangriaItems([{ id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", notacoes: "", pontoVenda: "" }]);
+      setSangriaItems([{ id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", bobinas: "", caixasAlmeida: "", notacoes: "", pontoVenda: "" }]);
     }
   }, [allSavedSangrias]);
 
