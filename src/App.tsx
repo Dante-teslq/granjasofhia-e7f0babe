@@ -66,27 +66,6 @@ const AuthenticatedLayout = () => {
   );
 };
 
-const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const { session, loading, profile } = useApp();
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-primary text-sm">Carregando...</div>
-      </div>
-    );
-  }
-  if (!session) return <Navigate to="/login" replace />;
-  // Wait for profile to load before rendering children (prevents wrong role redirect)
-  if (session && !profile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-primary text-sm">Carregando perfil...</div>
-      </div>
-    );
-  }
-  return <>{children}</>;
-};
-
 /** After login, redirect to the correct home based on role */
 const RoleBasedHome = () => {
   const { currentRole } = useApp();
