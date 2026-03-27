@@ -109,7 +109,7 @@ const AppRoutes = () => {
         loading ? null : session ? <Navigate to="/" replace /> : <Login />
       } />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route element={<AuthGuard><AuthenticatedLayout><Outlet /></AuthenticatedLayout></AuthGuard>}>
+      <Route element={<AuthenticatedLayout />}>
         <Route path="/" element={<ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute>} />
         <Route path="/estoque" element={<ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute>} />
         <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
