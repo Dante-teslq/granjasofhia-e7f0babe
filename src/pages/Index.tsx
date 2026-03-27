@@ -4,7 +4,6 @@ import {
   TrendingUp, Trophy, AlertCircle, Heart, MapPin,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useApp } from "@/contexts/AppContext";
@@ -197,7 +196,7 @@ const Index = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 max-w-[1400px] animate-fade-in-up">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -526,7 +525,7 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

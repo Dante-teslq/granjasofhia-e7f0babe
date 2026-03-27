@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { FileText, Search, Download, ShieldCheck, Loader2, History, Eye, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -170,7 +169,7 @@ const AuditoriaPage = () => {
   const isMobile = useIsMobile();
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         <div className="flex flex-col gap-3 md:gap-4">
           <div>
@@ -426,7 +425,7 @@ const AuditoriaPage = () => {
           )}
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 };
 

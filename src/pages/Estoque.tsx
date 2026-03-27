@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Save, CheckCircle, Store, Trash2, Lock, AlertTriangle, Plus } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
 import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -141,7 +140,7 @@ const EstoquePage = () => {
   const visibleFields = isAdmin ? numFields : numFields.filter((f) => f.key !== "estoque_sistema");
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         {/* Header */}
         <div className="flex flex-col gap-3 md:gap-4">
@@ -317,7 +316,7 @@ const EstoquePage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

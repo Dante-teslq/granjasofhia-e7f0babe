@@ -4,7 +4,6 @@ import { ptBR } from "date-fns/locale";
 import {
   Camera, Upload, Save, CheckCircle, Search, Filter, ImageIcon, X, Calendar, MapPin, User, AlertTriangle, Trash2,
 } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -206,7 +205,7 @@ const EvidenciasPage = () => {
   const uniqueUsers = [...new Set(records.map((r) => r.usuario))];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 max-w-[1400px]">
         {/* Header */}
         <div>
@@ -604,7 +603,7 @@ const EvidenciasPage = () => {
           )}
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 };
 

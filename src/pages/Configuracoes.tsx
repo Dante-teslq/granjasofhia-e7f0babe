@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Sun, Moon, Monitor, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useApp } from "@/contexts/AppContext";
@@ -51,7 +50,7 @@ const ConfiguracoesPage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 max-w-[1400px] space-y-4 md:space-y-6">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground">Configurações</h1>
@@ -118,7 +117,7 @@ const ConfiguracoesPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

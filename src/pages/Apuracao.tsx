@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { TrendingUp, TrendingDown, BarChart3, Download, Plus, Edit2, Trash2, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -145,16 +144,16 @@ const ApuracaoPage = () => {
 
   if (loading && registros.length === 0) {
     return (
-      <DashboardLayout>
+      <>
         <div className="p-6 lg:p-8 flex items-center justify-center min-h-[400px]">
           <p className="text-muted-foreground">Carregando dados de apuração...</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         {/* Header */}
         <div className="flex flex-col gap-3 md:gap-4">
@@ -410,7 +409,7 @@ const ApuracaoPage = () => {
         </DialogContent>
       </Dialog>
 
-    </DashboardLayout>
+    </>
   );
 };
 

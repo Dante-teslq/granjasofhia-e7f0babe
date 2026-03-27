@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import {
   ShieldAlert, Clock, TrendingUp, ExternalLink,
@@ -56,7 +55,7 @@ const AlertasPage = () => {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -141,7 +140,7 @@ const AlertasPage = () => {
         {/* Alerts History - segregated by resolved/unresolved */}
         <AlertsHistory />
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

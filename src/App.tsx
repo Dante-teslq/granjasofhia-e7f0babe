@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { InventoryProvider } from "@/contexts/InventoryContext";
 import { AuditProvider } from "@/contexts/AuditContext";
 import { FraudProvider } from "@/contexts/FraudContext";
@@ -19,6 +19,7 @@ import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import Transferencias from "./pages/Transferencias";
 import VendasDiarias from "./pages/VendasDiarias";
+import DashboardLayout from "./components/DashboardLayout";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -41,7 +42,7 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   return <>{children}</>;
 };
 
-const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+const AuthenticatedLayout = () => {
   const { session, loading, profile } = useApp();
   if (loading) {
     return (
@@ -51,7 +52,6 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     );
   }
   if (!session) return <Navigate to="/login" replace />;
-  // Wait for profile to load before rendering children (prevents wrong role redirect)
   if (session && !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -59,7 +59,11 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-  return <>{children}</>;
+  return (
+    <DashboardLayout>
+      <Outlet />
+    </DashboardLayout>
+  );
 };
 
 /** After login, redirect to the correct home based on role */
@@ -84,18 +88,20 @@ const AppRoutes = () => {
         loading ? null : session ? <Navigate to="/" replace /> : <Login />
       } />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute></AuthGuard>} />
-      <Route path="/estoque" element={<AuthGuard><ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute></AuthGuard>} />
-      <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
-      <Route path="/apuracao" element={<AuthGuard><ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute></AuthGuard>} />
-      <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
-      <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
-      <Route path="/antifraude" element={<AuthGuard><ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute></AuthGuard>} />
-      <Route path="/vendas-diarias" element={<AuthGuard><ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/evidencias" element={<AuthGuard><ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/transferencias" element={<AuthGuard><ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/usuarios" element={<AuthGuard><ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute></AuthGuard>} />
-      <Route path="/configuracoes" element={<AuthGuard><ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute></AuthGuard>} />
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/" element={<ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute>} />
+        <Route path="/estoque" element={<ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute>} />
+        <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
+        <Route path="/apuracao" element={<ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute>} />
+        <Route path="/auditoria" element={<ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute>} />
+        <Route path="/alertas" element={<ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute>} />
+        <Route path="/antifraude" element={<ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute>} />
+        <Route path="/vendas-diarias" element={<ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute>} />
+        <Route path="/evidencias" element={<ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute>} />
+        <Route path="/transferencias" element={<ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute>} />
+        <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />
+        <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
+      </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
