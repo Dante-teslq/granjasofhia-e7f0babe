@@ -93,18 +93,20 @@ const AppRoutes = () => {
         loading ? null : session ? <Navigate to="/" replace /> : <Login />
       } />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/" element={<AuthGuard><ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute></AuthGuard>} />
-      <Route path="/estoque" element={<AuthGuard><ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute></AuthGuard>} />
-      <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
-      <Route path="/apuracao" element={<AuthGuard><ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute></AuthGuard>} />
-      <Route path="/auditoria" element={<AuthGuard><ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute></AuthGuard>} />
-      <Route path="/alertas" element={<AuthGuard><ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute></AuthGuard>} />
-      <Route path="/antifraude" element={<AuthGuard><ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute></AuthGuard>} />
-      <Route path="/vendas-diarias" element={<AuthGuard><ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/evidencias" element={<AuthGuard><ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/transferencias" element={<AuthGuard><ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute></AuthGuard>} />
-      <Route path="/usuarios" element={<AuthGuard><ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute></AuthGuard>} />
-      <Route path="/configuracoes" element={<AuthGuard><ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute></AuthGuard>} />
+      <Route element={<AuthGuard><AuthenticatedLayout><Outlet /></AuthenticatedLayout></AuthGuard>}>
+        <Route path="/" element={<ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute>} />
+        <Route path="/estoque" element={<ProtectedRoute path="/estoque"><Estoque /></ProtectedRoute>} />
+        <Route path="/sangrias" element={<Navigate to="/transferencias" replace />} />
+        <Route path="/apuracao" element={<ProtectedRoute path="/apuracao"><Apuracao /></ProtectedRoute>} />
+        <Route path="/auditoria" element={<ProtectedRoute path="/auditoria"><Auditoria /></ProtectedRoute>} />
+        <Route path="/alertas" element={<ProtectedRoute path="/alertas"><Alertas /></ProtectedRoute>} />
+        <Route path="/antifraude" element={<ProtectedRoute path="/antifraude"><Antifraude /></ProtectedRoute>} />
+        <Route path="/vendas-diarias" element={<ProtectedRoute path="/vendas-diarias"><VendasDiarias /></ProtectedRoute>} />
+        <Route path="/evidencias" element={<ProtectedRoute path="/evidencias"><Evidencias /></ProtectedRoute>} />
+        <Route path="/transferencias" element={<ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute>} />
+        <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />
+        <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
+      </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
