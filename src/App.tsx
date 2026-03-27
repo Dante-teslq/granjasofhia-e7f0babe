@@ -42,10 +42,26 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   return <>{children}</>;
 };
 
-const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
+const AuthenticatedLayout = () => {
+  const { session, loading, profile } = useApp();
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-primary text-sm">Carregando...</div>
+      </div>
+    );
+  }
+  if (!session) return <Navigate to="/login" replace />;
+  if (session && !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-primary text-sm">Carregando perfil...</div>
+      </div>
+    );
+  }
   return (
     <DashboardLayout>
-      {children}
+      <Outlet />
     </DashboardLayout>
   );
 };
