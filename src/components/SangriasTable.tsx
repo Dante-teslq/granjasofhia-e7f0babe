@@ -15,6 +15,8 @@ const emptySangria = (): SangriaItem => ({
   sangria: "",
   cartelasVazias: "",
   barbantes: "",
+  bobinas: "",
+  caixasAlmeida: "",
   notacoes: "",
   pontoVenda: "",
 });
