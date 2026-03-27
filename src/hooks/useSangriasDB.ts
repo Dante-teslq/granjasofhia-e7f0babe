@@ -32,6 +32,8 @@ export function useSangriasDB(externalDate?: Date) {
           sangria: r.sangria,
           cartelasVazias: r.cartelas_vazias,
           barbantes: r.barbantes,
+          bobinas: r.bobinas || "",
+          caixasAlmeida: r.caixas_almeida || "",
           notacoes: r.notacoes,
           pontoVenda: r.ponto_venda,
           data: r.data,
