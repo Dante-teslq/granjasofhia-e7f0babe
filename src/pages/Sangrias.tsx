@@ -29,6 +29,8 @@ const emptyRow = (): SangriaItem => ({
   sangria: "",
   cartelasVazias: "",
   barbantes: "",
+  bobinas: "",
+  caixasAlmeida: "",
   notacoes: "",
   pontoVenda: "",
 });
