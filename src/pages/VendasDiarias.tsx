@@ -4,7 +4,6 @@ import { ptBR } from "date-fns/locale";
 import {
   ShoppingCart, Plus, Lock, Trash2, Package, Calendar, AlertTriangle,
 } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -150,7 +149,7 @@ const VendasDiariasPage = () => {
   ];
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-10 space-y-6 max-w-[1400px] animate-fade-in-up">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -348,7 +347,7 @@ const VendasDiariasPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </>
   );
 };
 

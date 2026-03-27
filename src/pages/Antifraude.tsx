@@ -1,4 +1,3 @@
-import DashboardLayout from "@/components/DashboardLayout";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import {
   ShieldAlert, TrendingUp, Clock, Activity, Repeat, UserX,
@@ -74,7 +73,7 @@ const AntifravdePage = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -313,7 +312,7 @@ const AntifravdePage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { ArrowRightLeft, Plus, Send, PackageCheck, ClipboardList } from "lucide-react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from "@/contexts/AppContext";
@@ -38,7 +37,7 @@ const TransferenciasPage = () => {
   }, []);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -103,7 +102,7 @@ const TransferenciasPage = () => {
           onSuccess={loadRecords}
         />
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

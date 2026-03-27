@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Save, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import DashboardLayout from "@/components/DashboardLayout";
 import SangriasTable from "@/components/SangriasTable";
 import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
@@ -105,7 +104,7 @@ const SangriasPage = () => {
   }, {});
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         {/* Header */}
         <div>
@@ -209,7 +208,7 @@ const SangriasPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

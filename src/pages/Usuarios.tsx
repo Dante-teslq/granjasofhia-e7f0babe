@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Shield, Pencil, Trash2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -135,7 +134,7 @@ const UsuariosPage = () => {
   const getPdvName = (pdvId: string | null) => pdvId ? pdvMap[pdvId] || "—" : "—";
 
   return (
-    <DashboardLayout>
+    <>
       <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -362,7 +361,7 @@ const UsuariosPage = () => {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 
