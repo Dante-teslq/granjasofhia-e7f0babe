@@ -41,6 +41,14 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
   return <>{children}</>;
 };
 
+const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>
+  );
+};
+
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const { session, loading, profile } = useApp();
   if (loading) {
