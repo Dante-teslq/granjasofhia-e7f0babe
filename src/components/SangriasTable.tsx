@@ -34,6 +34,8 @@ const SangriasTable = ({ items, onChange, readOnly }: SangriasTableProps) => {
   const fields: { key: keyof SangriaItem; label: string; placeholder: string }[] = [
     { key: "cartelasVazias", label: "Cartelas Vazias", placeholder: "Ex: 20 unidades" },
     { key: "barbantes", label: "Barbantes", placeholder: "Ex: 5 rolos" },
+    { key: "bobinas", label: "Bobinas", placeholder: "Ex: 3 unidades" },
+    { key: "caixasAlmeida", label: "Caixas Almeida", placeholder: "Ex: 10 unidades" },
     { key: "notacoes", label: "Notações", placeholder: "Ex: Reposição pendente" },
   ];
 
