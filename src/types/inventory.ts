@@ -15,6 +15,8 @@ export interface SangriaItem {
   sangria: string; // kept for DB compat, unused in UI
   cartelasVazias: string;
   barbantes: string;
+  bobinas: string;
+  caixasAlmeida: string;
   notacoes: string;
   pontoVenda: string;
   data?: string;

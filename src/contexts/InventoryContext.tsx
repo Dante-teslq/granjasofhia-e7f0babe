@@ -58,7 +58,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
   const [currentStore, setCurrentStore] = useState<StoreName>("CEASA");
   const [stockItems, setStockItems] = useState<StockItem[]>([emptyStockRow()]);
   const [sangriaItems, setSangriaItems] = useState<SangriaItem[]>([
-    { id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", notacoes: "", pontoVenda: "" },
+    { id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", bobinas: "", caixasAlmeida: "", notacoes: "", pontoVenda: "" },
   ]);
 
   // Persistent stores keyed by date+store and date
@@ -98,7 +98,7 @@ export const InventoryProvider = ({ children }: { children: ReactNode }) => {
     if (saved && saved.length > 0) {
       setSangriaItems(saved.map((s) => ({ ...s })));
     } else {
-      setSangriaItems([{ id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", notacoes: "", pontoVenda: "" }]);
+      setSangriaItems([{ id: crypto.randomUUID(), sangria: "", cartelasVazias: "", barbantes: "", bobinas: "", caixasAlmeida: "", notacoes: "", pontoVenda: "" }]);
     }
   }, [allSavedSangrias]);
 

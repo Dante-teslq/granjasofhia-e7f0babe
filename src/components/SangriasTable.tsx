@@ -15,6 +15,8 @@ const emptySangria = (): SangriaItem => ({
   sangria: "",
   cartelasVazias: "",
   barbantes: "",
+  bobinas: "",
+  caixasAlmeida: "",
   notacoes: "",
   pontoVenda: "",
 });
@@ -32,6 +34,8 @@ const SangriasTable = ({ items, onChange, readOnly }: SangriasTableProps) => {
   const fields: { key: keyof SangriaItem; label: string; placeholder: string }[] = [
     { key: "cartelasVazias", label: "Cartelas Vazias", placeholder: "Ex: 20 unidades" },
     { key: "barbantes", label: "Barbantes", placeholder: "Ex: 5 rolos" },
+    { key: "bobinas", label: "Bobinas", placeholder: "Ex: 3 unidades" },
+    { key: "caixasAlmeida", label: "Caixas Almeida", placeholder: "Ex: 10 unidades" },
     { key: "notacoes", label: "Notações", placeholder: "Ex: Reposição pendente" },
   ];
 
@@ -82,6 +86,8 @@ const SangriasTable = ({ items, onChange, readOnly }: SangriasTableProps) => {
              <tr className="bg-primary/10 text-foreground">
               <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Cartelas Vazias</th>
               <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Barbantes</th>
+              <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Bobinas</th>
+              <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Caixas Almeida</th>
               <th className="px-3 py-3 text-left font-bold text-[11px] uppercase tracking-[0.1em] text-muted-foreground">Campo de Notações</th>
               {!readOnly && <th className="px-3 py-3 w-10"></th>}
             </tr>

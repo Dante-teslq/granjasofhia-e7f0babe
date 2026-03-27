@@ -32,6 +32,8 @@ export function useSangriasDB(externalDate?: Date) {
           sangria: r.sangria,
           cartelasVazias: r.cartelas_vazias,
           barbantes: r.barbantes,
+          bobinas: r.bobinas || "",
+          caixasAlmeida: r.caixas_almeida || "",
           notacoes: r.notacoes,
           pontoVenda: r.ponto_venda,
           data: r.data,
@@ -63,13 +65,15 @@ export function useSangriasDB(externalDate?: Date) {
     await supabase.from("sangrias").delete().eq("data", dateStr).eq("ponto_venda", pontoVenda);
 
     const rows = items
-      .filter((i) => i.sangria || i.cartelasVazias || i.barbantes || i.notacoes)
+      .filter((i) => i.sangria || i.cartelasVazias || i.barbantes || i.bobinas || i.caixasAlmeida || i.notacoes)
       .map((i) => ({
         data: dateStr,
         ponto_venda: pontoVenda,
         sangria: i.sangria,
         cartelas_vazias: i.cartelasVazias,
         barbantes: i.barbantes,
+        bobinas: i.bobinas,
+        caixas_almeida: i.caixasAlmeida,
         notacoes: i.notacoes,
         usuario,
       }));

@@ -594,6 +594,8 @@ export type Database = {
       sangrias: {
         Row: {
           barbantes: string
+          bobinas: string
+          caixas_almeida: string
           cartelas_vazias: string
           created_at: string
           data: string
@@ -606,6 +608,8 @@ export type Database = {
         }
         Insert: {
           barbantes?: string
+          bobinas?: string
+          caixas_almeida?: string
           cartelas_vazias?: string
           created_at?: string
           data?: string
@@ -618,6 +622,8 @@ export type Database = {
         }
         Update: {
           barbantes?: string
+          bobinas?: string
+          caixas_almeida?: string
           cartelas_vazias?: string
           created_at?: string
           data?: string
