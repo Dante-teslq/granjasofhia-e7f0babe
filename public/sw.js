@@ -1,4 +1,4 @@
-const CACHE_NAME = 'granja-sofhia-v6';
+const CACHE_NAME = 'granja-sofhia-v7';
 const STATIC_ASSETS = [
   '/',
   '/logo.jpg',
