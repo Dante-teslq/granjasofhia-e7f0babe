@@ -18,6 +18,9 @@ import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FechamentoDiarioEstoque from "@/components/FechamentoDiarioEstoque";
+import SangriasTable from "@/components/SangriasTable";
+import { useSangriasDB } from "@/hooks/useSangriasDB";
+import { SangriaItem } from "@/types/inventory";
 
 const EstoquePage = () => {
   const { currentRole, dateRange, setDateRange, profile, isOperator, userPdvName, session } = useApp();
