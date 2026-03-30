@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Save, CheckCircle, Store, Trash2, Lock, AlertTriangle, Plus } from "lucide-react";
+import { Save, CheckCircle, Store, Trash2, Lock, AlertTriangle, Plus, ClipboardList } from "lucide-react";
 import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
