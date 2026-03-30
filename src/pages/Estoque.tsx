@@ -35,6 +35,24 @@ const EstoquePage = () => {
   const [pdvList, setPdvList] = useState<{ id: string; nome: string }[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Insumos state
+  const emptyInsumo = (): SangriaItem => ({
+    id: crypto.randomUUID(),
+    sangria: "",
+    cartelasVazias: "",
+    barbantes: "",
+    bobinas: "",
+    caixasAlmeida: "",
+    notacoes: "",
+    pontoVenda: "",
+  });
+  const [insumoItems, setInsumoItems] = useState<SangriaItem[]>([emptyInsumo()]);
+  const {
+    records: insumosRecords,
+    loading: insumosLoading,
+    saveItems: saveInsumos,
+  } = useSangriasDB(selectedDate);
+
   // Load PDV list
   useEffect(() => {
     const loadPdvs = async () => {
