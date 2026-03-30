@@ -305,7 +305,34 @@ const EstoquePage = () => {
                   />
                 )}
 
-                {/* Footer actions */}
+                {/* Insumos section */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" /> Insumos
+                  </h3>
+                  <SangriasTable items={insumoItems} onChange={setInsumoItems} readOnly={readOnly} />
+                  {!readOnly && (
+                    <div className="flex justify-end">
+                      <Button onClick={handleSaveInsumos} variant="outline" className="gap-2">
+                        <Save className="w-4 h-4" /> Salvar Insumos
+                      </Button>
+                    </div>
+                  )}
+                  {/* Saved insumos for this date/pdv */}
+                  {insumosRecords.filter(r => r.pontoVenda === selectedPdvName).length > 0 && (
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      <div className="bg-muted/40 px-4 py-2 text-xs font-semibold text-muted-foreground">
+                        Registros salvos
+                      </div>
+                      <SangriasTable
+                        items={insumosRecords.filter(r => r.pontoVenda === selectedPdvName)}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     {diario && (
