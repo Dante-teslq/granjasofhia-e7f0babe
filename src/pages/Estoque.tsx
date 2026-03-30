@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { Save, CheckCircle, Store, Trash2, Lock, AlertTriangle, Plus } from "lucide-react";
+import { Save, CheckCircle, Store, Trash2, Lock, AlertTriangle, Plus, ClipboardList } from "lucide-react";
 import DateRangePicker from "@/components/DateRangePicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,9 @@ import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FechamentoDiarioEstoque from "@/components/FechamentoDiarioEstoque";
+import SangriasTable from "@/components/SangriasTable";
+import { useSangriasDB } from "@/hooks/useSangriasDB";
+import { SangriaItem } from "@/types/inventory";
 
 const EstoquePage = () => {
   const { currentRole, dateRange, setDateRange, profile, isOperator, userPdvName, session } = useApp();
@@ -31,6 +34,24 @@ const EstoquePage = () => {
   const [selectedPdvName, setSelectedPdvName] = useState<string>("");
   const [pdvList, setPdvList] = useState<{ id: string; nome: string }[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Insumos state
+  const emptyInsumo = (): SangriaItem => ({
+    id: crypto.randomUUID(),
+    sangria: "",
+    cartelasVazias: "",
+    barbantes: "",
+    bobinas: "",
+    caixasAlmeida: "",
+    notacoes: "",
+    pontoVenda: "",
+  });
+  const [insumoItems, setInsumoItems] = useState<SangriaItem[]>([emptyInsumo()]);
+  const {
+    records: insumosRecords,
+    loading: insumosLoading,
+    saveItems: saveInsumos,
+  } = useSangriasDB(selectedDate);
 
   // Load PDV list
   useEffect(() => {
@@ -127,6 +148,18 @@ const EstoquePage = () => {
   const handleAdminDelete = async () => {
     if (!profile?.nome) return;
     await adminDelete(profile.nome);
+  };
+
+  const handleSaveInsumos = async () => {
+    if (!selectedPdvName) {
+      toast.error("Selecione um ponto de venda.");
+      return;
+    }
+    await saveInsumos(insumoItems, selectedPdvName, profile?.nome || currentRole);
+    toast.success("Insumos salvos com sucesso!", {
+      description: `${selectedPdvName} — ${format(selectedDate, "dd/MM/yyyy")}`,
+    });
+    setInsumoItems([emptyInsumo()]);
   };
 
   const numFields: { key: keyof EstoqueDiarioItem; label: string }[] = [
@@ -272,7 +305,34 @@ const EstoquePage = () => {
                   />
                 )}
 
-                {/* Footer actions */}
+                {/* Insumos section */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" /> Insumos
+                  </h3>
+                  <SangriasTable items={insumoItems} onChange={setInsumoItems} readOnly={readOnly} />
+                  {!readOnly && (
+                    <div className="flex justify-end">
+                      <Button onClick={handleSaveInsumos} variant="outline" className="gap-2">
+                        <Save className="w-4 h-4" /> Salvar Insumos
+                      </Button>
+                    </div>
+                  )}
+                  {/* Saved insumos for this date/pdv */}
+                  {insumosRecords.filter(r => r.pontoVenda === selectedPdvName).length > 0 && (
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      <div className="bg-muted/40 px-4 py-2 text-xs font-semibold text-muted-foreground">
+                        Registros salvos
+                      </div>
+                      <SangriasTable
+                        items={insumosRecords.filter(r => r.pontoVenda === selectedPdvName)}
+                        onChange={() => {}}
+                        readOnly
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div>
                     {diario && (
