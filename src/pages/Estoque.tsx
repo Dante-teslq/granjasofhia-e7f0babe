@@ -150,6 +150,18 @@ const EstoquePage = () => {
     await adminDelete(profile.nome);
   };
 
+  const handleSaveInsumos = async () => {
+    if (!selectedPdvName) {
+      toast.error("Selecione um ponto de venda.");
+      return;
+    }
+    await saveInsumos(insumoItems, selectedPdvName, profile?.nome || currentRole);
+    toast.success("Insumos salvos com sucesso!", {
+      description: `${selectedPdvName} — ${format(selectedDate, "dd/MM/yyyy")}`,
+    });
+    setInsumoItems([emptyInsumo()]);
+  };
+
   const numFields: { key: keyof EstoqueDiarioItem; label: string }[] = [
     { key: "estoque_sistema", label: "Est. Sistema" },
     { key: "estoque_loja", label: "Est. Loja" },
