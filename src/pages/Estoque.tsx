@@ -271,9 +271,9 @@ const EstoquePage = () => {
 
         {/* Tabs: Conferência and Fechamento Diário */}
         <Tabs defaultValue="conferencia" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="conferencia">Conferência</TabsTrigger>
-            <TabsTrigger value="fechamento">Fechamento Diário</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 max-w-[280px] md:max-w-md h-auto">
+            <TabsTrigger value="conferencia" className="text-xs md:text-sm px-2 md:px-4 py-2">Conferência</TabsTrigger>
+            <TabsTrigger value="fechamento" className="text-xs md:text-sm px-2 md:px-4 py-2">Fechamento Diário</TabsTrigger>
           </TabsList>
 
           <TabsContent value="conferencia" className="space-y-4 mt-4">
