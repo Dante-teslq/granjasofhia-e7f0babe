@@ -1,4 +1,4 @@
-import { Package, LayoutDashboard, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft } from "lucide-react";
+import { Package, LayoutDashboard, Settings, Shield, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft, Plug } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ const allLinks = [
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
   { to: "/antifraude", icon: ShieldAlert, label: "Painel de Segurança", section: "Segurança" },
   { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
+  { to: "/integracoes", icon: Plug, label: "Integrações Omie", section: "Sistema" },
   { to: "/configuracoes", icon: Settings, label: "Configurações", section: "Sistema" },
 ];
 

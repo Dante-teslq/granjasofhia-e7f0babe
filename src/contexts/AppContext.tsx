@@ -203,8 +203,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const canAccess = (page: string) => {
     if (currentRole === "Administrador" || currentRole === "Admin") return true;
-    if (currentRole === "Supervisor") return page !== "/antifraude";
-    if (currentRole === "Auditor") return page !== "/configuracoes" && page !== "/usuarios" && page !== "/antifraude";
+    if (currentRole === "Supervisor") return page !== "/antifraude" && page !== "/integracoes";
+    if (currentRole === "Auditor") return page !== "/configuracoes" && page !== "/usuarios" && page !== "/antifraude" && page !== "/integracoes";
     if (currentRole === "Operador de Depósito") return depositoAllowed.has(page);
     return vendaAllowed.has(page);
   };
