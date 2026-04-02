@@ -19,6 +19,7 @@ import Antifraude from "./pages/Antifraude";
 import Evidencias from "./pages/Evidencias";
 import Transferencias from "./pages/Transferencias";
 import VendasDiarias from "./pages/VendasDiarias";
+import Integracoes from "./pages/Integracoes";
 import DashboardLayout from "./components/DashboardLayout";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
