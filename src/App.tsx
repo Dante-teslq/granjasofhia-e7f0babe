@@ -102,6 +102,7 @@ const AppRoutes = () => {
         <Route path="/transferencias" element={<ProtectedRoute path="/transferencias"><Transferencias /></ProtectedRoute>} />
         <Route path="/usuarios" element={<ProtectedRoute path="/usuarios"><Usuarios /></ProtectedRoute>} />
         <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
+        <Route path="/integracoes" element={<ProtectedRoute path="/integracoes"><Integracoes /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
