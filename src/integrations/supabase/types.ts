@@ -406,6 +406,311 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_audit_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          integration_id: string | null
+          metadata: Json | null
+          new_value: Json | null
+          old_value: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          integration_id?: string | null
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          integration_id?: string | null
+          metadata?: Json | null
+          new_value?: Json | null
+          old_value?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_audit_events_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_failures: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          failure_reason: string
+          id: string
+          integration_id: string | null
+          is_resolved: boolean
+          provider_response: Json | null
+          queue_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          technical_details: Json | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          failure_reason: string
+          id?: string
+          integration_id?: string | null
+          is_resolved?: boolean
+          provider_response?: Json | null
+          queue_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          technical_details?: Json | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          failure_reason?: string
+          id?: string
+          integration_id?: string | null
+          is_resolved?: boolean
+          provider_response?: Json | null
+          queue_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          technical_details?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_failures_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_failures_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "integration_queue"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_idempotency_keys: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          integration_id: string | null
+          operation_type: string
+          request_hash: string | null
+          response_hash: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          expires_at?: string
+          id?: string
+          idempotency_key: string
+          integration_id?: string | null
+          operation_type: string
+          request_hash?: string | null
+          response_hash?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string
+          id?: string
+          idempotency_key?: string
+          integration_id?: string | null
+          operation_type?: string
+          request_hash?: string | null
+          response_hash?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_idempotency_keys_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_logs: {
+        Row: {
+          correlation_id: string
+          created_at: string
+          edge_function_name: string | null
+          entity_id: string | null
+          entity_type: string
+          error_code: string | null
+          error_message: string | null
+          execution_status: string
+          finished_at: string | null
+          http_status: number | null
+          id: string
+          integration_id: string | null
+          operation_type: string
+          payload_response: Json | null
+          payload_sent: Json | null
+          provider_status: string | null
+          retry_count: number
+          source_module: string | null
+          started_at: string
+          triggered_by_context: string | null
+          triggered_by_user_id: string | null
+        }
+        Insert: {
+          correlation_id?: string
+          created_at?: string
+          edge_function_name?: string | null
+          entity_id?: string | null
+          entity_type: string
+          error_code?: string | null
+          error_message?: string | null
+          execution_status?: string
+          finished_at?: string | null
+          http_status?: number | null
+          id?: string
+          integration_id?: string | null
+          operation_type: string
+          payload_response?: Json | null
+          payload_sent?: Json | null
+          provider_status?: string | null
+          retry_count?: number
+          source_module?: string | null
+          started_at?: string
+          triggered_by_context?: string | null
+          triggered_by_user_id?: string | null
+        }
+        Update: {
+          correlation_id?: string
+          created_at?: string
+          edge_function_name?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          error_code?: string | null
+          error_message?: string | null
+          execution_status?: string
+          finished_at?: string | null
+          http_status?: number | null
+          id?: string
+          integration_id?: string | null
+          operation_type?: string
+          payload_response?: Json | null
+          payload_sent?: Json | null
+          provider_status?: string | null
+          retry_count?: number
+          source_module?: string | null
+          started_at?: string
+          triggered_by_context?: string | null
+          triggered_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_logs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_queue: {
+        Row: {
+          attempt_count: number
+          available_at: string
+          correlation_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          integration_id: string | null
+          last_error: string | null
+          locked_at: string | null
+          max_attempts: number
+          operation_type: string
+          payload_snapshot: Json
+          priority: number
+          processed_at: string | null
+          scheduled_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempt_count?: number
+          available_at?: string
+          correlation_id?: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          integration_id?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          operation_type: string
+          payload_snapshot: Json
+          priority?: number
+          processed_at?: string | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempt_count?: number
+          available_at?: string
+          correlation_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          integration_id?: string | null
+          last_error?: string | null
+          locked_at?: string | null
+          max_attempts?: number
+          operation_type?: string
+          payload_snapshot?: Json
+          priority?: number
+          processed_at?: string | null
+          scheduled_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_queue_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       movimentacoes_estoque: {
         Row: {
           confirmado_em: string | null
@@ -477,6 +782,355 @@ export type Database = {
             columns: ["pdv_origem_id"]
             isOneToOne: false
             referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_customer_map: {
+        Row: {
+          conflict_flag: boolean
+          created_at: string
+          id: string
+          integration_id: string
+          last_payload_hash: string | null
+          last_sync_at: string | null
+          local_record_id: string
+          local_record_type: string
+          omie_code: string | null
+          omie_record_id: string | null
+          source_of_truth: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id?: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id?: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_customer_map_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_integration_bindings: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          integration_id: string
+          is_default: boolean
+          pdv_id: string | null
+          unit_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          integration_id: string
+          is_default?: boolean
+          pdv_id?: string | null
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          integration_id?: string
+          is_default?: boolean
+          pdv_id?: string | null
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_integration_bindings_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omie_integration_bindings_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_integrations: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          customers_sync_mode: string
+          environment: string
+          id: string
+          inheritance_level: string
+          integration_name: string
+          inventory_sync_mode: string
+          is_active: boolean
+          metadata: Json | null
+          omie_app_key: string
+          omie_app_secret: string
+          orders_sync_mode: string
+          pdv_id: string | null
+          priority: number
+          products_sync_mode: string
+          unit_id: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customers_sync_mode?: string
+          environment?: string
+          id?: string
+          inheritance_level?: string
+          integration_name: string
+          inventory_sync_mode?: string
+          is_active?: boolean
+          metadata?: Json | null
+          omie_app_key: string
+          omie_app_secret: string
+          orders_sync_mode?: string
+          pdv_id?: string | null
+          priority?: number
+          products_sync_mode?: string
+          unit_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customers_sync_mode?: string
+          environment?: string
+          id?: string
+          inheritance_level?: string
+          integration_name?: string
+          inventory_sync_mode?: string
+          is_active?: boolean
+          metadata?: Json | null
+          omie_app_key?: string
+          omie_app_secret?: string
+          orders_sync_mode?: string
+          pdv_id?: string | null
+          priority?: number
+          products_sync_mode?: string
+          unit_id?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_integrations_pdv_id_fkey"
+            columns: ["pdv_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_de_venda"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_inventory_map: {
+        Row: {
+          conflict_flag: boolean
+          created_at: string
+          id: string
+          integration_id: string
+          last_payload_hash: string | null
+          last_sync_at: string | null
+          local_record_id: string
+          local_record_type: string
+          omie_code: string | null
+          omie_record_id: string | null
+          source_of_truth: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id?: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id?: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_inventory_map_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_order_map: {
+        Row: {
+          conflict_flag: boolean
+          created_at: string
+          id: string
+          integration_id: string
+          last_payload_hash: string | null
+          last_sync_at: string | null
+          local_record_id: string
+          local_record_type: string
+          omie_code: string | null
+          omie_record_id: string | null
+          source_of_truth: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id?: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id?: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_order_map_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_product_map: {
+        Row: {
+          conflict_flag: boolean
+          created_at: string
+          id: string
+          integration_id: string
+          last_payload_hash: string | null
+          last_sync_at: string | null
+          local_record_id: string
+          local_record_type: string
+          omie_code: string | null
+          omie_record_id: string | null
+          source_of_truth: string
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          conflict_flag?: boolean
+          created_at?: string
+          id?: string
+          integration_id?: string
+          last_payload_hash?: string | null
+          last_sync_at?: string | null
+          local_record_id?: string
+          local_record_type?: string
+          omie_code?: string | null
+          omie_record_id?: string | null
+          source_of_truth?: string
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_product_map_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "omie_integrations"
             referencedColumns: ["id"]
           },
         ]
@@ -837,6 +1491,15 @@ export type Database = {
       get_user_role: { Args: { _user_id: string }; Returns: string }
       is_admin_user: { Args: { _user_id: string }; Returns: boolean }
       is_diario_open: { Args: { _diario_id: string }; Returns: boolean }
+      resolve_omie_integration: {
+        Args: { _company_id?: string; _pdv_id: string; _unit_id?: string }
+        Returns: {
+          environment: string
+          integration_id: string
+          integration_name: string
+          resolution_level: string
+        }[]
+      }
       validate_transfer_stock: {
         Args: { _pdv_id: string; _produto_codigo: string; _quantidade: number }
         Returns: boolean
