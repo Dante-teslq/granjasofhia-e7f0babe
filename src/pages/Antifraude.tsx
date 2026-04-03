@@ -312,6 +312,9 @@ const AntifravdePage = () => {
             })}
           </div>
         </div>
+
+        {/* Divergências Omie */}
+        <DivergenciasOmie />
       </div>
     </>
   );
