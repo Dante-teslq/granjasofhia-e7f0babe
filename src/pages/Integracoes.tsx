@@ -336,6 +336,7 @@ export default function Integracoes() {
           <TabsTrigger value="logs" className="text-xs md:text-sm">Logs</TabsTrigger>
           <TabsTrigger value="queue" className="text-xs md:text-sm">Fila</TabsTrigger>
           <TabsTrigger value="failures" className="text-xs md:text-sm">Falhas</TabsTrigger>
+          <TabsTrigger value="reconciliacao" className="text-xs md:text-sm">Reconciliação</TabsTrigger>
         </TabsList>
 
         <TabsContent value="integrations" className="mt-4">
