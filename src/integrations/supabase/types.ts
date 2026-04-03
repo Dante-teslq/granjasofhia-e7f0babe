@@ -1165,6 +1165,36 @@ export type Database = {
         }
         Relationships: []
       }
+      produtos: {
+        Row: {
+          codigo_omie: number
+          created_at: string
+          estoque: number
+          id: string
+          nome: string
+          preco: number
+          updated_at: string
+        }
+        Insert: {
+          codigo_omie: number
+          created_at?: string
+          estoque?: number
+          id?: string
+          nome?: string
+          preco?: number
+          updated_at?: string
+        }
+        Update: {
+          codigo_omie?: number
+          created_at?: string
+          estoque?: number
+          id?: string
+          nome?: string
+          preco?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cargo: string
