@@ -530,6 +530,10 @@ export default function Integracoes() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="reconciliacao" className="mt-4">
+          <ReconciliacaoTab />
+        </TabsContent>
       </Tabs>
     </div>
   );
