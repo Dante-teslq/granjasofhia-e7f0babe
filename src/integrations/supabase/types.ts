@@ -792,6 +792,7 @@ export type Database = {
           descricao: string
           id: string
           omie_app_key: string
+          omie_app_secret: string
           pdv_nome: string
           updated_at: string
         }
@@ -800,6 +801,7 @@ export type Database = {
           descricao?: string
           id?: string
           omie_app_key: string
+          omie_app_secret?: string
           pdv_nome: string
           updated_at?: string
         }
@@ -808,6 +810,7 @@ export type Database = {
           descricao?: string
           id?: string
           omie_app_key?: string
+          omie_app_secret?: string
           pdv_nome?: string
           updated_at?: string
         }
