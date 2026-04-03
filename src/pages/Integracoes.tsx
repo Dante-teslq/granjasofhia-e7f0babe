@@ -13,6 +13,8 @@ import { useOmieIntegrations, OmieIntegration } from "@/hooks/useOmieIntegration
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, TestTube, Plug, RefreshCw, AlertTriangle, CheckCircle2, Clock, XCircle, RotateCcw, Trash2, Edit } from "lucide-react";
+import OmieMovimentosCard from "@/components/integracoes/OmieMovimentosCard";
+import ReconciliacaoTab from "@/components/integracoes/ReconciliacaoTab";
 
 interface PdvOption {
   id: string;
@@ -286,6 +288,9 @@ export default function Integracoes() {
         </div>
       </div>
 
+      {/* Omie Movimentos Card */}
+      <OmieMovimentosCard />
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -333,6 +338,7 @@ export default function Integracoes() {
           <TabsTrigger value="logs" className="text-xs md:text-sm">Logs</TabsTrigger>
           <TabsTrigger value="queue" className="text-xs md:text-sm">Fila</TabsTrigger>
           <TabsTrigger value="failures" className="text-xs md:text-sm">Falhas</TabsTrigger>
+          <TabsTrigger value="reconciliacao" className="text-xs md:text-sm">Reconciliação</TabsTrigger>
         </TabsList>
 
         <TabsContent value="integrations" className="mt-4">
@@ -523,6 +529,10 @@ export default function Integracoes() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reconciliacao" className="mt-4">
+          <ReconciliacaoTab />
         </TabsContent>
       </Tabs>
     </div>

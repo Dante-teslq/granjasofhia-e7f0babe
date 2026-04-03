@@ -12,6 +12,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from "recharts";
+import DivergenciasOmie from "@/components/antifraude/DivergenciasOmie";
 
 const AntifravdePage = () => {
   const { alerts, userRiskProfiles, fraudSettings, updateFraudSettings } = useFraud();
@@ -311,6 +312,9 @@ const AntifravdePage = () => {
             })}
           </div>
         </div>
+
+        {/* Divergências Omie */}
+        <DivergenciasOmie />
       </div>
     </>
   );
