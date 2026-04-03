@@ -1,0 +1,1 @@
+ALTER TABLE public.omie_contas ADD COLUMN omie_app_secret text NOT NULL DEFAULT '';
