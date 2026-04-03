@@ -786,6 +786,33 @@ export type Database = {
           },
         ]
       }
+      omie_contas: {
+        Row: {
+          created_at: string
+          descricao: string
+          id: string
+          omie_app_key: string
+          pdv_nome: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string
+          id?: string
+          omie_app_key: string
+          pdv_nome: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string
+          id?: string
+          omie_app_key?: string
+          pdv_nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       omie_customer_map: {
         Row: {
           conflict_flag: boolean
@@ -1131,6 +1158,62 @@ export type Database = {
             columns: ["integration_id"]
             isOneToOne: false
             referencedRelation: "omie_integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omie_reconciliacao: {
+        Row: {
+          created_at: string
+          data: string
+          divergencia: number
+          id: string
+          omie_conta_id: string
+          produto_codigo: string
+          produto_descricao: string
+          revisado_em: string | null
+          revisado_por: string | null
+          saldo_interno: number
+          saldo_omie: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          divergencia?: number
+          id?: string
+          omie_conta_id: string
+          produto_codigo?: string
+          produto_descricao?: string
+          revisado_em?: string | null
+          revisado_por?: string | null
+          saldo_interno?: number
+          saldo_omie?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          divergencia?: number
+          id?: string
+          omie_conta_id?: string
+          produto_codigo?: string
+          produto_descricao?: string
+          revisado_em?: string | null
+          revisado_por?: string | null
+          saldo_interno?: number
+          saldo_omie?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omie_reconciliacao_omie_conta_id_fkey"
+            columns: ["omie_conta_id"]
+            isOneToOne: false
+            referencedRelation: "omie_contas"
             referencedColumns: ["id"]
           },
         ]
