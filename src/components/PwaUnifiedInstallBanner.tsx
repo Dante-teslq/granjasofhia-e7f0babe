@@ -1,292 +1,168 @@
-import { useState, useEffect, useCallback } from "react";
-import { X, Download, Share2, Monitor, Smartphone, Globe, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Download, Share2, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
+const DISMISS_KEY = "pwa-install-dismissed";
+const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-const DISMISS_KEY = "pwa-unified-dismissed";
-const INSTALLED_KEY = "pwa-installed";
-const VISITS_KEY = "pwa-unified-visits";
-const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000;
-
-type BannerType = "android" | "ios" | "desktop" | "firefox-desktop" | "firefox-mobile" | null;
-
-function detectBannerType(): BannerType {
-  const ua = navigator.userAgent;
-  const isStandalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as any).standalone;
-  if (isStandalone) return null;
-
-  const isIos = /iphone|ipad|ipod/i.test(ua);
-  const isAndroid = /android/i.test(ua);
-  const isFirefox = /firefox/i.test(ua);
-  const isMobile = /mobi|android|iphone|ipad|ipod/i.test(ua);
-
-  if (isFirefox && isMobile) return "firefox-mobile";
-  if (isFirefox) return "firefox-desktop";
-  if (isIos) return "ios";
-  if (isAndroid || (isMobile && !isIos)) return "android";
-  return "desktop";
-}
-
-function isDismissed(): boolean {
-  if (localStorage.getItem(INSTALLED_KEY)) return true;
+function wasDismissed(): boolean {
   const val = localStorage.getItem(DISMISS_KEY);
   if (!val) return false;
   return Date.now() - parseInt(val, 10) < DISMISS_DURATION;
 }
 
-function setDismissed() {
-  localStorage.setItem(DISMISS_KEY, String(Date.now()));
+interface Props {
+  /** Force the banner open regardless of dismiss state (used by the sidebar button). */
+  forceOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function PWAInstallBanner() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [bannerType, setBannerType] = useState<BannerType>(null);
+export function PWAInstallBanner({ forceOpen = false, onClose }: Props = {}) {
+  const { platform, canPrompt, isInstalled, install } = usePwaInstall();
   const [visible, setVisible] = useState(false);
-  const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
-    if (isDismissed()) return;
-
-    const visits = parseInt(localStorage.getItem(VISITS_KEY) || "0", 10) + 1;
-    localStorage.setItem(VISITS_KEY, String(visits));
-    if (visits < 2) return;
-
-    const type = detectBannerType();
-    if (!type) return;
-    setBannerType(type);
-
-    if (type === "ios" || type === "firefox-desktop" || type === "firefox-mobile") {
-      setTimeout(() => { setVisible(true); setAnimating(true); }, 500);
+    if (forceOpen) {
+      setVisible(true);
       return;
     }
-
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => { setVisible(true); setAnimating(true); }, 500);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-
-    const fallback = setTimeout(() => {
-      if (type === "desktop" || type === "android") {
-        setVisible(true);
-        setAnimating(true);
-      }
-    }, 3000);
-
-    const installedHandler = () => {
-      localStorage.setItem(INSTALLED_KEY, "1");
-      setVisible(false);
-    };
-    window.addEventListener("appinstalled", installedHandler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-      window.removeEventListener("appinstalled", installedHandler);
-      clearTimeout(fallback);
-    };
-  }, []);
-
-  const handleInstall = useCallback(async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (outcome === "accepted") {
-      localStorage.setItem(INSTALLED_KEY, "1");
-    }
-    dismiss();
-  }, [deferredPrompt]);
+    if (isInstalled || !platform || wasDismissed()) return;
+    // Small delay so it doesn't flash on initial render
+    const t = setTimeout(() => setVisible(true), 800);
+    return () => clearTimeout(t);
+  }, [forceOpen, isInstalled, platform]);
 
   const dismiss = () => {
-    setAnimating(false);
-    setTimeout(() => { setVisible(false); setDismissed(); }, 300);
+    setVisible(false);
+    if (!forceOpen) {
+      localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    }
+    onClose?.();
   };
 
-  if (!visible) return null;
+  const handleInstall = async () => {
+    const accepted = await install();
+    if (accepted) dismiss();
+  };
 
-  const isBottom = bannerType === "android" || bannerType === "ios" || bannerType === "firefox-mobile";
-  const isDesktopFloat = bannerType === "desktop" || bannerType === "firefox-desktop";
+  if (!visible || !platform) return null;
+
+  const isMobile = platform === "android" || platform === "ios" || platform === "firefox-mobile";
 
   return (
     <div
-      style={{
-        position: "fixed",
-        zIndex: 9999,
-        fontFamily: "'Inter', system-ui, sans-serif",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        opacity: animating ? 1 : 0,
-        transform: animating
-          ? "translateY(0)"
-          : isBottom ? "translateY(20px)" : "translateY(20px)",
-        ...(isBottom
-          ? { bottom: "calc(1rem + env(safe-area-inset-bottom, 0px))", left: "1rem", right: "1rem", maxWidth: 400, margin: "0 auto" }
-          : { bottom: "1.5rem", right: "1.5rem", width: 320 }),
-      }}
+      className={cn(
+        "fixed z-50 animate-in fade-in slide-in-from-bottom-4 duration-300",
+        isMobile
+          ? "bottom-4 left-4 right-4 mx-auto max-w-sm"
+          : "bottom-6 right-6 w-80",
+      )}
     >
-      <div
-        style={{
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(20px) saturate(180%)",
-          WebkitBackdropFilter: "blur(20px) saturate(180%)",
-          border: "1px solid rgba(255,255,255,0.6)",
-          borderRadius: 16,
-          padding: "1rem 1.125rem",
-          boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)",
-        }}
-      >
+      <div className="rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <div className="flex items-center gap-3 p-4 border-b border-border">
           <img
             src="/icons/icon-192x192.png"
             alt="Granja Sofhia"
-            style={{ width: 44, height: 44, borderRadius: "50%", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+            className="w-10 h-10 rounded-full ring-2 ring-primary/20 shrink-0"
           />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#1a1a1a" }}>Granja Sofhia</div>
-            <div style={{ fontSize: "0.75rem", color: "#888" }}>Sistema de gestão</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground leading-none">Granja Sofhia</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Sistema de gestão</p>
           </div>
           <button
             onClick={dismiss}
-            style={{ background: "none", border: "none", color: "#aaa", cursor: "pointer", padding: 4, borderRadius: 8, display: "flex", minHeight: 32, minWidth: 32, alignItems: "center", justifyContent: "center" }}
             aria-label="Fechar"
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
           >
-            <X style={{ width: 16, height: 16 }} />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Body — platform specific */}
-        {bannerType === "android" && (
-          <>
-            <p style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "#555", lineHeight: 1.5 }}>
-              Acesse mais rápido direto da sua tela inicial.
-            </p>
-            <div style={{ display: "flex", gap: 8 }}>
-              {deferredPrompt ? (
-                <button onClick={handleInstall} style={primaryBtn}>
-                  <Download style={{ width: 14, height: 14 }} /> Instalar
-                </button>
-              ) : (
-                <span style={{ fontSize: "0.75rem", color: "#888" }}>Use o menu do navegador para instalar.</span>
-              )}
-              <button onClick={dismiss} style={ghostBtn}>Agora não</button>
-            </div>
-          </>
-        )}
-
-        {bannerType === "ios" && (
-          <>
-            <div style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "#555", lineHeight: 1.7 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={stepBadge}>1</span>
-                <span>Toque em <Share2 style={{ display: "inline", width: 14, height: 14, verticalAlign: "middle", color: "#007aff" }} /> compartilhar</span>
+        {/* Body */}
+        <div className="p-4 space-y-4">
+          {(platform === "android" || platform === "desktop") && (
+            <>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {platform === "desktop"
+                  ? "Instale como app nativo — sem barra do navegador, abre direto da área de trabalho."
+                  : "Instale o app e acesse mais rápido direto da sua tela inicial."}
+              </p>
+              <div className="flex gap-2">
+                {canPrompt ? (
+                  <>
+                    <Button size="sm" onClick={handleInstall} className="gap-1.5">
+                      <Download className="w-3.5 h-3.5" /> Instalar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={dismiss}>
+                      Agora não
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    {platform === "desktop"
+                      ? "Use o ícone na barra de endereço do Chrome para instalar."
+                      : "Use o menu do navegador para instalar."}
+                  </p>
+                )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={stepBadge}>2</span>
-                <span>Toque em <strong>"Adicionar à Tela de Início"</strong></span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={stepBadge}>3</span>
-                <span>Toque em <strong>"Adicionar"</strong></span>
-              </div>
-            </div>
-            <button onClick={dismiss} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}>
-              <Check style={{ width: 14, height: 14 }} /> Entendido
-            </button>
-          </>
-        )}
+            </>
+          )}
 
-        {bannerType === "desktop" && (
-          <>
-            <div style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "#555", lineHeight: 1.6 }}>
-              <p style={{ margin: "0 0 8px" }}>Acesse como app nativo no seu computador:</p>
-              <ul style={{ margin: 0, paddingLeft: 16, listStyle: "none" }}>
-                <li style={featureItem}>✓ Sem barra do navegador</li>
-                <li style={featureItem}>✓ Abre direto da área de trabalho</li>
-                <li style={featureItem}>✓ Funciona offline</li>
-              </ul>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {deferredPrompt ? (
-                <button onClick={handleInstall} style={{ ...primaryBtn, flex: 1, justifyContent: "center" }}>
-                  <Download style={{ width: 14, height: 14 }} /> Instalar agora
-                </button>
-              ) : (
-                <span style={{ fontSize: "0.75rem", color: "#888" }}>Use o ícone na barra de endereço para instalar.</span>
-              )}
-            </div>
-          </>
-        )}
+          {platform === "ios" && (
+            <>
+              <p className="text-sm font-medium text-foreground">Adicionar à Tela de Início</p>
+              <ol className="space-y-2">
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <StepBadge>1</StepBadge>
+                  Toque em{" "}
+                  <Share2 className="inline w-3.5 h-3.5 text-blue-500 shrink-0" />{" "}
+                  compartilhar
+                </li>
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <StepBadge>2</StepBadge>
+                  Toque em{" "}
+                  <strong className="text-foreground">"Adicionar à Tela de Início"</strong>
+                </li>
+                <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <StepBadge>3</StepBadge>
+                  Toque em <strong className="text-foreground">"Adicionar"</strong>
+                </li>
+              </ol>
+              <Button size="sm" className="w-full gap-1.5" onClick={dismiss}>
+                <Check className="w-3.5 h-3.5" /> Entendido
+              </Button>
+            </>
+          )}
 
-        {bannerType === "firefox-desktop" && (
-          <>
-            <p style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "#555", lineHeight: 1.5 }}>
-              No menu <strong>☰</strong> do Firefox, clique em <strong>"Instalar este site como app"</strong>.
-            </p>
-            <button onClick={dismiss} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}>Entendido</button>
-          </>
-        )}
-
-        {bannerType === "firefox-mobile" && (
-          <>
-            <p style={{ margin: "0 0 12px", fontSize: "0.8125rem", color: "#555", lineHeight: 1.5 }}>
-              No menu <strong>⋮</strong> do Firefox, toque em <strong>"Adicionar à tela inicial"</strong>.
-            </p>
-            <button onClick={dismiss} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}>Entendido</button>
-          </>
-        )}
+          {(platform === "firefox-desktop" || platform === "firefox-mobile") && (
+            <>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {platform === "firefox-desktop" ? (
+                  <>No menu <strong className="text-foreground">☰</strong> do Firefox, clique em{" "}
+                  <strong className="text-foreground">"Instalar este site como app"</strong>.</>
+                ) : (
+                  <>No menu <strong className="text-foreground">⋮</strong> do Firefox, toque em{" "}
+                  <strong className="text-foreground">"Adicionar à tela inicial"</strong>.</>
+                )}
+              </p>
+              <Button size="sm" className="w-full" onClick={dismiss}>
+                Entendido
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-const primaryBtn: React.CSSProperties = {
-  background: "hsl(43, 55%, 47%)",
-  color: "#fff",
-  border: "none",
-  padding: "8px 16px",
-  borderRadius: 10,
-  fontSize: "0.8125rem",
-  fontWeight: 600,
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  gap: 6,
-  minHeight: 40,
-};
-
-const ghostBtn: React.CSSProperties = {
-  background: "transparent",
-  color: "#888",
-  border: "1px solid #e0e0e0",
-  padding: "8px 16px",
-  borderRadius: 10,
-  fontSize: "0.8125rem",
-  cursor: "pointer",
-  minHeight: 40,
-};
-
-const stepBadge: React.CSSProperties = {
-  width: 22,
-  height: 22,
-  borderRadius: "50%",
-  background: "hsl(43, 55%, 47%)",
-  color: "#fff",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontSize: "0.6875rem",
-  fontWeight: 700,
-  flexShrink: 0,
-};
-
-const featureItem: React.CSSProperties = {
-  fontSize: "0.75rem",
-  color: "#666",
-  marginBottom: 2,
-};
+function StepBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shrink-0">
+      {children}
+    </span>
+  );
+}
