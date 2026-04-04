@@ -3,13 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { InventoryProvider } from "@/contexts/InventoryContext";
 import { AuditProvider } from "@/contexts/AuditContext";
 import { FraudProvider } from "@/contexts/FraudContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
-
 import Apuracao from "./pages/Apuracao";
 import Auditoria from "./pages/Auditoria";
 import Alertas from "./pages/Alertas";
@@ -25,20 +23,19 @@ import DashboardLayout from "./components/DashboardLayout";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
-import { PwaInstallBanner } from "./components/PwaInstallBanner";
 import { OfflineIndicator } from "./components/OfflineIndicator";
 import { PwaUpdateNotifier } from "./components/PwaUpdateNotifier";
-import { PwaDesktopInstallBanner } from "./components/PwaDesktopInstallBanner";
 import { PWAInstallBanner } from "./components/PwaUnifiedInstallBanner";
 
 const queryClient = new QueryClient();
 
-
 const ProtectedRoute = ({ path, children }: { path: string; children: React.ReactNode }) => {
   const { canAccess, currentRole } = useApp();
   if (!canAccess(path)) {
-    // Redirect based on role
-    const fallback = (currentRole === "Operador de Venda" || currentRole === "Operador de Depósito") ? "/estoque" : "/";
+    const fallback =
+      currentRole === "Operador de Venda" || currentRole === "Operador de Depósito"
+        ? "/estoque"
+        : "/";
     return <Navigate to={fallback} replace />;
   }
   return <>{children}</>;
@@ -46,6 +43,7 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
 
 const AuthenticatedLayout = () => {
   const { session, loading, profile } = useApp();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -53,14 +51,17 @@ const AuthenticatedLayout = () => {
       </div>
     );
   }
+
   if (!session) return <Navigate to="/login" replace />;
-  if (session && !profile) {
+
+  if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-primary text-sm">Carregando perfil...</div>
       </div>
     );
   }
+
   return (
     <DashboardLayout>
       <Outlet />
@@ -68,16 +69,10 @@ const AuthenticatedLayout = () => {
   );
 };
 
-/** After login, redirect to the correct home based on role */
 const RoleBasedHome = () => {
   const { currentRole } = useApp();
-  if (currentRole === "Operador de Venda") {
-    return <Navigate to="/vendas-diarias" replace />;
-  }
-  if (currentRole === "Operador de Depósito") {
-    return <Navigate to="/estoque" replace />;
-  }
-  // Administrador, Supervisor, Auditor → Dashboard
+  if (currentRole === "Operador de Venda") return <Navigate to="/vendas-diarias" replace />;
+  if (currentRole === "Operador de Depósito") return <Navigate to="/estoque" replace />;
   return <Index />;
 };
 
@@ -86,9 +81,10 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={
-        loading ? null : session ? <Navigate to="/" replace /> : <Login />
-      } />
+      <Route
+        path="/login"
+        element={loading ? null : session ? <Navigate to="/" replace /> : <Login />}
+      />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<AuthenticatedLayout />}>
         <Route path="/" element={<ProtectedRoute path="/"><RoleBasedHome /></ProtectedRoute>} />
@@ -111,31 +107,25 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => {
-  return (
+const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AppProvider>
-        <InventoryProvider>
-          <AuditProvider>
-            <FraudProvider>
-              <Toaster />
-              <Sonner />
-              <OfflineIndicator />
-              <PwaInstallBanner />
-              <PwaDesktopInstallBanner />
-              <PwaUpdateNotifier />
-              <PWAInstallBanner />
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
-            </FraudProvider>
-          </AuditProvider>
-        </InventoryProvider>
+        <AuditProvider>
+          <FraudProvider>
+            <Toaster />
+            <Sonner />
+            <OfflineIndicator />
+            <PWAInstallBanner />
+            <PwaUpdateNotifier />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </FraudProvider>
+        </AuditProvider>
       </AppProvider>
     </TooltipProvider>
   </QueryClientProvider>
-  );
-};
+);
 
 export default App;

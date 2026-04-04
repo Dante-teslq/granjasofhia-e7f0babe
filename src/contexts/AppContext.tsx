@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 
@@ -57,6 +57,7 @@ const depositoAllowed = new Set(["/estoque", "/evidencias", "/transferencias"]);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const sessionRef = useRef<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [userPdvName, setUserPdvName] = useState<string | null>(null);
@@ -139,12 +140,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("audit_logs").insert({
           action: "logout",
           module: "Auth",
-          usuario: session?.user?.email || "unknown",
+          usuario: sessionRef.current?.user?.email || "unknown",
           item_description: "Logout realizado",
           device: /Mobi|Android/i.test(navigator.userAgent) ? "Mobile" : "Desktop",
         }).then(() => {});
       }
 
+      sessionRef.current = newSession;
       setSession(newSession);
       if (newSession?.user?.id) {
         // Defer to avoid Supabase deadlock
