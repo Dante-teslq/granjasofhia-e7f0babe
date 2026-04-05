@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Package, LayoutDashboard, Settings, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft, Plug, Download } from "lucide-react";
+import { Package, LayoutDashboard, Settings, Bell, FileText, Users, ShieldAlert, Camera, LogOut, ShoppingCart, ArrowRightLeft, Plug, Download, MapPin } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const allLinks = [
   { to: "/alertas", icon: Bell, label: "Alertas", section: "Segurança" },
   { to: "/antifraude", icon: ShieldAlert, label: "Painel de Segurança", section: "Segurança" },
   { to: "/usuarios", icon: Users, label: "Usuários & Perfis", section: "Segurança" },
+  { to: "/pontos-de-venda", icon: MapPin, label: "Pontos de Venda", section: "Sistema" },
   { to: "/integracoes", icon: Plug, label: "Integrações Omie", section: "Sistema" },
   { to: "/configuracoes", icon: Settings, label: "Configurações", section: "Sistema" },
 ];

@@ -19,6 +19,7 @@ import Transferencias from "./pages/Transferencias";
 import VendasDiarias from "./pages/VendasDiarias";
 import Integracoes from "./pages/Integracoes";
 import IntegracoesOmie from "./pages/IntegracoesOmie";
+import PontosDeVenda from "./pages/PontosDeVenda";
 import DashboardLayout from "./components/DashboardLayout";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -101,6 +102,7 @@ const AppRoutes = () => {
         <Route path="/configuracoes" element={<ProtectedRoute path="/configuracoes"><Configuracoes /></ProtectedRoute>} />
         <Route path="/integracoes" element={<ProtectedRoute path="/integracoes"><Integracoes /></ProtectedRoute>} />
         <Route path="/integracoes-omie" element={<ProtectedRoute path="/integracoes"><IntegracoesOmie /></ProtectedRoute>} />
+        <Route path="/pontos-de-venda" element={<ProtectedRoute path="/pontos-de-venda"><PontosDeVenda /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
