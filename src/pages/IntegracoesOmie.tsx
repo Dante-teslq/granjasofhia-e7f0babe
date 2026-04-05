@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,15 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Loader2, Package, ArrowDownUp } from "lucide-react";
+import { Search, Loader2, ArrowDownUp, AlertTriangle } from "lucide-react";
 
-const PDV_LIST = [
-  { nome: "Filial Granja Sofhia", app_key: "6542435457558", app_secret: "8aafaebdc473934bf8cd2a1e72b92659" },
-  { nome: "Ceasa Timon", app_key: "5350975315686", app_secret: "e429894ba0a73c6151b3130f81ac2f52" },
-  { nome: "Parque Alvorada", app_key: "6007471325856", app_secret: "9aee0baeef6d1d3200d71fc0818a14e9" },
-  { nome: "São Benedito", app_key: "5350913982414", app_secret: "468f3bcad872b8d46e95c1e3402e96b5" },
-  { nome: "Formosa", app_key: "5350990649004", app_secret: "f94d58117e9b93caef220989097c0288" },
-];
+interface OmieIntegrationItem {
+  id: string;
+  integration_name: string;
+  omie_app_key: string;
+  omie_app_secret: string;
+}
 
 interface AjusteEstoque {
   data: string;
@@ -30,25 +29,42 @@ interface AjusteEstoque {
 
 export default function IntegracoesOmie() {
   const { toast } = useToast();
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [integrations, setIntegrations] = useState<OmieIntegrationItem[]>([]);
+  const [loadingIntegrations, setLoadingIntegrations] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ajustes, setAjustes] = useState<AjusteEstoque[]>([]);
-  const [pdvNome, setPdvNome] = useState("");
+  const [integNome, setIntegNome] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
 
-  const buscarMovimentos = async (idx: number) => {
-    const pdv = PDV_LIST[idx];
+  useEffect(() => {
+    const loadIntegrations = async () => {
+      setLoadingIntegrations(true);
+      const { data, error } = await supabase
+        .from("omie_integrations")
+        .select("id, integration_name, omie_app_key, omie_app_secret")
+        .eq("is_active", true)
+        .order("integration_name");
+      if (!error && data) {
+        setIntegrations(data as OmieIntegrationItem[]);
+      }
+      setLoadingIntegrations(false);
+    };
+    loadIntegrations();
+  }, []);
+
+  const buscarMovimentos = async (integ: OmieIntegrationItem) => {
     setLoading(true);
-    setSelectedIdx(idx);
+    setSelectedId(integ.id);
     setAjustes([]);
-    setPdvNome(pdv.nome);
+    setIntegNome(integ.integration_name);
 
     try {
       const params: Record<string, unknown> = {
-        app_key: pdv.app_key,
-        app_secret: pdv.app_secret,
+        app_key: integ.omie_app_key,
+        app_secret: integ.omie_app_secret,
       };
       if (dataInicio) params.data_inicio = dataInicio;
       if (dataFim) params.data_fim = dataFim;
@@ -129,22 +145,39 @@ export default function IntegracoesOmie() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {PDV_LIST.map((pdv, idx) => (
-          <Card key={idx} className={`cursor-pointer transition-all hover:shadow-md ${selectedIdx === idx ? "ring-2 ring-primary" : ""}`}>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-sm">{pdv.nome}</h3>
-                <Badge variant="outline" className="text-xs">{pdv.app_key.slice(0, 6)}...</Badge>
-              </div>
-              <Button size="sm" className="w-full" onClick={() => buscarMovimentos(idx)} disabled={loading && selectedIdx === idx}>
-                {loading && selectedIdx === idx ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Search className="w-4 h-4 mr-1" />}
-                Ver Movimentos
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loadingIntegrations ? (
+        <div className="flex items-center justify-center py-10 text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin mr-2" /> Carregando integrações...
+        </div>
+      ) : integrations.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <AlertTriangle className="w-8 h-8 opacity-40" />
+            <p className="text-sm text-center">
+              Nenhuma integração Omie ativa encontrada.
+              <br />
+              Cadastre uma integração na aba <strong>Integrações</strong> primeiro.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {integrations.map((integ) => (
+            <Card key={integ.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedId === integ.id ? "ring-2 ring-primary" : ""}`}>
+              <CardContent className="pt-4 pb-3">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-sm">{integ.integration_name}</h3>
+                  <Badge variant="outline" className="text-xs">{integ.omie_app_key.slice(0, 6)}...</Badge>
+                </div>
+                <Button size="sm" className="w-full" onClick={() => buscarMovimentos(integ)} disabled={loading && selectedId === integ.id}>
+                  {loading && selectedId === integ.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Search className="w-4 h-4 mr-1" />}
+                  Ver Movimentos
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {ajustes.length > 0 && (
         <Card>
@@ -152,7 +185,7 @@ export default function IntegracoesOmie() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <ArrowDownUp className="w-4 h-4" />
-                Movimentos — {pdvNome}
+                Movimentos — {integNome}
               </CardTitle>
               <Badge variant="secondary">{ajustesFiltrados.length} registros</Badge>
             </div>
