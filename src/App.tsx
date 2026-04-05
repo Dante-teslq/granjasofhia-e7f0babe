@@ -56,7 +56,11 @@ const AuthenticatedLayout = () => {
 
   if (!session) return <Navigate to="/login" replace />;
 
-  if (profileLoading) {
+  // Only show profile loading screen on FIRST load (no profile yet).
+  // If profile already exists, allow a silent background refresh without dismounting the layout.
+  // This prevents the page from appearing to "reload" when switching browser tabs
+  // causes a Supabase TOKEN_REFRESHED event.
+  if (profileLoading && !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-primary text-sm">Carregando perfil...</div>

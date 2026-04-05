@@ -82,8 +82,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("appSettings", JSON.stringify(settings));
   }, [settings]);
 
-  const fetchProfile = async (userId: string) => {
-    setProfileLoading(true);
+  const fetchProfile = async (userId: string, silent = false) => {
+    // Only show loading spinner on first load, not on background token-refresh calls
+    if (!silent) setProfileLoading(true);
     setProfileError(null);
     const { data, error } = await supabase
       .from("profiles")
@@ -110,9 +111,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ? "Perfil de usuário não encontrado. Contate o administrador."
         : (error?.message || "Erro ao carregar perfil.");
       setProfileError(msg);
-      setProfile(null);
+      // Only clear profile on initial load failure, not on background refreshes
+      if (!silent) setProfile(null);
     }
-    setProfileLoading(false);
+    if (!silent) setProfileLoading(false);
   };
 
   const refreshProfile = async () => {
@@ -160,11 +162,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         }).then(() => {});
       }
 
+      // TOKEN_REFRESHED: session was silently renewed (e.g. user switched browser tabs).
+      // The profile data hasn't changed — skip fetchProfile to avoid profileLoading=true
+      // which would unmount the entire layout and close any open dialogs.
+      if (_event === "TOKEN_REFRESHED") {
+        sessionRef.current = newSession;
+        setSession(newSession);
+        return;
+      }
+
       sessionRef.current = newSession;
       setSession(newSession);
       if (newSession?.user?.id) {
-        // Defer to avoid Supabase deadlock
-        setTimeout(() => fetchProfile(newSession.user.id), 0);
+        // On SIGNED_IN, always fetch fresh profile.
+        // On other events, fetch silently (no loading screen) if profile already exists.
+        const isSilent = _event !== "SIGNED_IN" && !!profile;
+        setTimeout(() => fetchProfile(newSession.user.id, isSilent), 0);
       } else {
         setProfile(null);
       }
