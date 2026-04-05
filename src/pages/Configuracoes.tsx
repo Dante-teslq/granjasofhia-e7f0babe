@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
 import { Sun, Moon, Monitor, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useApp } from "@/contexts/AppContext";
 import { toast } from "@/components/ui/sonner";
 
-type Theme = "light" | "dark" | "system";
+import { Theme, useTheme } from "@/components/theme-provider";
 
 const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "Claro", icon: Sun },
@@ -14,31 +13,7 @@ const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
 
 const ConfiguracoesPage = () => {
   const { settings, updateSettings } = useApp();
-  const [theme, setTheme] = useState<Theme>(() => {
-    return (localStorage.getItem("theme") as Theme) || "light";
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const applyTheme = (dark: boolean) => {
-      root.classList.toggle("dark", dark);
-      // Update mobile status bar color
-      const meta = document.querySelector('meta[name="theme-color"]');
-      if (meta) meta.setAttribute("content", dark ? "#121212" : "#F0F0F0");
-    };
-
-    if (theme === "system") {
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      applyTheme(mq.matches);
-      const handler = (e: MediaQueryListEvent) => applyTheme(e.matches);
-      mq.addEventListener("change", handler);
-      localStorage.setItem("theme", theme);
-      return () => mq.removeEventListener("change", handler);
-    } else {
-      applyTheme(theme === "dark");
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
+  const { theme, setTheme } = useTheme();
 
 
   const handleHourChange = (field: "operationStartHour" | "operationEndHour", val: string) => {

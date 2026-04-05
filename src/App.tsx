@@ -125,24 +125,28 @@ const AppRoutes = () => {
   );
 };
 
+import { ThemeProvider } from "./components/theme-provider";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AppProvider>
-        <AuditProvider>
-          <FraudProvider>
-            <Toaster />
-            <Sonner />
-            <OfflineIndicator />
-            <PWAInstallBanner />
-            <PwaUpdateNotifier />
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </FraudProvider>
-        </AuditProvider>
-      </AppProvider>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="light" storageKey="theme">
+      <TooltipProvider>
+        <AppProvider>
+          <AuditProvider>
+            <FraudProvider>
+              <Toaster />
+              <Sonner />
+              <OfflineIndicator />
+              <PWAInstallBanner />
+              <PwaUpdateNotifier />
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </FraudProvider>
+          </AuditProvider>
+        </AppProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
