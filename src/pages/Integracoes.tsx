@@ -332,14 +332,16 @@ export default function Integracoes() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="integrations">
-        <TabsList className="w-full max-w-2xl h-auto flex-wrap">
-          <TabsTrigger value="integrations" className="text-xs md:text-sm">Integrações</TabsTrigger>
-          <TabsTrigger value="logs" className="text-xs md:text-sm">Logs</TabsTrigger>
-          <TabsTrigger value="queue" className="text-xs md:text-sm">Fila</TabsTrigger>
-          <TabsTrigger value="failures" className="text-xs md:text-sm">Falhas</TabsTrigger>
-          <TabsTrigger value="reconciliacao" className="text-xs md:text-sm">Reconciliação</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="integrations" className="space-y-6">
+        <div className="flex items-center justify-center">
+          <TabsList className="h-auto p-1 bg-muted/40 border border-border/50">
+            <TabsTrigger value="integrations" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none">Integrações</TabsTrigger>
+            <TabsTrigger value="logs">Logs</TabsTrigger>
+            <TabsTrigger value="queue">Fila</TabsTrigger>
+            <TabsTrigger value="failures">Falhas</TabsTrigger>
+            <TabsTrigger value="reconciliacao">Reconciliação</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="integrations" className="mt-4">
           <Card>

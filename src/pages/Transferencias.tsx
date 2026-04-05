@@ -61,17 +61,19 @@ const TransferenciasPage = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="envios" className="w-full">
-          <TabsList>
-            <TabsTrigger value="envios" className="gap-1.5">
-              <Send className="w-3.5 h-3.5" /> Envios
-            </TabsTrigger>
-            <TabsTrigger value="recebimentos" className="gap-1.5">
-              <PackageCheck className="w-3.5 h-3.5" /> Recebimentos
-            </TabsTrigger>
-            <TabsTrigger value="insumos" className="gap-1.5">
-              <ClipboardList className="w-3.5 h-3.5" /> Insumos
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-center mb-4">
+            <TabsList className="h-auto p-1 bg-muted/40 border border-border/50">
+              <TabsTrigger value="envios" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none">
+                <Send className="w-3.5 h-3.5" /> Envios
+              </TabsTrigger>
+              <TabsTrigger value="recebimentos" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none">
+                <PackageCheck className="w-3.5 h-3.5" /> Recebimentos
+              </TabsTrigger>
+              <TabsTrigger value="insumos" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none">
+                <ClipboardList className="w-3.5 h-3.5" /> Insumos
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="envios" className="mt-4">
             <TransferenciasTable records={records} loading={loading} onDelete={deleteRecord} isAdmin={isAdmin} />
