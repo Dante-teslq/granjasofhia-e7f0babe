@@ -154,7 +154,7 @@ const ApuracaoPage = () => {
 
   return (
     <>
-      <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 max-w-[1400px]">
+      <div className="p-4 md:p-6 lg:p-10 space-y-4 md:space-y-6 max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="flex flex-col gap-3 md:gap-4">
           <div>

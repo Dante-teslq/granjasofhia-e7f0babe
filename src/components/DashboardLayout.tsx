@@ -39,8 +39,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   if (isMobile) {
     return (
       <div className="flex flex-col min-h-screen">
-        <header className="sticky top-0 z-40 flex items-center justify-between px-4 border-b border-border bg-sidebar text-sidebar-foreground"
-          style={{ height: 'calc(3.5rem + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <header className="sticky top-0 z-40 flex items-center justify-between px-6 border-b border-border bg-sidebar text-sidebar-foreground shadow-sm"
+          style={{ height: 'calc(4rem + env(safe-area-inset-top, 0px))', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="text-sidebar-foreground hover:bg-sidebar-accent min-h-[44px] min-w-[44px]">
@@ -77,8 +77,10 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       <div className="fixed top-0 left-0 h-screen w-64 z-30 overflow-y-auto">
         <AppSidebar />
       </div>
-      <main className="flex-1 ml-64 overflow-auto min-h-screen">
-        {children}
+      <main className="flex-1 ml-64 overflow-auto min-h-screen flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
       </main>
       {/* Global dialogs — rendered outside <Outlet /> so they persist on navigation */}
       <GlobalDialogs />

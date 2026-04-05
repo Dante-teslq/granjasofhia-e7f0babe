@@ -169,7 +169,7 @@ export default function Integracoes() {
   const deadCount = queue.filter((q) => q.status === "dead_letter").length;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="p-4 md:p-6 lg:p-10 space-y-6 animate-fade-in max-w-[1600px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Integrações Omie</h1>
