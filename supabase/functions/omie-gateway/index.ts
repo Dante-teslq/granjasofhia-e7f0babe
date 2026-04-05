@@ -181,8 +181,13 @@ async function persistIntegrationLog(log: {
   edge_function_name?: string;
   retry_count?: number;
 }) {
-  const admin = getAdminClient();
-  await admin.from("integration_logs").insert(log);
+  try {
+    const admin = getAdminClient();
+    await admin.from("integration_logs").insert(log);
+  } catch (err) {
+    // Log is best-effort — never block the main flow
+    console.error("[omie-gateway] persistIntegrationLog failed:", err);
+  }
 }
 
 // =============================================
@@ -938,7 +943,12 @@ Deno.serve(async (req: Request) => {
   } catch (err: unknown) {
     const status = err instanceof HttpError ? err.status : 500;
     const message = err instanceof Error ? err.message : "Erro interno do servidor";
-
+    // Log to Supabase function logs (visible in Dashboard → Functions → omie-gateway → Logs)
+    if (!(err instanceof HttpError)) {
+      console.error("[omie-gateway] Unhandled error:", err);
+    } else {
+      console.warn(`[omie-gateway] HTTP ${status}:`, message);
+    }
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status,
