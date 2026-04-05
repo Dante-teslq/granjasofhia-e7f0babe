@@ -13,7 +13,6 @@ import { useOmieIntegrations, OmieIntegration } from "@/hooks/useOmieIntegration
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, TestTube, Plug, RefreshCw, AlertTriangle, CheckCircle2, Clock, XCircle, RotateCcw, Trash2, Edit } from "lucide-react";
-import OmieMovimentosCard from "@/components/integracoes/OmieMovimentosCard";
 import ReconciliacaoTab from "@/components/integracoes/ReconciliacaoTab";
 
 interface PdvOption {
@@ -287,9 +286,6 @@ export default function Integracoes() {
           </Dialog>
         </div>
       </div>
-
-      {/* Omie Movimentos Card */}
-      <OmieMovimentosCard />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

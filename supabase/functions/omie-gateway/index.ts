@@ -47,19 +47,17 @@ async function authenticateRequest(req: Request): Promise<{ userId: string; emai
     throw new HttpError(401, "Token de autenticação não fornecido");
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
   const token = authHeader.replace("Bearer ", "");
-  const { data, error } = await supabase.auth.getClaims(token);
-  if (error || !data?.claims) {
+
+  // Use the admin client to validate the JWT — getUser() is the correct
+  // Supabase JS v2 method; getClaims() does not exist in this SDK version.
+  const admin = getAdminClient();
+  const { data: { user }, error } = await admin.auth.admin.getUser(token);
+  if (error || !user) {
     throw new HttpError(401, "Token inválido ou expirado");
   }
 
-  return { userId: data.claims.sub as string, email: (data.claims.email as string) || "" };
+  return { userId: user.id, email: user.email || "" };
 }
 
 // --- Error Class ---
