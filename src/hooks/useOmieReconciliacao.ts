@@ -33,7 +33,6 @@ export interface HistoricoItem {
   revisado_em: string | null;
 }
 
-const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
 export function useOmieReconciliacao() {
   const { profile } = useApp();
@@ -96,28 +95,14 @@ export function useOmieReconciliacao() {
     setIntegracaoAtiva(integracao);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Sessão expirada");
-
       // 1. Busca posição de estoque no Omie via omie-gateway
-      const omieRes = await fetch(`${FUNCTIONS_URL}/omie-gateway/fetch-inventory`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          pdv_id: integracao.pdv_id,
-          omie_params: { nPagina: 1, nRegPorPagina: 500 },
-        }),
-      });
+      // supabase.functions.invoke injeta o token da sessão atual automaticamente
+      const { data: omieResult, error: invErr } = await supabase.functions.invoke(
+        "omie-gateway/fetch-inventory",
+        { body: { pdv_id: integracao.pdv_id, omie_params: { nPagina: 1, nRegPorPagina: 500 } } }
+      );
 
-      if (!omieRes.ok) {
-        const err = await omieRes.json().catch(() => ({}));
-        throw new Error(err.error || `Omie retornou HTTP ${omieRes.status}`);
-      }
-
-      const omieResult = await omieRes.json();
+      if (invErr) throw new Error(invErr.message);
 
       // 2. Busca estoque do sistema para o PDV
       const { data: estoqueData, error: estoqueError } = await supabase

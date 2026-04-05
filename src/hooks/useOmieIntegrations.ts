@@ -147,41 +147,19 @@ export function useOmieIntegrations() {
   }, [fetchIntegrations]);
 
   const testConnection = useCallback(async (integrationId: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Não autenticado");
-
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/omie-gateway/test-connection`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ integration_id: integrationId }),
-      }
-    );
-    return await res.json();
+    const { data, error } = await supabase.functions.invoke("omie-gateway/test-connection", {
+      body: { integration_id: integrationId },
+    });
+    if (error) throw error;
+    return data;
   }, []);
 
   const retryFailed = useCallback(async (failureId: string) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Não autenticado");
-
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const res = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/omie-gateway/retry-failed`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ failure_id: failureId }),
-      }
-    );
-    return await res.json();
+    const { data, error } = await supabase.functions.invoke("omie-gateway/retry-failed", {
+      body: { failure_id: failureId },
+    });
+    if (error) throw error;
+    return data;
   }, []);
 
   return {
