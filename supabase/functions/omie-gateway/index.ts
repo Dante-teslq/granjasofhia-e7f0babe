@@ -47,12 +47,16 @@ async function authenticateRequest(req: Request): Promise<{ userId: string; emai
     throw new HttpError(401, "Token de autenticação não fornecido");
   }
 
-  const token = authHeader.replace("Bearer ", "");
+  // Validate the JWT using the anon client with the Authorization header forwarded.
+  // This is the standard Supabase Edge Function auth pattern (SDK v2).
+  // getClaims() does not exist; admin.getUser() takes a UID not a JWT.
+  const anonClient = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
 
-  // Use the admin client to validate the JWT — getUser() is the correct
-  // Supabase JS v2 method; getClaims() does not exist in this SDK version.
-  const admin = getAdminClient();
-  const { data: { user }, error } = await admin.auth.admin.getUser(token);
+  const { data: { user }, error } = await anonClient.auth.getUser();
   if (error || !user) {
     throw new HttpError(401, "Token inválido ou expirado");
   }
