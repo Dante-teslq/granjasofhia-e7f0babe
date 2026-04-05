@@ -141,6 +141,35 @@ export const FraudProvider = ({ children }: { children: ReactNode }) => {
 
     loadAlerts();
     loadProfiles();
+
+    // Realtime: sync new fraud_alerts from other sessions/devices
+    const channel = supabase
+      .channel("fraud-alerts-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "fraud_alerts" }, (payload) => {
+        const row = payload.new as any;
+        setAlerts((prev) => {
+          if (prev.some((a) => a.id === row.id)) return prev;
+          return [
+            {
+              id: row.id,
+              type: row.type as FraudAlertType,
+              severity: row.severity as FraudSeverity,
+              status: row.status as FraudStatus,
+              message: row.message,
+              operator: row.operator,
+              timestamp: formatTimestamp(row.created_at),
+              link: row.link,
+              analyst: row.analyst || undefined,
+              observation: row.observation || undefined,
+              details: row.details || undefined,
+            } satisfies FraudAlert,
+            ...prev,
+          ];
+        });
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const addAlert = useCallback(async (alert: Omit<FraudAlert, "id" | "timestamp">) => {

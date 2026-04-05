@@ -21,6 +21,7 @@ import FechamentoDiarioEstoque from "@/components/FechamentoDiarioEstoque";
 import SangriasTable from "@/components/SangriasTable";
 import { useSangriasDB } from "@/hooks/useSangriasDB";
 import { SangriaItem } from "@/types/inventory";
+import { useFraudDetection } from "@/hooks/useFraudDetection";
 
 const EstoquePage = () => {
   const { currentRole, dateRange, setDateRange, profile, isOperator, userPdvName, session } = useApp();
@@ -28,6 +29,7 @@ const EstoquePage = () => {
 
   const isAdmin = currentRole === "Administrador" || currentRole === "Admin" || currentRole === "Supervisor";
   const selectedDate = dateRange.from;
+  const { checkForaHorario, checkAjusteElevado, checkMultiplosAjustes } = useFraudDetection();
 
   // PDV selection
   const [selectedPdvId, setSelectedPdvId] = useState<string | null>(null);
@@ -136,13 +138,31 @@ const EstoquePage = () => {
       toast.error("Sessão inválida. Faça login novamente.");
       return;
     }
-    await saveAndClose(profile.nome, session.user.id);
+    const ok = await saveAndClose(profile.nome, session.user.id);
+    if (ok) {
+      const link = "/estoque";
+      await checkForaHorario("Estoque", link).catch(() => {});
+      const firedHigh = await checkAjusteElevado(
+        itens.map(i => ({ descricao: i.produto_descricao, estoque_sistema: i.estoque_sistema, estoque_loja: i.estoque_loja })),
+        link
+      ).catch(() => false);
+      if (firedHigh) await checkMultiplosAjustes(link).catch(() => {});
+    }
   };
 
   const handleAdminSave = async () => {
     if (!session?.user?.id || !profile?.nome) return;
     const success = await adminUpdate(itens, profile.nome, session.user.id);
-    if (success) setIsEditing(false);
+    if (success) {
+      setIsEditing(false);
+      const link = "/estoque";
+      await checkForaHorario("Estoque", link).catch(() => {});
+      const firedHigh = await checkAjusteElevado(
+        itens.map(i => ({ descricao: i.produto_descricao, estoque_sistema: i.estoque_sistema, estoque_loja: i.estoque_loja })),
+        link
+      ).catch(() => false);
+      if (firedHigh) await checkMultiplosAjustes(link).catch(() => {});
+    }
   };
 
   const handleAdminDelete = async () => {

@@ -126,6 +126,20 @@ export const AuditProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Realtime: push new audit_logs into state without requiring a full re-fetch
+  useEffect(() => {
+    const channel = supabase
+      .channel("audit-logs-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "audit_logs" }, (payload) => {
+        setLogs((prev) => {
+          if (prev.some((l) => l.id === (payload.new as AuditEntry).id)) return prev;
+          return [payload.new as AuditEntry, ...prev];
+        });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   return (
     <AuditContext.Provider value={{ logs, loading, addLog, fetchLogs }}>
       {children}

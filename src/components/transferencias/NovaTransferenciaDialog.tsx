@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import type { PdvOption } from "@/hooks/useTransferencias";
+import { useFraudDetection } from "@/hooks/useFraudDetection";
 
 interface Props {
   open: boolean;
@@ -26,6 +27,7 @@ interface Props {
 }
 
 const NovaTransferenciaDialog = ({ open, onOpenChange, pdvList, isOperator, userPdvId, userName, onSuccess }: Props) => {
+  const { checkForaHorario } = useFraudDetection();
   const [dataTransf, setDataTransf] = useState<Date>(new Date());
   const [origemId, setOrigemId] = useState("");
   const [destinoId, setDestinoId] = useState("");
@@ -101,6 +103,7 @@ const NovaTransferenciaDialog = ({ open, onOpenChange, pdvList, isOperator, user
     }
 
     toast.success("Transferência registrada como pendente");
+    checkForaHorario("Transferências", "/transferencias").catch(() => {});
     onOpenChange(false);
     resetForm();
     onSuccess();

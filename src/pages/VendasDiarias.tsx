@@ -18,6 +18,7 @@ import { STORES, PRODUCT_CATALOG } from "@/types/inventory";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
+import { useFraudDetection } from "@/hooks/useFraudDetection";
 
 const FORMAS_PAGAMENTO = ["Dinheiro", "PIX", "Cartão Crédito", "Cartão Débito", "Boleto", "Outros"];
 
@@ -27,6 +28,7 @@ interface InsumosRow { data: string; ponto_venda: string; cartelas: number; barb
 const VendasDiariasPage = () => {
   const { dateRange, profile, isOperator, userPdvName, currentRole } = useApp();
   const isAdmin = currentRole === "Administrador" || currentRole === "Admin";
+  const { checkForaHorario } = useFraudDetection();
   const {
     records, loading, totalHoje, totalPeriodo, qtdHoje, qtdPeriodo,
     porProduto, diaFechado, addVenda, deleteVenda, fecharDia,
@@ -141,6 +143,7 @@ const VendasDiariasPage = () => {
       });
       toast.success("Venda registrada!");
       setShowAdd(false);
+      checkForaHorario("Vendas Diárias", "/vendas-diarias").catch(() => {});
       setFormProduto(""); setFormCodigo(""); setFormQtd(""); setFormValor(""); setFormObs("");
     } catch (e: any) {
       toast.error("Erro ao salvar: " + e.message);
