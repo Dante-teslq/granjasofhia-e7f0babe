@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { AuditProvider } from "@/contexts/AuditContext";
 import { FraudProvider } from "@/contexts/FraudContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
+import { DialogProvider } from "@/contexts/DialogContext";
 import Index from "./pages/Index";
 import Estoque from "./pages/Estoque";
 import Apuracao from "./pages/Apuracao";
@@ -80,9 +81,11 @@ const AuthenticatedLayout = () => {
   }
 
   return (
-    <DashboardLayout>
-      <Outlet />
-    </DashboardLayout>
+    <DialogProvider>
+      <DashboardLayout>
+        <Outlet />
+      </DashboardLayout>
+    </DialogProvider>
   );
 };
 

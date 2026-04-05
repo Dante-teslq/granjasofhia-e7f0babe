@@ -3,25 +3,24 @@ import { ArrowRightLeft, Plus, Send, PackageCheck, ClipboardList } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApp } from "@/contexts/AppContext";
+import { useDialogs } from "@/contexts/DialogContext";
 import GlobalDateFilter from "@/components/GlobalDateFilter";
 import { useTransferencias } from "@/hooks/useTransferencias";
 import TransferenciaStats from "@/components/transferencias/TransferenciaStats";
 import TransferenciasTable from "@/components/transferencias/TransferenciasTable";
 import RecebimentosTab from "@/components/transferencias/RecebimentosTab";
-import NovaTransferenciaDialog from "@/components/transferencias/NovaTransferenciaDialog";
 import InsumosTab from "@/components/transferencias/InsumosTab";
 
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
 const TransferenciasPage = () => {
-  const { profile, dateRange, isOperator, currentRole, session } = useApp();
+  const { dateRange, currentRole, session } = useApp();
+  const { openDialog } = useDialogs();
   const isAdmin = currentRole === "Admin" || currentRole === "Administrador" || currentRole === "Supervisor";
-  const { records, pdvList, loading, loadRecords, deleteRecord } = useTransferencias(dateRange);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { records, loading, loadRecords, deleteRecord } = useTransferencias(dateRange);
   const [insumosCount, setInsumosCount] = useState(0);
 
-  const userName = profile?.nome || profile?.email || "";
 
   // Fetch today's insumos count
   useEffect(() => {
@@ -52,7 +51,7 @@ const TransferenciasPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <GlobalDateFilter />
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Button onClick={() => openDialog("novaTransferencia")} className="gap-2">
               <Plus className="w-4 h-4" /> Nova Transferência
             </Button>
           </div>
@@ -92,15 +91,6 @@ const TransferenciasPage = () => {
           </TabsContent>
         </Tabs>
 
-        <NovaTransferenciaDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          pdvList={pdvList}
-          isOperator={isOperator}
-          userPdvId={profile?.pdv_id || null}
-          userName={userName}
-          onSuccess={loadRecords}
-        />
       </div>
     </>
   );

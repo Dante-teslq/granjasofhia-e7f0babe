@@ -4,6 +4,33 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import AppSidebar from "./AppSidebar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { useDialogs } from "@/contexts/DialogContext";
+import { useApp } from "@/contexts/AppContext";
+import { useTransferencias } from "@/hooks/useTransferencias";
+import NovaTransferenciaDialog from "@/components/transferencias/NovaTransferenciaDialog";
+
+/**
+ * Renders global persistent dialogs.
+ * Because this is mounted above <Outlet />, these dialogs survive page navigation.
+ */
+const GlobalDialogs = () => {
+  const { dialogs, closeDialog } = useDialogs();
+  const { profile, dateRange, isOperator } = useApp();
+  const { pdvList, loadRecords } = useTransferencias(dateRange);
+  const userName = profile?.nome || profile?.email || "";
+
+  return (
+    <NovaTransferenciaDialog
+      open={dialogs.novaTransferencia}
+      onOpenChange={(v) => { if (!v) closeDialog("novaTransferencia"); }}
+      pdvList={pdvList}
+      isOperator={isOperator}
+      userPdvId={profile?.pdv_id || null}
+      userName={userName}
+      onSuccess={loadRecords}
+    />
+  );
+};
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const isMobile = useIsMobile();
@@ -38,6 +65,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <main className="flex-1 overflow-auto">
           {children}
         </main>
+        {/* Global dialogs — rendered outside <Outlet /> so they persist on navigation */}
+        <GlobalDialogs />
       </div>
     );
   }
@@ -51,6 +80,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       <main className="flex-1 ml-64 overflow-auto min-h-screen">
         {children}
       </main>
+      {/* Global dialogs — rendered outside <Outlet /> so they persist on navigation */}
+      <GlobalDialogs />
     </div>
   );
 };
