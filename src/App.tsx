@@ -43,7 +43,7 @@ const ProtectedRoute = ({ path, children }: { path: string; children: React.Reac
 };
 
 const AuthenticatedLayout = () => {
-  const { session, loading, profile } = useApp();
+  const { session, loading, profile, profileLoading, profileError, signOut } = useApp();
 
   if (loading) {
     return (
@@ -55,10 +55,26 @@ const AuthenticatedLayout = () => {
 
   if (!session) return <Navigate to="/login" replace />;
 
-  if (!profile) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-primary text-sm">Carregando perfil...</div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <p className="text-destructive text-sm text-center max-w-sm">
+          {profileError || "Perfil de usuário não encontrado. Contate o administrador."}
+        </p>
+        <button
+          onClick={signOut}
+          className="text-sm underline text-muted-foreground hover:text-foreground"
+        >
+          Sair
+        </button>
       </div>
     );
   }

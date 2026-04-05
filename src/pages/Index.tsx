@@ -181,58 +181,76 @@ const Index = () => {
   const isLoading = loading || loadingOp;
 
   return (
-    <>
-      <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 max-w-[1400px] animate-fade-in-up">
+    <div className="min-h-screen bg-mesh-light dark:bg-mesh-dark transition-colors duration-500">
+      <div className="p-4 md:p-6 lg:p-10 space-y-8 md:space-y-12 max-w-[1600px] mx-auto animate-fade-in-up">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-border/50 pb-8">
           <div>
-            <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Dashboard Operacional</h1>
-            <p className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1 md:mt-2">Gestão diária — Granja Sofhia</p>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-8 bg-primary rounded-full" />
+              <p className="text-[10px] md:text-xs font-bold text-primary uppercase tracking-[0.2em]">Gestão Operacional — Granja Sofhia</p>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
+              Dashboard <span className="text-gradient-gold">Inteligente</span>
+            </h1>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Select value={selectedPDV} onValueChange={setSelectedPDV}>
-              <SelectTrigger className="w-[180px] h-9 text-sm">
-                <MapPin className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-                <SelectValue placeholder="Todos os PDVs" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os PDVs</SelectItem>
-                {pdvOptions.map(pdv => (
-                  <SelectItem key={pdv} value={pdv}>{pdv}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <GlobalDateFilter />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="glass-card p-1 flex items-center gap-2">
+              <Select value={selectedPDV} onValueChange={setSelectedPDV}>
+                <SelectTrigger className="w-[200px] h-10 border-none bg-transparent focus:ring-0">
+                  <MapPin className="w-4 h-4 mr-2 text-primary" />
+                  <SelectValue placeholder="Todos os PDVs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os PDVs</SelectItem>
+                  {pdvOptions.map(pdv => (
+                    <SelectItem key={pdv} value={pdv}>{pdv}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="w-px h-6 bg-border/50" />
+              <GlobalDateFilter />
+            </div>
           </div>
         </div>
 
         {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-pulse text-sm text-muted-foreground">Carregando dados...</div>
+          <div className="fixed inset-0 bg-background/20 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="glass-card p-8 flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <p className="text-sm font-bold text-muted-foreground animate-pulse">Sincronizando dados...</p>
+            </div>
           </div>
         )}
 
         {/* ══════════════ BLOCO 1 — Resumo do Dia (6 Cards) ══════════════ */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
           {[
-            { label: "Vendas Hoje", value: `${filteredVendas.qtdHoje.toLocaleString('pt-BR')}`, sub: "CARTELAS", icon: ShoppingCart, color: "text-primary", bg: "bg-primary/10", link: "/vendas-diarias" },
+            { label: "Vendas Hoje", value: filteredVendas.qtdHoje.toLocaleString('pt-BR'), sub: "CARTELAS", icon: ShoppingCart, color: "text-primary", bg: "bg-primary/10", link: "/vendas-diarias" },
             { label: "Estoque Atual", value: estoquePdvMetrics.totalItens.toLocaleString('pt-BR'), sub: "UNIDADES", icon: Package, color: "text-primary", bg: "bg-primary/10", link: "/estoque" },
             { label: "Perdas Hoje", value: evidMetrics.qtdHoje.toLocaleString('pt-BR'), sub: "UNIDADES", icon: AlertCircle, color: "text-destructive", bg: "bg-destructive/10", link: "/evidencias" },
-            { label: "Transf. Enviadas", value: transfMetrics.enviadasHoje.toString(), sub: "HOJE", icon: ArrowUp, color: "text-blue-600", bg: "bg-blue-600/10", link: "/transferencias" },
-            { label: "Transf. Recebidas", value: transfMetrics.recebidasHoje.toString(), sub: "HOJE", icon: ArrowDown, color: "text-emerald-600", bg: "bg-emerald-600/10", link: "/transferencias" },
-            { label: "Alertas", value: alertasOperacionais.length.toString(), sub: "ATIVOS", icon: Bell, color: alertasOperacionais.length > 0 ? "text-destructive" : "text-muted-foreground", bg: alertasOperacionais.length > 0 ? "bg-destructive/10" : "bg-muted", link: "/alertas" },
+            { label: "Transf. Enviadas", value: transfMetrics.enviadasHoje.toString(), sub: "HOJE", icon: ArrowUp, color: "text-blue-500", bg: "bg-blue-500/10", link: "/transferencias" },
+            { label: "Transf. Recebidas", value: transfMetrics.recebidasHoje.toString(), sub: "HOJE", icon: ArrowDown, color: "text-emerald-500", bg: "bg-emerald-500/10", link: "/transferencias" },
+            { label: "Alertas Ativos", value: alertasOperacionais.length.toString(), sub: "ESTADO", icon: Bell, color: alertasOperacionais.length > 0 ? "text-destructive" : "text-muted-foreground", bg: alertasOperacionais.length > 0 ? "bg-destructive/10" : "bg-muted", link: "/alertas" },
           ].map((stat) => (
             <div
               key={stat.label}
               onClick={() => navigate(stat.link)}
-              className="glass-card-interactive p-4 md:p-5"
+              className="glass-card-interactive p-6 flex flex-col group"
             >
-              <div className={`flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-xl ${stat.bg} ${stat.color} mb-3`}>
-                <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
+              <div className="flex items-center justify-between mb-4">
+                <div className={`flex items-center justify-center w-12 h-12 rounded-2xl ${stat.bg} ${stat.color} transition-transform group-hover:scale-110 duration-300`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <ArrowRightLeft className="w-4 h-4 text-muted-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <p className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground">{stat.value}</p>
-              <p className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">{stat.sub}</p>
-              <p className="text-[10px] md:text-xs font-medium text-muted-foreground mt-1">{stat.label}</p>
+              <div className="space-y-1">
+                <p className="text-3xl font-black tracking-tight text-foreground">{stat.value}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{stat.sub}</p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <p className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">{stat.label}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -269,93 +287,132 @@ const Index = () => {
         )}
 
         {/* ══════════════ BLOCO 3 — Desempenho Comercial ══════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* Vendas com Tendência */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Vendas por Dia (CARTELAS)</h3>
+          <div className="glass-card p-6 md:p-8 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Fluxo de Vendas</h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Unidades por dia</p>
+                </div>
               </div>
-              <button onClick={() => navigate("/vendas-diarias")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
-                Ver todas
+              <button 
+                onClick={() => navigate("/vendas-diarias")} 
+                className="text-xs font-bold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-full transition-colors border border-primary/20"
+              >
+                Detalhes
               </button>
             </div>
             {vendasChartData.length > 0 ? (
-              <>
-                <ResponsiveContainer width="100%" height={220}>
-                  <ComposedChart data={vendasChartData} barGap={6}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                    <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-                    <Bar dataKey="total" name="CARTELAS" fill="hsl(var(--primary))" radius={[6, 6, 6, 6]} animationDuration={800} />
-                    <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={2} strokeDasharray="6 3" dot={false} animationDuration={1000} />
+              <div className="flex-1 w-full min-h-[260px]">
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart data={vendasChartData} barGap={8}>
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }} axisLine={false} tickLine={false} dx={-10} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.1 }} />
+                    <Bar dataKey="total" name="CARTELAS" fill="url(#barGradient)" radius={[6, 6, 0, 0]} animationDuration={1000} />
+                    <Line type="monotone" dataKey="tendencia" name="Tendência" stroke="hsl(var(--destructive))" strokeWidth={3} strokeDasharray="8 4" dot={false} animationDuration={1500} />
                   </ComposedChart>
                 </ResponsiveContainer>
-                <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><span className="w-3 h-2 rounded-sm bg-primary inline-block" /> CARTELAS</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-destructive inline-block" style={{ borderTop: "2px dashed" }} /> Tendência</span>
-                </div>
-              </>
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-[220px] text-muted-foreground text-sm">
-                Nenhuma venda registrada no período
+              <div className="flex flex-col items-center justify-center flex-1 h-[260px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <ShoppingCart className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Sem vendas registradas</p>
               </div>
             )}
           </div>
 
           {/* Top 5 Mais Vendidos */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-6">
-              <Trophy className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Mais Vendidos</h3>
+          <div className="glass-card p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <Trophy className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Produtos Estrela</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Top 5 em demanda</p>
+              </div>
             </div>
             {filteredRankings.topVendidos.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-6 mt-4">
                 {filteredRankings.topVendidos.map((p, i) => {
                   const maxQtd = filteredRankings.topVendidos[0]?.quantidade || 1;
                   const pct = (p.quantidade / maxQtd) * 100;
                   return (
-                    <div key={p.produto} className="flex items-center gap-3">
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        i === 0 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                      }`}>{i + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-foreground truncate">{p.produto}</span>
-                          <span className="text-xs font-bold text-foreground ml-2 shrink-0">{p.quantidade.toLocaleString('pt-BR')} CARTELAS</span>
+                    <div key={p.produto} className="group relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-black ${
+                            i === 0 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "bg-muted text-muted-foreground"
+                          }`}>
+                            {i + 1}
+                          </span>
+                          <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{p.produto}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-primary/60 transition-all" style={{ width: `${pct}%` }} />
-                        </div>
+                        <span className="text-sm font-black text-foreground">{p.quantidade.toLocaleString('pt-BR')} <span className="text-[10px] text-muted-foreground font-bold">UN</span></span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted/50 overflow-hidden backdrop-blur-sm">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                            i === 0 ? "bg-gradient-to-r from-primary to-accent" : "bg-muted-foreground/30"
+                          }`}
+                          style={{ width: `${pct}%` }} 
+                        />
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
-                Nenhuma venda no período
+              <div className="flex flex-col items-center justify-center h-[260px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <Trophy className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Aguardando dados de performance</p>
               </div>
             )}
           </div>
         </div>
 
         {/* ══════════════ BLOCO 4 — Controle Operacional ══════════════ */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* Saúde do Estoque */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-6">
-              <Heart className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Saúde do Estoque</h3>
+          <div className="glass-card p-6 md:p-8 flex flex-col">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Heart className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Saúde do Estoque</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Monitoramento de níveis</p>
+              </div>
             </div>
             {filteredStockHealth.total > 0 ? (
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="w-[140px] h-[140px]">
+              <div className="flex flex-col md:flex-row items-center gap-10 flex-1">
+                <div className="relative w-[180px] h-[180px] group">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={healthPieData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} dataKey="value" animationDuration={800} strokeWidth={2} stroke="hsl(var(--card))">
+                      <Pie 
+                        data={healthPieData} 
+                        cx="50%" 
+                        cy="50%" 
+                        innerRadius={60} 
+                        outerRadius={80} 
+                        dataKey="value" 
+                        paddingAngle={5}
+                        animationDuration={1000} 
+                        stroke="none"
+                      >
                         {healthPieData.map((entry, i) => (
                           <Cell key={i} fill={entry.color} />
                         ))}
@@ -363,235 +420,233 @@ const Index = () => {
                       <Tooltip content={<CustomTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-black text-foreground">{filteredStockHealth.total}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Itens</span>
+                  </div>
                 </div>
-                <div className="flex-1 space-y-2 w-full">
+                <div className="flex-1 space-y-3 w-full">
                   {[
-                    { label: "Saudável", count: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"] },
-                    { label: "Atenção", count: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"] },
-                    { label: "Crítico", count: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"] },
+                    { label: "Nível Saudável", count: filteredStockHealth.saudavel, color: HEALTH_COLORS["Saudável"], desc: "Estoque otimizado" },
+                    { label: "Atenção Mínima", count: filteredStockHealth.atencao, color: HEALTH_COLORS["Atenção"], desc: "Próximo ao limite" },
+                    { label: "Nível Crítico", count: filteredStockHealth.critico, color: HEALTH_COLORS["Crítico"], desc: "Risco de ruptura" },
                   ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full" style={{ background: item.color }} />
-                        <span className="text-sm text-foreground font-medium">{item.label}</span>
+                    <div key={item.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/20 border border-border/50 group hover:bg-muted/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full shadow-sm" style={{ background: item.color }} />
+                        <div>
+                          <span className="text-sm text-foreground font-bold block">{item.label}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium">{item.desc}</span>
+                        </div>
                       </div>
-                      <span className="text-sm font-bold text-foreground">{item.count} {item.count === 1 ? "produto" : "produtos"}</span>
+                      <div className="text-right">
+                        <span className="text-sm font-black text-foreground">{item.count}</span>
+                        <span className="text-[10px] text-muted-foreground font-bold ml-1">PROD</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-[140px] text-muted-foreground text-sm">
-                Nenhum dado de estoque
+              <div className="flex flex-col items-center justify-center h-[220px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <Heart className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Sem dados operacionais</p>
               </div>
             )}
           </div>
 
           {/* Perdas — Evidências */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 text-destructive" />
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Perdas no Período</h3>
+          <div className="glass-card p-6 md:p-8 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-destructive/10">
+                  <Camera className="w-5 h-5 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Registro de Perdas</h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Controle de qualidade</p>
+                </div>
               </div>
-              <button onClick={() => navigate("/evidencias")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
-                Ver todas
+              <button 
+                onClick={() => navigate("/evidencias")} 
+                className="text-xs font-bold text-destructive hover:bg-destructive/10 px-3 py-1.5 rounded-full transition-colors border border-destructive/20"
+              >
+                Auditar
               </button>
             </div>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-muted/30 border border-border text-center">
-                <p className="text-lg md:text-xl font-extrabold text-foreground">{evidMetrics.qtdHoje}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">Hoje</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 border border-border text-center">
-                <p className="text-lg md:text-xl font-extrabold text-foreground">{evidMetrics.qtdPeriodo}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">Período</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 border border-border text-center">
-                <p className="text-xs md:text-sm font-bold text-foreground truncate">{evidMetrics.motivoMaisFrequente}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">Motivo Top</p>
-              </div>
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[
+                { label: "Hoje", value: evidMetrics.qtdHoje, icon: AlertCircle, color: "text-destructive" },
+                { label: "No Período", value: evidMetrics.qtdPeriodo, icon: BarChart3, color: "text-foreground" },
+                { label: "Frequente", value: evidMetrics.motivoMaisFrequente, icon: Bell, color: "text-primary" },
+              ].map((stat, i) => (
+                <div key={i} className="p-4 rounded-xl bg-muted/20 border border-border/50 transition-transform hover:scale-[1.02]">
+                  <p className={`text-xl font-black ${stat.color} truncate`}>{stat.value}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-wider">{stat.label}</p>
+                </div>
+              ))}
             </div>
             {perdasChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={perdasChartData}>
-                  <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} width={30} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="quantidade" name="Perdas" fill="hsl(var(--destructive))" radius={[4, 4, 4, 4]} opacity={0.8} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="flex-1 min-h-[140px]">
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={perdasChartData}>
+                    <defs>
+                      <linearGradient id="lossGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.8} />
+                        <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.4} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                    <Bar dataKey="quantidade" name="Perdas" fill="url(#lossGradient)" radius={[4, 4, 0, 0]} animationDuration={1200} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
-                Nenhuma perda registrada
+              <div className="flex flex-col items-center justify-center flex-1 h-[140px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <ShieldAlert className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Nenhuma ocorrência registrada</p>
               </div>
             )}
           </div>
         </div>
 
         {/* ── Transferências + Top Perdas ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* Transferências */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-primary" />
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Transferências</h3>
+          <div className="glass-card p-6 md:p-8 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-blue-500/10">
+                  <Truck className="w-5 h-5 text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">Logística</h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Fluxo entre unidades</p>
+                </div>
               </div>
-              <button onClick={() => navigate("/transferencias")} className="text-xs text-primary hover:underline font-bold uppercase tracking-wide">
-                Ver todas
+              <button 
+                onClick={() => navigate("/transferencias")} 
+                className="text-xs font-bold text-blue-500 hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors border border-blue-500/20"
+              >
+                Monitorar
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-muted/30 border border-border">
-                <p className="text-lg font-extrabold text-foreground">{transfMetrics.pendentes}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">Pendentes</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 border border-border">
-                <p className="text-lg font-extrabold text-foreground">{transfMetrics.confirmadas}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">Confirmadas</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 border border-border">
-                <p className="text-xs font-bold text-foreground truncate">{transfMetrics.pdvMaisEnviou}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">+ Enviou</p>
-              </div>
-              <div className="p-3 rounded-xl bg-muted/30 border border-border">
-                <p className="text-xs font-bold text-foreground truncate">{transfMetrics.pdvMaisRecebeu}</p>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase">+ Recebeu</p>
-              </div>
+            <div className="grid grid-cols-2 gap-4 mb-8">
+              {[
+                { label: "Pendentes", value: transfMetrics.pendentes, color: "text-orange-500", bg: "bg-orange-500/10" },
+                { label: "Confirmadas", value: transfMetrics.confirmadas, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              ].map((item, i) => (
+                <div key={i} className={`p-4 rounded-xl ${item.bg} border border-white/10 flex flex-col items-center justify-center`}>
+                  <p className={`text-2xl font-black ${item.color}`}>{item.value}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">{item.label}</p>
+                </div>
+              ))}
             </div>
             {transfMetrics.recentes.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Últimas movimentações</p>
+              <div className="space-y-3 flex-1 overflow-y-auto max-h-[250px] pr-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Movimentações Recentes</p>
                 {transfMetrics.recentes.map((t: any) => (
-                  <div key={t.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/20 border border-border text-sm">
+                  <div key={t.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/10 border border-border/50 hover:bg-muted/20 transition-colors group">
                     <div className="min-w-0 flex-1">
-                      <span className="font-medium text-foreground truncate block">{t.produto_descricao}</span>
-                      <span className="text-[10px] text-muted-foreground">{t.origemNome} → {t.destinoNome}</span>
+                      <span className="font-bold text-sm text-foreground truncate block group-hover:text-primary transition-colors">{t.produto_descricao}</span>
+                      <span className="text-[10px] text-muted-foreground font-medium">{t.origemNome} <ArrowRightLeft className="w-2.5 h-2.5 inline mx-1" /> {t.destinoNome}</span>
                     </div>
-                    <div className="text-right shrink-0 ml-2">
-                      <span className="font-bold text-foreground">{t.quantidade}</span>
-                      <span className={`block text-[9px] font-bold uppercase ${t.status === "pendente" ? "text-accent" : "text-emerald-600"}`}>{t.status}</span>
+                    <div className="text-right shrink-0 ml-4">
+                      <span className="font-black text-foreground">{t.quantidade}</span>
+                      <span className={`block text-[9px] font-black uppercase tracking-tighter ${t.status === "pendente" ? "text-orange-500" : "text-emerald-500"}`}>{t.status}</span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-[60px] text-muted-foreground text-sm">
-                Nenhuma transferência no período
+              <div className="flex flex-col items-center justify-center h-[120px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <Truck className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Nenhuma transferência em curso</p>
               </div>
             )}
           </div>
 
           {/* Top 5 Maiores Perdas */}
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-6">
-              <AlertCircle className="w-4 h-4 text-destructive" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Maiores Perdas</h3>
+          <div className="glass-card p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Alertas de Perda</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Maiores quebras por SKU</p>
+              </div>
             </div>
             {filteredRankings.topPerdas.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-6">
                 {filteredRankings.topPerdas.map((p: any, i: number) => {
                   const maxQuebrado = filteredRankings.topPerdas[0]?.quebrado || 1;
                   const pct = (p.quebrado / maxQuebrado) * 100;
                   return (
-                    <div key={p.descricao} className="flex items-center gap-3">
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        i === 0 ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"
-                      }`}>{i + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-foreground truncate">{p.descricao}</span>
-                          <span className="text-xs font-bold text-destructive ml-2 shrink-0">{p.quebrado} un.</span>
+                    <div key={p.descricao} className="group relative">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-black ${
+                            i === 0 ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "bg-muted text-muted-foreground"
+                          }`}>
+                            {i + 1}
+                          </span>
+                          <span className="text-sm font-bold text-foreground group-hover:text-red-500 transition-colors uppercase truncate max-w-[180px]">{p.descricao}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-full rounded-full bg-destructive/60 transition-all" style={{ width: `${pct}%` }} />
-                        </div>
+                        <span className="text-sm font-black text-red-500">{p.quebrado} <span className="text-[9px] font-bold opacity-70">UN</span></span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted/50 overflow-hidden">
+                        <div 
+                          className={`h-full rounded-full transition-all duration-1000 ${
+                            i === 0 ? "bg-red-500" : "bg-muted-foreground/30"
+                          }`}
+                          style={{ width: `${pct}%` }} 
+                        />
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-[120px] text-muted-foreground text-sm">
-                Nenhuma perda registrada no período
+              <div className="flex flex-col items-center justify-center h-[260px] text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                <ShieldAlert className="w-8 h-8 mb-2 opacity-20" />
+                <p className="text-sm font-medium">Controle de qualidade intacto</p>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Estoque: Top 5 Menores + Top 5 Maiores Saldos ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-6">
-              <ArrowDown className="w-4 h-4 text-destructive" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Menor Saldo</h3>
-            </div>
-            {estoquePdvMetrics.top5Menores.length > 0 ? (
-              <div className="space-y-2">
-                {estoquePdvMetrics.top5Menores.map((p: any, i: number) => (
-                  <div key={p.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${
-                        p.quantidade <= 0 ? "bg-destructive text-destructive-foreground" : p.quantidade <= p.quantidade_minima ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"
-                      }`}>{i + 1}</span>
-                      <span className="text-sm text-foreground truncate">{p.produto_descricao}</span>
-                    </div>
-                    <span className={`text-sm font-bold shrink-0 ml-2 ${p.quantidade <= 0 ? "text-destructive" : p.quantidade <= p.quantidade_minima ? "text-accent" : "text-foreground"}`}>
-                      {p.quantidade}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-[100px] text-muted-foreground text-sm">Sem dados de estoque</div>
-            )}
-          </div>
-
-          <div className="glass-card p-4 md:p-6 lg:p-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-6">
-              <ArrowUp className="w-4 h-4 text-emerald-600" />
-              <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Top 5 Maior Saldo</h3>
-            </div>
-            {estoquePdvMetrics.top5Maiores.length > 0 ? (
-              <div className="space-y-2">
-                {estoquePdvMetrics.top5Maiores.map((p: any, i: number) => (
-                  <div key={p.id} className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 border border-border">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 bg-emerald-600/10 text-emerald-600">{i + 1}</span>
-                      <span className="text-sm text-foreground truncate">{p.produto_descricao}</span>
-                    </div>
-                    <span className="text-sm font-bold text-emerald-600 shrink-0 ml-2">{p.quantidade}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-[100px] text-muted-foreground text-sm">Sem dados de estoque</div>
             )}
           </div>
         </div>
 
         {/* ── Resumo Geral ── */}
-        <div className="glass-card p-4 md:p-6 lg:p-8">
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4 md:mb-6">Resumo do Período</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {[
-              { label: "Vendas Hoje (CARTELAS)", value: filteredVendas.qtdHoje.toLocaleString('pt-BR') },
-              { label: "Vendas Período (CARTELAS)", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR') },
-              { label: "Estoque Total", value: estoquePdvMetrics.totalItens.toLocaleString('pt-BR') },
-              { label: "Produtos Zerados", value: estoquePdvMetrics.semEstoque.toString() },
-              { label: "Perdas (Período)", value: evidMetrics.qtdPeriodo.toLocaleString('pt-BR') },
-              { label: "Transf. Pendentes", value: transfMetrics.pendentes.toString() },
-            ].map(item => (
-              <div key={item.label} className="flex flex-col p-3 rounded-xl bg-muted/30 border border-border">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold">{item.label}</span>
-                <span className="text-lg font-bold text-foreground mt-1">{item.value}</span>
-              </div>
-            ))}
+        <div className="glass-card-gold p-8 border-none overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 transition-transform group-hover:scale-110 duration-500">
+            <BarChart3 className="w-48 h-48" />
+          </div>
+          <div className="relative z-10">
+            <h3 className="text-xl font-black text-primary uppercase tracking-[0.2em] mb-8">Performance Consolidada</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              {[
+                { label: "Vendas Hoje", value: filteredVendas.qtdHoje.toLocaleString('pt-BR'), unit: "CART" },
+                { label: "Vendas Ciclo", value: filteredVendas.qtdPeriodo.toLocaleString('pt-BR'), unit: "CART" },
+                { label: "Estoque Total", value: estoquePdvMetrics.totalItens.toLocaleString('pt-BR'), unit: "UN" },
+                { label: "Rupturas", value: estoquePdvMetrics.semEstoque.toString(), unit: "SKU" },
+                { label: "Perdas Totais", value: evidMetrics.qtdPeriodo.toLocaleString('pt-BR'), unit: "UN" },
+                { label: "Pendências", value: transfMetrics.pendentes.toString(), unit: "LOG" },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col p-6 rounded-2xl bg-white/40 dark:bg-black/20 backdrop-blur-md border border-white/20">
+                  <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{item.label}</span>
+                  <div className="flex items-baseline gap-1 mt-2">
+                    <span className="text-2xl font-black text-foreground">{item.value}</span>
+                    <span className="text-[9px] font-bold text-primary">{item.unit}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

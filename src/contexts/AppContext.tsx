@@ -31,6 +31,8 @@ interface AppContextData {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
+  profileError: string | null;
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
   settings: AppSettings;
@@ -60,6 +62,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const sessionRef = useRef<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [userPdvName, setUserPdvName] = useState<string | null>(null);
 
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -79,7 +83,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, [settings]);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
+    setProfileLoading(true);
+    setProfileError(null);
+    const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
@@ -87,6 +93,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (data) {
       const p = data as UserProfile;
       setProfile(p);
+      setProfileError(null);
       // Fetch PDV name if pdv_id exists
       if (p.pdv_id) {
         const { data: pdvData } = await supabase
@@ -98,7 +105,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setUserPdvName(null);
       }
+    } else {
+      const msg = error?.code === "PGRST116"
+        ? "Perfil de usuário não encontrado. Contate o administrador."
+        : (error?.message || "Erro ao carregar perfil.");
+      setProfileError(msg);
+      setProfile(null);
     }
+    setProfileLoading(false);
   };
 
   const refreshProfile = async () => {
@@ -221,7 +235,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AppContext.Provider
-      value={{ currentRole, session, profile, loading, dateRange, setDateRange, settings, updateSettings, canAccess, signOut, refreshProfile, userPdvName, isOperator }}
+      value={{ currentRole, session, profile, loading, profileLoading, profileError, dateRange, setDateRange, settings, updateSettings, canAccess, signOut, refreshProfile, userPdvName, isOperator }}
     >
       {children}
     </AppContext.Provider>
