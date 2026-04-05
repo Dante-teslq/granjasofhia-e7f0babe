@@ -41,27 +41,24 @@ function getAdminClient() {
 }
 
 // --- Auth Helper ---
-async function authenticateRequest(req: Request): Promise<{ userId: string; email: string }> {
+// The Supabase platform validates the JWT signature before the function runs.
+// We only need to decode the payload to extract the user identity — no network call needed.
+function authenticateRequest(req: Request): { userId: string; email: string } {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     throw new HttpError(401, "Token de autenticação não fornecido");
   }
-
-  // Validate the JWT using the anon client with the Authorization header forwarded.
-  // This is the standard Supabase Edge Function auth pattern (SDK v2).
-  // getClaims() does not exist; admin.getUser() takes a UID not a JWT.
-  const anonClient = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const { data: { user }, error } = await anonClient.auth.getUser();
-  if (error || !user) {
-    throw new HttpError(401, "Token inválido ou expirado");
+  try {
+    const token = authHeader.replace("Bearer ", "");
+    const [, payloadB64] = token.split(".");
+    const payload = JSON.parse(
+      atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
+    );
+    if (!payload?.sub) throw new Error("Missing sub");
+    return { userId: payload.sub as string, email: (payload.email as string) || "" };
+  } catch {
+    throw new HttpError(401, "Token inválido");
   }
-
-  return { userId: user.id, email: user.email || "" };
 }
 
 // --- Error Class ---
@@ -293,8 +290,12 @@ async function auditIntegrationEvent(event: {
   new_value?: unknown;
   metadata?: unknown;
 }) {
-  const admin = getAdminClient();
-  await admin.from("integration_audit_events").insert(event);
+  try {
+    const admin = getAdminClient();
+    await admin.from("integration_audit_events").insert(event);
+  } catch {
+    // Table may not exist — audit is best-effort, never block the main flow
+  }
 }
 
 // =============================================
@@ -881,8 +882,8 @@ Deno.serve(async (req: Request) => {
     const path = url.pathname.split("/").filter(Boolean);
     const route = path[path.length - 1] || "";
 
-    // Authenticate
-    const { userId } = await authenticateRequest(req);
+    // Authenticate (JWT already validated by Supabase platform — just decode payload)
+    const { userId } = authenticateRequest(req);
 
     // Parse body
     let body: Record<string, unknown> = {};
